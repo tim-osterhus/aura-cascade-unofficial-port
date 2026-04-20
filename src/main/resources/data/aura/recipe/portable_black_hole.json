@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " g ",
+    "pip",
+    " e "
+  ],
+  "key": {
+    "g": "aura:arcane_gem_black",
+    "p": "aura:arcane_prism",
+    "i": "aura:arcane_ingot_black",
+    "e": "minecraft:ender_eye"
+  },
+  "result": {
+    "id": "aura:portable_black_hole",
+    "count": 1
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:amethyst_shard",
+    "minecraft:glowstone_dust",
+    "minecraft:quartz"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:aura_crystal_white"
+  }
+}

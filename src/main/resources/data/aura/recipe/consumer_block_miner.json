@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "minecraft:diamond_pickaxe",
+    "I": "minecraft:iron_ingot",
+    "P": "aura:arcane_prism",
+    "R": "aura:portable_red_hole"
+  },
+  "pattern": [
+    "PDP",
+    "IRI",
+    "IRI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:consumer_block_miner"
+  }
+}

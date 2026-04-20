@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_top",
+  "textures": {
+    "top": "aura:block/aura_loot_top",
+    "side": "aura:block/aura_loot"
+  }
+}

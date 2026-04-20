@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " r ",
+    " i ",
+    " s "
+  ],
+  "key": {
+    "r": "aura:arcane_gem_red",
+    "i": "aura:arcane_ingot_red",
+    "s": "minecraft:diamond_sword"
+  },
+  "result": {
+    "id": "aura:sword_of_the_barbarian",
+    "count": 1
+  }
+}

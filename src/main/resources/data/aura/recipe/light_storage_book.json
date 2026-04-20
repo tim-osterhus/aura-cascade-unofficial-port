@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:book",
+    "minecraft:paper",
+    "aura:arcane_ingot_yellow"
+  ],
+  "result": {
+    "id": "aura:light_storage_book",
+    "count": 1
+  }
+}

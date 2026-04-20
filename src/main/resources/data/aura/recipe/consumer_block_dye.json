@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "aura:aura_crystal_orange",
+    "S": "minecraft:shears",
+    "W": "minecraft:white_wool"
+  },
+  "pattern": [
+    "CWC",
+    "WSW",
+    "CWC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:consumer_block_dye"
+  }
+}

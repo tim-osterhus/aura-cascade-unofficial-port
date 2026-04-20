@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:book",
+    "aura:aura_crystal_white",
+    "aura:arcane_prism"
+  ],
+  "result": {
+    "id": "aura:encyclopedia_aura",
+    "count": 1
+  }
+}

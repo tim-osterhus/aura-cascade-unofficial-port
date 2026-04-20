@@ -1,0 +1,8 @@
+{
+  "parent": "aura:block/miniblock_top_bottom",
+  "textures": {
+    "top": "aura:block/pump_projectile_node_top",
+    "bottom": "aura:block/pump_projectile_node_bottom",
+    "side": "aura:block/pump_projectile_node_side"
+  }
+}

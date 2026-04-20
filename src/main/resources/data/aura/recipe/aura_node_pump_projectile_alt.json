@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "minecraft:redstone",
+    "P": "aura:aura_node_pump_projectile"
+  },
+  "pattern": [
+    " E ",
+    "EPE",
+    " E "
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:aura_node_pump_projectile_alt"
+  }
+}

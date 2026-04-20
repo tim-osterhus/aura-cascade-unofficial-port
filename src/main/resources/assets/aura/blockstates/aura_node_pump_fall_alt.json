@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "aura:block/aura_node_pump_fall_alt"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:bookshelf",
+    "I": "aura:arcane_ingot_blue",
+    "P": "aura:arcane_prism",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "BIB",
+    "RPR",
+    "BIB"
+  ],
+  "result": {
+    "id": "aura:bookshelf_coordinator",
+    "count": 1
+  }
+}

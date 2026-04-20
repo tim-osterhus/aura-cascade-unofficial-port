@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "aura:arcane_gem_blue",
+    "C": "minecraft:crying_obsidian",
+    "G": "aura:arcane_gem_green",
+    "P": "aura:consumer_block_ore_adv",
+    "V": "aura:arcane_gem_violet",
+    "W": "aura:arcane_gem_white"
+  },
+  "pattern": [
+    "GVG",
+    "PCP",
+    "WBW"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:consumer_block_angel"
+  }
+}

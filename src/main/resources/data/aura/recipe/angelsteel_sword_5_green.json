@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": "aura:angelsteel_ingot_5",
+    "C": "aura:aura_crystal_green"
+  },
+  "pattern": [
+    " A",
+    " A",
+    " C"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:angelsteel_sword_5",
+    "components": {
+      "minecraft:custom_data": {
+        "aura": "green"
+      }
+    }
+  }
+}

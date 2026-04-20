@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " gr",
+    " pg",
+    "r  "
+  ],
+  "key": {
+    "g": "minecraft:glass_pane",
+    "r": "aura:arcane_ingot_red",
+    "p": "aura:arcane_prism"
+  },
+  "result": {
+    "id": "aura:mirror_of_the_angel",
+    "count": 1
+  }
+}

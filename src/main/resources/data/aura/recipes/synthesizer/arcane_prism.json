@@ -1,0 +1,14 @@
+{
+  "type": "aura:synthesizer",
+  "ingredients": [
+    { "item": "aura:arcane_gem_white", "count": 1 },
+    { "item": "aura:arcane_gem_black", "count": 1 },
+    { "item": "aura:arcane_gem_orange", "count": 1 },
+    { "item": "aura:arcane_gem_red", "count": 1 },
+    { "item": "aura:arcane_gem_yellow", "count": 1 },
+    { "item": "aura:arcane_gem_green", "count": 1 },
+    { "item": "aura:arcane_gem_blue", "count": 1 },
+    { "item": "aura:arcane_gem_violet", "count": 1 }
+  ],
+  "result": { "item": "aura:arcane_prism", "count": 1 }
+}

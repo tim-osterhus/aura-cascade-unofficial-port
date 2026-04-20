@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "aura:block/aura_furnace_top",
+    "front": "aura:block/aura_furnace_front",
+    "side": "aura:block/aura_furnace_side"
+  }
+}

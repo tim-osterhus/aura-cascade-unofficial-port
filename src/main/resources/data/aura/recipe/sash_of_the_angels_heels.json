@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " r ",
+    "p p",
+    " b "
+  ],
+  "key": {
+    "r": "minecraft:rabbit_hide",
+    "p": "aura:arcane_prism",
+    "b": "minecraft:leather_boots"
+  },
+  "result": {
+    "id": "aura:sash_of_the_angels_heels",
+    "count": 1
+  }
+}

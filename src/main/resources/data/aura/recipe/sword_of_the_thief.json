@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " b ",
+    " i ",
+    " s "
+  ],
+  "key": {
+    "b": "aura:arcane_gem_blue",
+    "i": "aura:arcane_ingot_black",
+    "s": "minecraft:iron_sword"
+  },
+  "result": {
+    "id": "aura:sword_of_the_thief",
+    "count": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "minecraft:obsidian",
+    "N": "aura:ritual_nether",
+    "P": "aura:arcane_prism"
+  },
+  "pattern": [
+    "EPE",
+    "ENE",
+    "EEE"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:ritual_end"
+  }
+}

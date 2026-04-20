@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "aura:block/consumer_block_enchant"
+    }
+  }
+}

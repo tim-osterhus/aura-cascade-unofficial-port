@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": "minecraft:nether_bricks",
+    "I": "aura:arcane_ingot_black"
+  },
+  "pattern": [
+    "BBB",
+    "BIB",
+    "BBB"
+  ],
+  "result": {
+    "count": 32,
+    "id": "aura:travelers_bricks"
+  }
+}

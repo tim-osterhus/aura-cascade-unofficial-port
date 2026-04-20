@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "aura:basic_storage_book",
+    "aura:arcane_gem_white",
+    "minecraft:iron_ingot"
+  ],
+  "result": {
+    "id": "aura:dense_storage_book",
+    "count": 1
+  }
+}

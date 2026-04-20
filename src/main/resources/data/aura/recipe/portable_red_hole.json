@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " g ",
+    "pip",
+    " f "
+  ],
+  "key": {
+    "g": "aura:arcane_gem_red",
+    "p": "aura:arcane_prism",
+    "i": "aura:arcane_ingot_red",
+    "f": "minecraft:fire_charge"
+  },
+  "result": {
+    "id": "aura:portable_red_hole",
+    "count": 1
+  }
+}

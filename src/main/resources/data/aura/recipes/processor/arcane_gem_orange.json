@@ -1,0 +1,9 @@
+{
+  "type": "aura:processor",
+  "prismatic_only": true,
+  "ingredients": [
+    { "item": "minecraft:diamond", "count": 1 },
+    { "item": "aura:arcane_ingot_orange", "count": 1 }
+  ],
+  "result": { "item": "aura:arcane_gem_orange", "count": 1 }
+}

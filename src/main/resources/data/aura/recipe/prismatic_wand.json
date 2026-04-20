@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  p",
+    " s ",
+    "b  "
+  ],
+  "key": {
+    "p": "aura:arcane_prism",
+    "s": "minecraft:stick",
+    "b": "minecraft:blaze_rod"
+  },
+  "result": {
+    "id": "aura:prismatic_wand",
+    "count": 1
+  }
+}

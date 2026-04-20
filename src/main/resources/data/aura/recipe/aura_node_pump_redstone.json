@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:redstone_block",
+    "P": "aura:aura_node_pump",
+    "R": "aura:arcane_ingot_red"
+  },
+  "pattern": [
+    "BBB",
+    "RPR",
+    "R R"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:aura_node_pump_redstone"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "anvil_cost": 3,
+  "description": {
+    "translate": "enchantment.aura.kaleidoscopic_yellow"
+  },
+  "effects": {
+    "minecraft:attributes": [
+      {
+        "amount": {
+          "type": "minecraft:linear",
+          "base": 1.0,
+          "per_level_above_first": 1.0
+        },
+        "attribute": "minecraft:mining_efficiency",
+        "id": "aura:enchantment.kaleidoscopic_yellow",
+        "operation": "add_value"
+      }
+    ]
+  },
+  "max_cost": {
+    "base": 32,
+    "per_level_above_first": 8
+  },
+  "max_level": 8,
+  "min_cost": {
+    "base": 8,
+    "per_level_above_first": 6
+  },
+  "primary_items": "#aura:kaleidoscopic_enchantable",
+  "slots": [
+    "mainhand"
+  ],
+  "supported_items": "#aura:kaleidoscopic_enchantable",
+  "weight": 4
+}

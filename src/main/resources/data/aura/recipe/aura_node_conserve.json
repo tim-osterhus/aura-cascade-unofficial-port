@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "aura:arcane_ingot_blue",
+    "N": "aura:aura_node"
+  },
+  "pattern": [
+    " B ",
+    " N ",
+    " B "
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:aura_node_conserve"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "rgy",
+    "pap",
+    " b "
+  ],
+  "key": {
+    "r": "aura:arcane_gem_red",
+    "g": "aura:arcane_gem_green",
+    "y": "aura:arcane_gem_yellow",
+    "p": "aura:arcane_prism",
+    "a": "minecraft:apple",
+    "b": "aura:arcane_gem_blue"
+  },
+  "result": {
+    "id": "aura:amulet_of_the_forbidden_fruit",
+    "count": 1
+  }
+}

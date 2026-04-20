@@ -1,0 +1,8 @@
+{
+  "parent": "aura:block/miniblock_top_bottom",
+  "textures": {
+    "top": "aura:block/orange_node_top",
+    "bottom": "aura:block/orange_node_bottom",
+    "side": "aura:block/orange_node_side"
+  }
+}

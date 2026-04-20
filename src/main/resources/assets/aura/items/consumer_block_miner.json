@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "aura:item/consumer_block_miner"
+  }
+}

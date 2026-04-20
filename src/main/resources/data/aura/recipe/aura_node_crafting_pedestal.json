@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "minecraft:amethyst_shard",
+    "N": "aura:aura_node",
+    "S": "minecraft:smooth_stone_slab"
+  },
+  "pattern": [
+    " A ",
+    "SNS",
+    " S "
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:aura_node_crafting_pedestal"
+  }
+}

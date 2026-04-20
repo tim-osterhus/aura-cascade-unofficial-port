@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "aura:basic_storage_book",
+    "minecraft:wheat",
+    "aura:arcane_gem_green"
+  ],
+  "result": {
+    "id": "aura:farming_storage_book",
+    "count": 1
+  }
+}

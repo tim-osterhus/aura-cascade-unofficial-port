@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:barrel",
+    "C": "aura:aura_crystal_blue",
+    "R": "minecraft:fishing_rod"
+  },
+  "pattern": [
+    "CRC",
+    "RBR",
+    "CRC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:consumer_block_fish"
+  }
+}

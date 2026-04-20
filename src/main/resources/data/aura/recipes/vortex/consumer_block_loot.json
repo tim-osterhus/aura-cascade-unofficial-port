@@ -1,0 +1,38 @@
+{
+  "type": "aura:vortex",
+  "ingredients": [
+    {
+      "item": "aura:consumer_block_ore_adv",
+      "aura": {
+        "color": "yellow",
+        "amount": 2400
+      }
+    },
+    {
+      "item": "aura:sword_of_the_thief",
+      "aura": {
+        "color": "black",
+        "amount": 2600
+      }
+    },
+    {
+      "item": "aura:arcane_prism",
+      "aura": {
+        "color": "yellow",
+        "amount": 3000
+      }
+    },
+    {
+      "item": "aura:arcane_gem_yellow",
+      "aura": {
+        "color": "yellow",
+        "amount": 1800
+      }
+    }
+  ],
+  "result": {
+    "item": "aura:consumer_block_loot",
+    "count": 1
+  },
+  "max_progress": 220
+}

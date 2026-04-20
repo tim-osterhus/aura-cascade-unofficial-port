@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " f ",
+    "p p",
+    " i "
+  ],
+  "key": {
+    "f": "minecraft:feather",
+    "p": "aura:arcane_prism",
+    "i": "minecraft:piston"
+  },
+  "result": {
+    "id": "aura:amulet_of_the_angels_wing",
+    "count": 1
+  }
+}

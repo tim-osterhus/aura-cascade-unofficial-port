@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "aura:block/fortified_glass"
+      }
+    }
+  ]
+}

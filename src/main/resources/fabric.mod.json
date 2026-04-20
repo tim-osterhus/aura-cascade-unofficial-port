@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "aura",
+  "version": "${version}",
+  "name": "Aura Cascade",
+  "description": "Unofficial modern Fabric port of Aura Cascade with parity-audited runtime content and release documentation.",
+  "authors": [
+    "pixlepix"
+  ],
+  "contributors": [
+    "williewillus",
+    "Millrace runtime bootstrap"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "pixlepix.auracascade.AuraCascadeMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.1",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "minecraft:amethyst_shard",
+    "B": "aura:arcane_ingot_blue",
+    "G": "aura:arcane_ingot_green",
+    "O": "aura:arcane_ingot_orange",
+    "P": "aura:consumer_block_ore",
+    "W": "aura:arcane_ingot_white"
+  },
+  "pattern": [
+    "WAW",
+    "PBP",
+    "OGO"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:consumer_block_ore_adv"
+  }
+}

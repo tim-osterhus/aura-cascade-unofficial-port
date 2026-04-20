@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "aura:aura_crystal_white",
+    "C": "minecraft:copper_ingot",
+    "F": "minecraft:furnace"
+  },
+  "pattern": [
+    "CBC",
+    "BFB",
+    "CBC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:consumer_block_furnace"
+  }
+}

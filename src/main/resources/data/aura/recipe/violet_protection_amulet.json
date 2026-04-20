@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " g ",
+    "p p",
+    " i "
+  ],
+  "key": {
+    "g": "aura:arcane_gem_violet",
+    "p": "aura:arcane_prism",
+    "i": "minecraft:iron_ingot"
+  },
+  "result": {
+    "id": "aura:violet_protection_amulet",
+    "count": 1
+  }
+}

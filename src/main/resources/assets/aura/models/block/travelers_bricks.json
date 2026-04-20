@@ -1,0 +1,8 @@
+{
+  "parent": "aura:block/bigger_than_slab",
+  "textures": {
+    "bottom": "aura:block/bricks",
+    "top": "aura:block/bricks",
+    "side": "aura:block/bricks"
+  }
+}

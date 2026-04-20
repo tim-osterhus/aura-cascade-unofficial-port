@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": "aura:aura_node",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "RRR",
+    "RNR",
+    "RRR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:monitor"
+  }
+}

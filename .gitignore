@@ -1,0 +1,29 @@
+# Gradle/Fabric build state
+.gradle/
+.fabric/
+build/
+run/
+logs/
+mods/
+
+# IDE/editor cruft
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Local JVM crash/output files
+hs_err_pid*
+*.log
+*.log.gz
+
+# Millrace runtime state
+ideas/
+millrace-agents/
+millrace-daemon-tmux.log
+millrace-health-monitor-*.log
+
+# Benchmark/prompt/reference artifacts
+AuraCascade-592.jar
+aura_cascade_unofficial_modern_port_spec.md
+port-parity-gaps.md

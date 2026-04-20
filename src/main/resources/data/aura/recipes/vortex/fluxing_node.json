@@ -1,0 +1,38 @@
+{
+  "type": "aura:vortex",
+  "ingredients": [
+    {
+      "item": "aura:aura_node",
+      "aura": {
+        "color": "white",
+        "amount": 1600
+      }
+    },
+    {
+      "item": "aura:arcane_prism",
+      "aura": {
+        "color": "orange",
+        "amount": 2800
+      }
+    },
+    {
+      "item": "aura:arcane_ingot_red",
+      "aura": {
+        "color": "red",
+        "amount": 2400
+      }
+    },
+    {
+      "item": "aura:arcane_ingot_orange",
+      "aura": {
+        "color": "orange",
+        "amount": 2400
+      }
+    }
+  ],
+  "result": {
+    "item": "aura:aura_node_flux",
+    "count": 1
+  },
+  "max_progress": 200
+}

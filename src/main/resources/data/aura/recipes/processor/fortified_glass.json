@@ -1,0 +1,8 @@
+{
+  "type": "aura:processor",
+  "ingredients": [
+    { "item": "minecraft:obsidian", "count": 1 },
+    { "item": "minecraft:glass", "count": 1 }
+  ],
+  "result": { "item": "aura:fortified_glass", "count": 1 }
+}

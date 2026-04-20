@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:blast_furnace",
+    "C": "minecraft:copper_ingot",
+    "R": "aura:aura_crystal_red"
+  },
+  "pattern": [
+    "RCR",
+    "CBC",
+    "RCR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:consumer_block_ore"
+  }
+}

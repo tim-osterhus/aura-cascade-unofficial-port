@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "aura:arcane_ingot_green",
+    "N": "aura:aura_node",
+    "Y": "aura:arcane_ingot_yellow"
+  },
+  "pattern": [
+    " Y ",
+    " N ",
+    " G "
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:aura_node_capacitor"
+  }
+}

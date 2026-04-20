@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "aura:aura_crystal_white",
+    "minecraft:purple_dye"
+  ],
+  "result": {
+    "count": 1,
+    "id": "aura:aura_crystal_violet"
+  }
+}
