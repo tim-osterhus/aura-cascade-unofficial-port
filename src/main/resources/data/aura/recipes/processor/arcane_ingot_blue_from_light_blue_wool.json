@@ -1,0 +1,8 @@
+{
+  "type": "aura:processor",
+  "ingredients": [
+    { "item": "minecraft:iron_ingot", "count": 1 },
+    { "item": "minecraft:light_blue_wool", "count": 1 }
+  ],
+  "result": { "item": "aura:arcane_ingot_blue", "count": 1 }
+}

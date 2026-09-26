@@ -125,8 +125,13 @@ public final class TestMinecraftBootstrap {
 
             Object itemRegistry = registryField(loader, "ITEM");
             Method keySetMethod = itemRegistry.getClass().getMethod("keySet");
-            Class<?> identifierClass = Class.forName("net.minecraft.resources.Identifier", true, loader);
-            Method getValueMethod = itemRegistry.getClass().getMethod("getValue", identifierClass);
+            Class<?> resourceLocationClass = Class.forName("net.minecraft.resources.ResourceLocation", true, loader);
+            Method getValueMethod;
+            try {
+                getValueMethod = itemRegistry.getClass().getMethod("get", resourceLocationClass);
+            } catch (NoSuchMethodException exception) {
+                getValueMethod = itemRegistry.getClass().getMethod("getValue", resourceLocationClass);
+            }
             Method getDescriptionIdMethod = Class.forName("net.minecraft.world.item.Item", true, loader).getMethod("getDescriptionId");
 
             Map<String, String> descriptionIds = new java.util.TreeMap<>();
@@ -209,8 +214,9 @@ public final class TestMinecraftBootstrap {
     private static void unfreezeAuraRegistries(ClassLoader loader) throws ReflectiveOperationException {
         unfreezeRegistry(loader, registryField(loader, "BLOCK"), true);
         unfreezeRegistry(loader, registryField(loader, "ITEM"), true);
-        unfreezeRegistry(loader, registryField(loader, "BLOCK_ENTITY_TYPE"), false);
+        unfreezeRegistry(loader, registryField(loader, "BLOCK_ENTITY_TYPE"), true);
         unfreezeRegistry(loader, registryField(loader, "CREATIVE_MODE_TAB"), false);
+        unfreezeRegistry(loader, registryField(loader, "MOB_EFFECT"), false);
     }
 
     private static Object registryField(ClassLoader loader, String fieldName) throws ReflectiveOperationException {

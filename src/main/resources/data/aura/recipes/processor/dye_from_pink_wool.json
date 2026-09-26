@@ -1,0 +1,8 @@
+{
+  "type": "aura:processor",
+  "prismatic_only": true,
+  "ingredients": [
+    { "item": "minecraft:pink_wool", "count": 1 }
+  ],
+  "result": { "item": "minecraft:pink_dye", "count": 1 }
+}

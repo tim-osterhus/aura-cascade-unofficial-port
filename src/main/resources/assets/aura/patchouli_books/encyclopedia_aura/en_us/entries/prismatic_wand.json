@@ -1,0 +1,37 @@
+{
+  "name": "Prismatic Wand",
+  "category": "aura:storage_gear",
+  "icon": "aura:prismatic_wand",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Select a Region",
+      "text": "Sneak-use to cycle Selection, Copy, and Paste. In Selection, right-click two opposite corners; those clicks define the region."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Copy Live Blocks",
+      "text": "In Copy, use the wand to save the selected region. It remembers the source coordinates and offset from you, not a snapshot; Paste reads each block at those positions when used. Containers and machines keep no contents or settings from the copy, and no fluid resources or buckets are saved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Paste at Your Position",
+      "text": "In Paste, use the wand where you stand. The region appears at the same offset from your current position as it had when copied; the block you click does not set its destination."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Paste Limits",
+      "text": "Only air is filled; occupied destinations and source-air cells stay unchanged. A selected region holds at most 512 cells total, including air. Before placement, every source and destination cell must be loaded and within build height and the world border; any unsafe cell prevents the paste."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Survival Cost",
+      "text": "In survival, one matching Block Item is consumed only after a block is placed successfully. There is no undo."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Wand Recipe",
+      "recipe": "aura:prismatic_wand"
+    }
+  ]
+}

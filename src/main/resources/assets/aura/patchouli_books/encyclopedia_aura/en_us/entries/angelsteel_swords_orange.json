@@ -1,0 +1,72 @@
+{
+  "name": "Orange Swords",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_sword_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Twelve Tiers",
+      "text": "Twelve Orange sword patterns. Return to $(l:aura:angelsteel_swords)Angelsteel Swords$(/l) or see $(l:aura:arcane_progression)Arcane Progression$(/l) for ingot tiers."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 1 Sword",
+      "recipe": "aura:angelsteel_sword_1_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 2 Sword",
+      "recipe": "aura:angelsteel_sword_2_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 3 Sword",
+      "recipe": "aura:angelsteel_sword_3_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 4 Sword",
+      "recipe": "aura:angelsteel_sword_4_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 5 Sword",
+      "recipe": "aura:angelsteel_sword_5_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 6 Sword",
+      "recipe": "aura:angelsteel_sword_6_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 7 Sword",
+      "recipe": "aura:angelsteel_sword_7_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 8 Sword",
+      "recipe": "aura:angelsteel_sword_8_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 9 Sword",
+      "recipe": "aura:angelsteel_sword_9_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 10 Sword",
+      "recipe": "aura:angelsteel_sword_10_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 11 Sword",
+      "recipe": "aura:angelsteel_sword_11_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Tier 12 Sword",
+      "recipe": "aura:angelsteel_sword_12_orange"
+    }
+  ]
+}

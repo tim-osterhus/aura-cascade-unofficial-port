@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SubstitutionClosureAuditTest {
@@ -22,26 +23,34 @@ final class SubstitutionClosureAuditTest {
         String violet = Files.readString(Path.of("src/main/resources/data/aura/enchantment/kaleidoscopic_violet.json"), StandardCharsets.UTF_8);
 
         assertAll(
-            () -> assertTrue(portingNotes.contains("dirt, stone, sand, and gravel")),
-            () -> assertTrue(portingNotes.contains("block entities and fluids")),
-            () -> assertTrue(portingNotes.contains("Red = Silk Touch")),
-            () -> assertTrue(portingNotes.contains("`Yellow + Green` crop harvest")),
-            () -> assertTrue(portingNotes.contains("Red = ignite")),
-            () -> assertTrue(portingNotes.contains("Orange = knockback")),
+            () -> assertTrue(portingNotes.contains("the ring makes nearby blasts spare non-terrain blocks and does not prevent")),
+            () -> assertTrue(portingNotes.contains("Prismatic Wand source integration now supersedes all older snapshot-clipboard")),
+            () -> assertTrue(portingNotes.contains("Red = temporary Silk Touch mining override")),
+            () -> assertTrue(portingNotes.contains("`Yellow + Green` harvests mature crops in a 3x3 footprint")),
+            () -> assertTrue(portingNotes.contains("destroy speed >= 8.0")),
             () -> assertTrue(portingNotes.contains("basic no-effect `Fairy`")),
             () -> assertTrue(lang.contains("\"text.aura.fairy_role.fairy\": \"Fairy\"")),
             () -> assertTrue(lang.contains("\"text.aura.fairy_role.training\": \"Training Fairy\"")),
             () -> assertTrue(lang.contains("\"message.aura.fairy_charm_attuned\": \"Fairy charm attuned to %s\"")),
             () -> assertTrue(lang.contains("\"message.aura.prismatic_wand_switched\": \"Switched to %s\"")),
-            () -> assertTrue(lang.contains("\"tooltip.aura.prismatic_wand.copy_limits\": \"Skips block entities and fluids\"")),
-            () -> assertTrue(lang.contains("\"tooltip.aura.prismatic_wand.material_limits\": \"Consumes placed block items directly\"")),
-            () -> assertTrue(lang.contains("\"tooltip.aura.ring_of_shattered_stone.residual\": \"Does not yet limit blasts to dirt, stone, sand, and gravel\"")),
-            () -> assertTrue(red.contains("\"minecraft:ignite\"")),
-            () -> assertTrue(orange.contains("\"minecraft:knockback\"")),
-            () -> assertTrue(yellow.contains("\"minecraft:mining_efficiency\"")),
-            () -> assertTrue(green.contains("\"minecraft:poison\"")),
-            () -> assertTrue(blue.contains("\"minecraft:damage\"")),
-            () -> assertTrue(violet.contains("\"minecraft:nausea\""))
+            () -> assertTrue(lang.contains("\"tooltip.aura.prismatic_wand.copy_limits\": \"Live source region: up to 512 cells\"")),
+            () -> assertTrue(lang.contains("\"tooltip.aura.prismatic_wand.material_limits\": \"Only empty spaces; materials charged on placement\"")),
+            () -> assertTrue(lang.contains("\"tooltip.aura.ring_of_shattered_stone.residual\": \"Nearby blasts spare non-terrain blocks; the ring does not prevent wearer damage.\"")),
+            () -> assertFalse(portingNotes.contains("1.21.11")),
+            () -> assertFalse(portingNotes.contains("Red = ignite")),
+            () -> assertFalse(portingNotes.contains("Orange = knockback")),
+            () -> assertFalse(red.contains("\"minecraft:ignite\"")),
+            () -> assertFalse(orange.contains("\"minecraft:knockback\"")),
+            () -> assertFalse(yellow.contains("\"minecraft:mining_efficiency\"")),
+            () -> assertFalse(green.contains("\"minecraft:poison\"")),
+            () -> assertFalse(blue.contains("\"minecraft:damage\"")),
+            () -> assertFalse(violet.contains("\"minecraft:nausea\"")),
+            () -> assertTrue(red.contains("\"translate\": \"enchantment.aura.kaleidoscopic_red\"")),
+            () -> assertTrue(orange.contains("\"translate\": \"enchantment.aura.kaleidoscopic_orange\"")),
+            () -> assertTrue(yellow.contains("\"translate\": \"enchantment.aura.kaleidoscopic_yellow\"")),
+            () -> assertTrue(green.contains("\"translate\": \"enchantment.aura.kaleidoscopic_green\"")),
+            () -> assertTrue(blue.contains("\"translate\": \"enchantment.aura.kaleidoscopic_blue\"")),
+            () -> assertTrue(violet.contains("\"translate\": \"enchantment.aura.kaleidoscopic_violet\""))
         );
     }
 }

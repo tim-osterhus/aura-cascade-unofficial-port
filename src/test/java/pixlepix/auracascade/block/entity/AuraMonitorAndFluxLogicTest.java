@@ -1,6 +1,5 @@
 package pixlepix.auracascade.block.entity;
 
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import pixlepix.auracascade.aura.AuraInspectionState;
@@ -17,7 +16,7 @@ final class AuraMonitorAndFluxLogicTest {
     }
 
     @Test
-    void monitorPrefersStrongestAdjacentAutomationSignal() {
+    void nodeAndPumpComparatorReadoutsRemainIndependentOfMonitorStatus() {
         AuraStorage storage = new AuraStorage();
         storage.set(AuraColor.WHITE, 500);
         AuraInspectionState node = new AuraInspectionState(storage, 2, 0, true);
@@ -27,7 +26,6 @@ final class AuraMonitorAndFluxLogicTest {
 
         assertEquals(8, nodeSignal);
         assertEquals(15, pumpSignal);
-        assertEquals(15, AuraMonitorLogic.aggregate(List.of(0, nodeSignal, pumpSignal, 4)));
     }
 
     @Test

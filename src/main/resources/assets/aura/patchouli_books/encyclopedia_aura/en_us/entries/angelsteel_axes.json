@@ -1,0 +1,72 @@
+{
+  "name": "Angelsteel Axes",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_axe_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Twelve Tiers",
+      "text": "Twelve registered recipes for this tool family. Return to $(l:aura:angelsteel_tools)Angelsteel Tools$(/l) or read $(l:aura:arcane_progression)Arcane Progression$(/l) for ingot tiers."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 1 Axe",
+      "recipe": "aura:angelsteel_axe_1"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 2 Axe",
+      "recipe": "aura:angelsteel_axe_2"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 3 Axe",
+      "recipe": "aura:angelsteel_axe_3"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 4 Axe",
+      "recipe": "aura:angelsteel_axe_4"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 5 Axe",
+      "recipe": "aura:angelsteel_axe_5"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 6 Axe",
+      "recipe": "aura:angelsteel_axe_6"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 7 Axe",
+      "recipe": "aura:angelsteel_axe_7"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 8 Axe",
+      "recipe": "aura:angelsteel_axe_8"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 9 Axe",
+      "recipe": "aura:angelsteel_axe_9"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 10 Axe",
+      "recipe": "aura:angelsteel_axe_10"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 11 Axe",
+      "recipe": "aura:angelsteel_axe_11"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 12 Axe",
+      "recipe": "aura:angelsteel_axe_12"
+    }
+  ]
+}

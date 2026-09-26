@@ -1,16 +1,17 @@
 package pixlepix.auracascade.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import pixlepix.auracascade.block.AuraContent;
 import pixlepix.auracascade.item.AuraItems;
 import pixlepix.auracascade.compat.AuraFluxBridgeRegistry;
 import pixlepix.auracascade.parity.AuraColor;
+import pixlepix.auracascade.util.NbtCompat;
 
 public class AuraNodeBlockEntity extends AuraNetworkBlockEntity {
     private static final String CAPACITOR_THRESHOLD_INDEX_TAG = "capacitor_threshold_index";
@@ -36,20 +37,19 @@ public class AuraNodeBlockEntity extends AuraNetworkBlockEntity {
         AuraNodeVariant variant = variant();
         boolean powered = level.hasNeighborSignal(pos);
 
-        if (variant.isCapacitor()) {
-            tickCapacitor(level);
-        }
-
-        if (variant.isManipulator() && powered && level.getGameTime() % 20L == 2L) {
-            nodeState = AuraNodeLogic.manipulatorState(variant);
-            setChanged();
-        }
-
         if (level.getGameTime() % 10L == 0L) {
             absorbNearbyAuraCrystals(level, pos);
         }
 
         serverTickBase(level, pos);
+
+        if (variant.isCapacitor()) {
+            tickCapacitor(level);
+        }
+        if (variant.isManipulator() && level.getGameTime() % 20L == 2L) {
+            AuraNodeLogic.refreshManipulator(nodeState, variant, powered);
+            setChanged();
+        }
 
         if (variant.isFlux() && level.getGameTime() % 20L == 1L) {
             int acceptedPower = AuraFluxBridgeRegistry.export(level, pos, nodeState.storedPower());
@@ -58,6 +58,7 @@ public class AuraNodeBlockEntity extends AuraNetworkBlockEntity {
                 setChanged();
             }
         }
+        syncInspection(level, pos);
     }
 
     @Override
@@ -98,6 +99,19 @@ public class AuraNodeBlockEntity extends AuraNetworkBlockEntity {
         return CAPACITOR_THRESHOLDS[Math.max(0, Math.min(CAPACITOR_THRESHOLDS.length - 1, capacitorThresholdIndex))];
     }
 
+    public boolean isCapacitor() {
+        return variant().isCapacitor();
+    }
+
+    public int cycleCapacitorThreshold() {
+        capacitorThresholdIndex = Math.floorMod(capacitorThresholdIndex + 1, CAPACITOR_THRESHOLDS.length);
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        }
+        return capacitorThreshold();
+    }
+
     private AuraNodeVariant variant() {
         AuraNodeVariant variant = AuraContent.nodeVariant(getBlockState().getBlock());
         return variant != null ? variant : AuraNodeVariant.AURA_NODE;
@@ -108,19 +122,12 @@ public class AuraNodeBlockEntity extends AuraNetworkBlockEntity {
             capacitorCooldown--;
         }
 
-        if (capacitorBurstTicks > 0) {
-            capacitorBurstTicks--;
-            if (capacitorBurstTicks == 0) {
-                capacitorCooldown = 110;
-            }
-        } else if (level.getGameTime() % 19L == 0L
-            && AuraNodeLogic.shouldStartCapacitorBurst(
-            nodeState.storage().total(),
-            capacitorThreshold(),
-            capacitorCooldown,
-            capacitorBurstTicks
-        )) {
-            capacitorBurstTicks = 5;
+        if (level.getGameTime() % 19L == 0L && nodeState.storage().total() >= capacitorThreshold()) {
+            capacitorBurstTicks = 1;
+        }
+        if (level.getGameTime() % 5L == 0L && capacitorBurstTicks > 0) {
+            capacitorBurstTicks = 0;
+            capacitorCooldown = 110;
         }
     }
 
@@ -143,18 +150,18 @@ public class AuraNodeBlockEntity extends AuraNetworkBlockEntity {
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        capacitorThresholdIndex = input.getIntOr(CAPACITOR_THRESHOLD_INDEX_TAG, 1);
-        capacitorCooldown = input.getIntOr(CAPACITOR_COOLDOWN_TAG, 0);
-        capacitorBurstTicks = input.getIntOr(CAPACITOR_BURST_TICKS_TAG, 0);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        capacitorThresholdIndex = NbtCompat.getIntOr(tag, CAPACITOR_THRESHOLD_INDEX_TAG, 1);
+        capacitorCooldown = NbtCompat.getIntOr(tag, CAPACITOR_COOLDOWN_TAG, 0);
+        capacitorBurstTicks = NbtCompat.getIntOr(tag, CAPACITOR_BURST_TICKS_TAG, 0);
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.putInt(CAPACITOR_THRESHOLD_INDEX_TAG, capacitorThresholdIndex);
-        output.putInt(CAPACITOR_COOLDOWN_TAG, capacitorCooldown);
-        output.putInt(CAPACITOR_BURST_TICKS_TAG, capacitorBurstTicks);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putInt(CAPACITOR_THRESHOLD_INDEX_TAG, capacitorThresholdIndex);
+        tag.putInt(CAPACITOR_COOLDOWN_TAG, capacitorCooldown);
+        tag.putInt(CAPACITOR_BURST_TICKS_TAG, capacitorBurstTicks);
     }
 }

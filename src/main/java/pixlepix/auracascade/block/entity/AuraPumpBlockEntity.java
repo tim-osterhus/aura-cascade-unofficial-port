@@ -2,24 +2,29 @@ package pixlepix.auracascade.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import pixlepix.auracascade.aura.AuraKernel;
 import pixlepix.auracascade.block.AuraContent;
 import pixlepix.auracascade.parity.AuraColor;
+import pixlepix.auracascade.util.NbtCompat;
 
 public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
     private static final String PUMP_POWER_TAG = "pump_power";
     private static final String PUMP_SPEED_TAG = "pump_speed";
+    private static final String PUMP_INHIBITED_TAG = "pump_inhibited";
 
     private AuraPumpLogic.PumpState pumpState = new AuraPumpLogic.PumpState(0, 0);
+    private boolean pumpInhibited;
 
     public AuraPumpBlockEntity(BlockPos pos, BlockState blockState) {
         super(AuraContent.AURA_PUMP_BLOCK_ENTITY, pos, blockState);
@@ -33,13 +38,22 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
 
     private void serverTick(Level level, BlockPos pos) {
         serverTickBase(level, pos);
+        boolean inhibited = level.hasNeighborSignal(pos);
+        if (pumpInhibited != inhibited) {
+            pumpInhibited = inhibited;
+            setChanged();
+        }
 
         AuraPumpVariant variant = variant();
         if (variant.isCreative()) {
             addFuel(AuraPumpLogic.creativeFuel());
-        } else if (!pumpState.active()) {
+        } else if (pumpState.power() == 0) {
             switch (variant) {
-                case BURNING, BURNING_ALT -> tryConsumeBurningFuel(level, pos);
+                case BURNING, BURNING_ALT -> {
+                    if (level.getGameTime() % 20L == 2L && !pumpInhibited) {
+                        tryConsumeBurningFuel(level, pos);
+                    }
+                }
                 case ILLUMINATION, ILLUMINATION_ALT -> tryConsumeLightSources(level, pos);
                 case REDSTONE, REDSTONE_ALT -> tryConsumeRedstone(level, pos);
                 default -> {
@@ -50,6 +64,7 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
         if (level.getGameTime() % 20L == 2L) {
             pumpAuraUpward(level, pos);
         }
+        syncInspection(level, pos);
     }
 
     @Override
@@ -70,6 +85,14 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
     @Override
     public int auraSignal() {
         return AuraMonitorLogic.pumpSignal(inspectionState(), comparatorCapacity(), pumpState.active());
+    }
+
+    public AuraPumpLogic.PumpState pumpState() {
+        return pumpState;
+    }
+
+    public boolean pumpInhibited() {
+        return pumpInhibited;
     }
 
     public void feedFromFall(float fallDistance) {
@@ -120,6 +143,9 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
     private void tryConsumeLightSources(Level level, BlockPos pos) {
         for (Direction direction : Direction.values()) {
             BlockPos targetPos = pos.relative(direction);
+            if (!level.hasChunkAt(targetPos)) {
+                continue;
+            }
             BlockState targetState = level.getBlockState(targetPos);
             if (targetState.is(Blocks.GLOWSTONE)) {
                 level.destroyBlock(targetPos, false);
@@ -138,13 +164,15 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
         for (Direction direction : Direction.values()) {
             for (int distance = 1; distance <= AuraKernel.DEFAULT_LINK_RANGE; distance++) {
                 BlockPos targetPos = pos.relative(direction, distance);
+                if (!level.hasChunkAt(targetPos)) {
+                    break;
+                }
                 BlockState targetState = level.getBlockState(targetPos);
                 if (targetState.getBlock() instanceof RedStoneWireBlock && targetState.getValue(RedStoneWireBlock.POWER) > 0) {
                     level.destroyBlock(targetPos, false);
                     addFuel(AuraPumpLogic.redstoneFuel(distance));
-                    return;
                 }
-                if (!targetState.isAir() && targetState.canOcclude()) {
+                if (!(targetState.getBlock() instanceof RedStoneWireBlock)) {
                     break;
                 }
             }
@@ -152,7 +180,7 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
     }
 
     private void pumpAuraUpward(Level level, BlockPos pos) {
-        if (!pumpState.active() || level.hasNeighborSignal(pos)) {
+        if (pumpState.power() == 0 || pumpInhibited) {
             return;
         }
 
@@ -171,12 +199,16 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
                 refreshLinks(level, pos);
             }
 
+            AuraPumpLogic.PumpState transferState = pumpState;
+            pumpState = AuraPumpLogic.spendForTarget(pumpState);
+            setChanged();
+
             var request = AuraPumpLogic.planTransfer(
                 nodeState,
                 pos,
                 targetPos,
                 environment(level),
-                pumpState,
+                transferState,
                 variant(),
                 level.getGameTime()
             );
@@ -185,58 +217,46 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
                 return;
             }
 
-            var filteredRequest = new pixlepix.auracascade.aura.AuraStorage();
-            for (AuraColor color : AuraColor.values()) {
-                if (request.get(color) > 0 && target.canReceiveAuraFrom(pos, color)) {
-                    filteredRequest.set(color, request.get(color));
-                }
+            var result = AuraKernel.applyTransfer(pos, nodeState, targetPos, target.nodeState, request, environment(level));
+            if (!result.moved().isEmpty()) {
+                emitTransferParticles(level, pos, targetPos, result.moved());
+                target.setChanged();
             }
-
-            if (filteredRequest.isEmpty()) {
-                return;
-            }
-
-            pumpState = new AuraPumpLogic.PumpState(Math.max(0, pumpState.power() - 1), pumpState.speed());
-            AuraKernel.applyTransfer(pos, nodeState, targetPos, target.nodeState, filteredRequest, environment(level));
-            target.setChanged();
-            setChanged();
             return;
         }
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        pumpState = new AuraPumpLogic.PumpState(
-            input.getIntOr(PUMP_POWER_TAG, 0),
-            input.getIntOr(PUMP_SPEED_TAG, 0)
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        pumpState = readPumpState(tag);
+        pumpInhibited = readPumpInhibited(tag);
+    }
+
+    static AuraPumpLogic.PumpState readPumpState(CompoundTag tag) {
+        return new AuraPumpLogic.PumpState(
+            NbtCompat.getIntOr(tag, PUMP_POWER_TAG, 0),
+            NbtCompat.getIntOr(tag, PUMP_SPEED_TAG, 0)
         );
     }
 
-    @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.putInt(PUMP_POWER_TAG, pumpState.power());
-        output.putInt(PUMP_SPEED_TAG, pumpState.speed());
+    static boolean readPumpInhibited(CompoundTag tag) {
+        return NbtCompat.getBooleanOr(tag, PUMP_INHIBITED_TAG, false);
     }
 
-    private static int burningFuelValue(net.minecraft.world.item.ItemStack stack) {
-        var item = stack.getItem();
-        if (item == net.minecraft.world.item.Items.COAL) {
-            return 1_600;
-        }
-        if (item == net.minecraft.world.item.Items.CHARCOAL) {
-            return 1_600;
-        }
-        if (item == net.minecraft.world.item.Items.BLAZE_ROD) {
-            return 2_400;
-        }
-        if (item == net.minecraft.world.item.Items.COAL_BLOCK) {
-            return 16_000;
-        }
-        if (item == net.minecraft.world.item.Items.LAVA_BUCKET) {
-            return 20_000;
-        }
-        return 0;
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        writePumpState(tag, pumpState, pumpInhibited);
+    }
+
+    static void writePumpState(CompoundTag tag, AuraPumpLogic.PumpState state, boolean inhibited) {
+        tag.putInt(PUMP_POWER_TAG, state.power());
+        tag.putInt(PUMP_SPEED_TAG, state.speed());
+        tag.putBoolean(PUMP_INHIBITED_TAG, inhibited);
+    }
+
+    static int burningFuelValue(ItemStack stack) {
+        return AbstractFurnaceBlockEntity.getFuel().getOrDefault(stack.getItem(), 0);
     }
 }

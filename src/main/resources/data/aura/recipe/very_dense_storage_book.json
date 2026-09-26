@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "aura:dense_storage_book",
-    "aura:arcane_gem_blue",
-    "minecraft:gold_block"
+    {
+      "item": "aura:dense_storage_book"
+    },
+    {
+      "item": "aura:arcane_gem_blue"
+    },
+    {
+      "item": "minecraft:gold_block"
+    }
   ],
   "result": {
     "id": "aura:very_dense_storage_book",

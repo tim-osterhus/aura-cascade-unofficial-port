@@ -40,15 +40,17 @@ public final class AuraNodeLogic {
         return variant.isCapacitor() ? capacitorThreshold : variant.comparatorCapacity();
     }
 
-    public static boolean shouldStartCapacitorBurst(int totalAura, int capacitorThreshold, int capacitorCooldown, int burstTicks) {
-        return burstTicks == 0 && capacitorCooldown == 0 && totalAura >= capacitorThreshold;
-    }
-
     public static AuraNodeState manipulatorState(AuraNodeVariant variant) {
         AuraNodeState nodeState = new AuraNodeState();
-        if (variant.isManipulator()) {
-            nodeState.storage().set(variant.manipulatorColor(), 100_000);
-        }
+        refreshManipulator(nodeState, variant, true);
         return nodeState;
+    }
+
+    public static void refreshManipulator(AuraNodeState nodeState, AuraNodeVariant variant, boolean powered) {
+        if (variant.isManipulator()) {
+            for (AuraColor color : AuraColor.values()) {
+                nodeState.storage().set(color, powered && color == variant.manipulatorColor() ? 100_000 : 0);
+            }
+        }
     }
 }

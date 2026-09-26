@@ -2,12 +2,24 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": "aura:arcane_gem_blue",
-    "C": "minecraft:crying_obsidian",
-    "G": "aura:arcane_gem_green",
-    "P": "aura:consumer_block_ore_adv",
-    "V": "aura:arcane_gem_violet",
-    "W": "aura:arcane_gem_white"
+    "B": {
+      "item": "aura:arcane_gem_blue"
+    },
+    "C": {
+      "item": "minecraft:crying_obsidian"
+    },
+    "G": {
+      "item": "aura:arcane_gem_green"
+    },
+    "P": {
+      "item": "aura:consumer_block_ore_adv"
+    },
+    "V": {
+      "item": "aura:arcane_gem_violet"
+    },
+    "W": {
+      "item": "aura:arcane_gem_white"
+    }
   },
   "pattern": [
     "GVG",

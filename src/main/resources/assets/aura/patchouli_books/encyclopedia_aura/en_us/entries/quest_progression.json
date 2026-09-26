@@ -1,0 +1,96 @@
+{
+  "name": "Quest Progression",
+  "category": "aura:walkthrough",
+  "icon": "aura:aura_crystal_white",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Track Your Progress",
+      "text": "Carry a discovery and open this encyclopedia to record it. The item is not consumed; each reward can be claimed once."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Crystals",
+      "trigger": "aura:quest/crystals",
+      "text": "Goal: have one White Aura Crystal. Reward: 64 White Aura Crystals. Read $(l:aura:white_aura_crystal)White Aura Crystal$(/l) and $(l:aura:arcane_progression)Arcane Progression$(/l)."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Nodes",
+      "trigger": "aura:quest/nodes",
+      "text": "Goal: have one Aura Node. Reward: 16 Aura Nodes. See $(l:aura:node_variants)Node Variants$(/l) for the node family and its recipes."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Pumps",
+      "trigger": "aura:quest/pumps",
+      "text": "Goal: have one Aura Node Pump. Reward: 64 Sticks. See $(l:aura:pump_variants)Pump Variants$(/l) to choose a pump and read its offering."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Furnace",
+      "trigger": "aura:quest/furnace",
+      "text": "Goal: have one Cascading Smelter. Reward: 64 White Aura Crystals. See $(l:aura:consumer_fieldwork)Consumer Workflows$(/l) for item placement and $(l:aura:consumers_vortex)shared power costs$(/l)."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Red Crystals",
+      "trigger": "aura:quest/red_crystals",
+      "text": "Goal: have one Red Aura Crystal. Reward: 4 TNT. See $(l:aura:aura_colors)Aura Colors$(/l) for Red Aura's lift behavior."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Processor",
+      "trigger": "aura:quest/processor",
+      "text": "Goal: have one Cascading Processor. Reward: 8 Coal. See $(l:aura:arcane_progression)Arcane Progression$(/l) for processor recipes and placement."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Dye",
+      "trigger": "aura:quest/dye",
+      "text": "Goal: have one Cascading Colorer. Reward: 32 White Wool. See $(l:aura:consumer_fieldwork)Consumer Workflows$(/l) for sheep care and $(l:aura:consumers_vortex)shared power costs$(/l)."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Arcane Ingot",
+      "trigger": "aura:quest/arcane_ingot",
+      "text": "Goal: have one White Arcane Ingot. Reward: 15 White Arcane Ingots. See $(l:aura:arcane_progression)Arcane Progression$(/l) for all eight colors."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Vortex Infusion",
+      "trigger": "aura:quest/vortex_infusion",
+      "text": "Goal: have one Vortex Controller. Reward: 4 Vortex Pedestals. See $(l:aura:consumers_vortex)Consumers and Vortex$(/l) for the cardinal layout and falling-power receipts."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Arcane Gem",
+      "trigger": "aura:quest/arcane_gem",
+      "text": "Goal: have one White Arcane Gem. Reward: 8 White Arcane Gems. See $(l:aura:arcane_progression)Arcane Progression$(/l) for the matching-color route."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Arcane Prism",
+      "trigger": "aura:quest/arcane_prism",
+      "text": "Goal: have an Arcane Prism. Reward: one Arcane Prism. See $(l:aura:arcane_progression)Arcane Progression$(/l) for the eight-distinct-gem Processor recipe."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Synthesizer",
+      "trigger": "aura:quest/synthesizer",
+      "text": "Goal: have one Cascading Synthesizer. Reward: 64 White Aura Crystals. See $(l:aura:arcane_progression)Arcane Progression$(/l) for its no-input Angelsteel output."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Angelsteel",
+      "trigger": "aura:quest/angelsteel",
+      "text": "Goal: have a tier-two Angelsteel Ingot. Reward: 15 tier-one Angelsteel Ingots. See $(l:aura:arcane_progression)Arcane Progression$(/l), $(l:aura:angelsteel_tools)Tools$(/l), and $(l:aura:angelsteel_swords)Swords$(/l)."
+    },
+    {
+      "type": "patchouli:quest",
+      "title": "Fairies",
+      "trigger": "aura:quest/fairies",
+      "text": "Goal: have a Ring of Binding. Reward: one Fairy Charm. See $(l:aura:accessory_loadout)Accessory Loadout$(/l) and $(l:aura:fairy_roles)Fairy Charms$(/l) to equip and bind it."
+    }
+  ]
+}

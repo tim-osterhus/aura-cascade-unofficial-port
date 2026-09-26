@@ -68,6 +68,28 @@ final class AuraKernelTransferTest {
     }
 
     @Test
+    void excludesPositionRejectedLinksBeforeNormalizingNaturalWeights() {
+        BlockPos origin = new BlockPos(0, 10, 0);
+        AuraNodeState source = new AuraNodeState(AuraStorage.of(AuraColor.WHITE, 1_000));
+        BlockPos rejected = new BlockPos(1, 10, 0);
+        BlockPos accepted = new BlockPos(2, 10, 0);
+        Map<BlockPos, AuraNodeState> connected = new LinkedHashMap<>();
+        connected.put(rejected, new AuraNodeState());
+        connected.put(accepted, new AuraNodeState());
+
+        Map<BlockPos, AuraStorage> plans = AuraKernel.planNaturalTransfers(
+            origin,
+            source,
+            connected,
+            new AuraTransferContext(AuraEnvironment.CLEAR_DAY, 25, 400, true),
+            targetPos -> !targetPos.equals(rejected)
+        );
+
+        assertEquals(447, plans.get(accepted).get(AuraColor.WHITE));
+        assertTrue(!plans.containsKey(rejected));
+    }
+
+    @Test
     void appliesTransferPowerAndSpecialUpwardRules() {
         AuraNodeState source = new AuraNodeState();
         AuraNodeState target = new AuraNodeState();
@@ -138,7 +160,7 @@ final class AuraKernelTransferTest {
         assertEquals(66, redLift.get(AuraColor.RED));
 
         Map<BlockPos, Set<BlockPos>> networkLinks = Map.of(
-            new BlockPos(0, 0, -1), Set.of(new BlockPos(1, 0, -1)),
+            new BlockPos(0, 0, -1), Set.of(new BlockPos(1, 0, -1), new BlockPos(2, 0, -1)),
             new BlockPos(1, 0, 0), Set.of(new BlockPos(2, 0, 0)),
             new BlockPos(-1, 0, 0), Set.of(new BlockPos(0, 0, 0)),
             new BlockPos(0, 0, 1), Set.of(new BlockPos(0, 0, 2))
@@ -151,11 +173,38 @@ final class AuraKernelTransferTest {
             networkLinks
         );
 
-        assertEquals(1, induced.size());
-        AuraInducedCurrent current = induced.getFirst();
-        assertEquals(new BlockPos(0, 0, -1), current.nodePos());
-        assertEquals(new BlockPos(1, 0, -1), current.downstreamTarget());
-        assertEquals(Direction.EAST, current.direction());
-        assertEquals(40, current.amount());
+        assertEquals(2, induced.size());
+        assertTrue(induced.stream().anyMatch(current -> current.nodePos().equals(new BlockPos(0, 0, -1))
+            && current.downstreamTarget().equals(new BlockPos(1, 0, -1))
+            && current.direction() == Direction.EAST && current.amount() == 40));
+        assertTrue(induced.stream().anyMatch(current -> current.nodePos().equals(new BlockPos(0, 0, -1))
+            && current.downstreamTarget().equals(new BlockPos(2, 0, -1))
+            && current.direction() == Direction.EAST && current.amount() == 40));
+    }
+
+    @Test
+    void reconcilesOrangeBurstAgainstTheOpposingRequestBeforeScaling() {
+        AuraStorage source = new AuraStorage();
+        source.set(AuraColor.WHITE, 100);
+
+        AuraKernel.OrangeBurstPlan forward = AuraKernel.planOrangeBurst(source, 50, 20);
+        AuraKernel.OrangeBurstPlan reverse = AuraKernel.planOrangeBurst(source, 20, 50);
+
+        assertEquals(AuraStorage.of(AuraColor.WHITE, 30), forward.transfer());
+        assertEquals(0, forward.opposingRemainder());
+        assertTrue(reverse.transfer().isEmpty());
+        assertEquals(30, reverse.opposingRemainder());
+    }
+
+    @Test
+    void clampsNegativeLegacyOrangeScaleToZero() {
+        AuraStorage source = new AuraStorage();
+        source.set(AuraColor.WHITE, 100);
+        source.set(AuraColor.ORANGE, 10);
+
+        AuraKernel.OrangeBurstPlan plan = AuraKernel.planOrangeBurst(source, 30, 0);
+
+        assertTrue(plan.transfer().isEmpty());
+        assertEquals(0, plan.opposingRemainder());
     }
 }

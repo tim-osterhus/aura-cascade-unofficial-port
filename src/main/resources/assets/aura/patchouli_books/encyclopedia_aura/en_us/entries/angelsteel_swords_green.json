@@ -1,0 +1,72 @@
+{
+  "name": "Green Swords",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_sword_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Twelve Tiers",
+      "text": "Twelve Green sword patterns. Return to $(l:aura:angelsteel_swords)Angelsteel Swords$(/l) or see $(l:aura:arcane_progression)Arcane Progression$(/l) for ingot tiers."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 1 Sword",
+      "recipe": "aura:angelsteel_sword_1_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 2 Sword",
+      "recipe": "aura:angelsteel_sword_2_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 3 Sword",
+      "recipe": "aura:angelsteel_sword_3_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 4 Sword",
+      "recipe": "aura:angelsteel_sword_4_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 5 Sword",
+      "recipe": "aura:angelsteel_sword_5_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 6 Sword",
+      "recipe": "aura:angelsteel_sword_6_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 7 Sword",
+      "recipe": "aura:angelsteel_sword_7_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 8 Sword",
+      "recipe": "aura:angelsteel_sword_8_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 9 Sword",
+      "recipe": "aura:angelsteel_sword_9_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 10 Sword",
+      "recipe": "aura:angelsteel_sword_10_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 11 Sword",
+      "recipe": "aura:angelsteel_sword_11_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Tier 12 Sword",
+      "recipe": "aura:angelsteel_sword_12_green"
+    }
+  ]
+}

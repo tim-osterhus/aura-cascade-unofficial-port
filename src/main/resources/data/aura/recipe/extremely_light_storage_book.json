@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "aura:super_light_storage_book",
-    "minecraft:shulker_shell",
-    "aura:arcane_gem_blue"
+    {
+      "item": "aura:super_light_storage_book"
+    },
+    {
+      "item": "minecraft:shulker_shell"
+    },
+    {
+      "item": "aura:arcane_gem_blue"
+    }
   ],
   "result": {
     "id": "aura:extremely_light_storage_book",

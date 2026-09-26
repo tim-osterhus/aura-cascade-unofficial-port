@@ -1,0 +1,72 @@
+{
+  "name": "Angelsteel Pickaxes",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_pickaxe_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Twelve Tiers",
+      "text": "Twelve registered recipes for this tool family. Return to $(l:aura:angelsteel_tools)Angelsteel Tools$(/l) or read $(l:aura:arcane_progression)Arcane Progression$(/l) for ingot tiers."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 1 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_1"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 2 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_2"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 3 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_3"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 4 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_4"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 5 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_5"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 6 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_6"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 7 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_7"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 8 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_8"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 9 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_9"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 10 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_10"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 11 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_11"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 12 Pickaxe",
+      "recipe": "aura:angelsteel_pickaxe_12"
+    }
+  ]
+}

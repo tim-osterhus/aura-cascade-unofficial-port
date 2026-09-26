@@ -1,5 +1,105 @@
 # Porting Notes
 
+## 0.2.1 Visual Hotfix
+
+Aura Cascade Reimagined retains the `aura` mod and registry IDs. Final artifact
+`0.2.1+1.21.1` SHA-256
+`2290a1a344fa8e1e43d631729b5f88d422923d573db90d1a592945fecc1aacc8`
+passes 252 tests in 62 suites and packaged intermediary-client smoke
+(`20260923-182030-717`).
+Actual-font audit v3 includes the opening page as well as 41 entries/371 pages:
+all pass, with opening text bottom 151 below the footer limit 155.
+Independent visual acceptance and publication are tracked in
+[the hotfix QA record](docs/audits/2026-09-23-hotfix-visual-qa.md) and
+[release notes](docs/releases/0.2.1-beta.md). The bounded five-target visual gate
+has passed; see [the publication record](docs/releases/0.2.1-publication.md)
+for CurseForge upload and availability status.
+
+## September 2026 Reopened Audit
+
+### Current Verified Checkpoint
+
+The final sixteenth integration passes 244 tests in 60 suites and adds the
+non-fiery per-item Red Hole tick correction to the verified explosion-list,
+mining-hook and bookshelf line-of-sight fixes.
+Its candidate hash is
+`cff6b2cdf435dc8c6318967c0e860d86e5990061af866628b4462317d7ba4a63`.
+Actual equipped/distant/unequipped Shattered Stone controls pass. Final packaged
+run `20260923-121601-864` passes all 41 entries/371 pages/14 quests in font audit
+v2 and 40 stable rendered frames. Final multiplayer run `20260923-121724-053`
+passes all 15 checks and all three transformed-item lifetime checks, with all
+four JVM lifetimes exiting normally. Both runs verify this exact candidate hash.
+The preceding thirteenth packaged candidate,
+SHA-256 `306ab942b05029d814607a155e3a3796eaed3384b85af0cf92423a74c5ac63d4`,
+passes real intermediary client/world rendering and actual-font layout for all
+41 Encyclopedia entries, 371 pages and 14 quest pages. All 261 legacy guide
+keys are mapped; full-book manual interaction is not claimed. Prior bounded
+quest reward/persistence and guide-navigation checks remain recorded evidence.
+
+Two packaged clients passed private owner-only equipment synchronization, real
+charm binding, logout cleanup and reconnect restoration. The thirteenth live
+session also passed 68 restored recipe/catalyst cases, real consumer item
+preservation, full White ingot/Prism/Angelsteel cycles without injected power or
+progress, and earned charge-21 Miner yield. Fixtures supplied raw materials.
+See [integration](docs/audits/2026-09-23-integrated-restoration.md),
+[gameplay](docs/audits/2026-09-23-thirteenth-gameplay.md) and
+[multiplayer](docs/audits/2026-09-23-packaged-multiplayer-playtest.md).
+Subsequent runtime checks pass combat, Mirror, Orange/capacitor controls,
+bookshelf conversion/obstruction/disconnection, storage contents/power reload,
+an exact active ritual queue reload and continued completion, same-target ritual
+rejection, and Yellow vortex receipt persistence followed by actual output.
+Portable Red Hole two-blast, marker-continuity, age and frozen-time controls now
+pass, as do actual held/dropped White crystal accounting. Independent review
+identified no remaining finite B1-B5 gameplay blocker. Publication status is
+recorded separately in [the release record](docs/releases/0.2.0-publication.md).
+These current results supersede older
+pending/closure statements below, which describe historical checkpoints.
+
+### Recovered Contracts
+
+Prismatic Wand source integration now supersedes all older snapshot-clipboard,
+stored-content and bucket-material claims below. The 592 wand saves a live source
+region and player-relative offset, reads source blocks at paste time and places
+only into air. The restored implementation uses those semantics with a 512-cell
+geometric safety cap and loaded-chunk/world-bound checks. It charges survival
+materials only after successful placement and does not duplicate source block-
+entity data or offer undo. Live region, placement and persistence controls remain
+required; the old snapshot tests are not acceptance for this implementation.
+
+The new [E1 contract](docs/audits/2026-09-23-kaleidoscopic-e1-contract.md)
+supersedes the older enchantment descriptions below. Restored source uses the
+original geometric pair strengths, connected growable harvesting, probabilistic
+two-ingot conversion, damage reduction before armor after vanilla hit acceptance,
+and destroy speed >= 3.0. The
+older crop-square, post-hit healing and permanent vanilla-enchantment behavior
+is historical, not a current acceptance target. Integrated validation is pending.
+
+Fourteen original quests now have server-awarded advancement progress and reward
+definitions. Opening the Encyclopedia checks carried items without consuming
+them. Reward quantities and metadata mappings are resource-tested; actual
+completion, persistence and Patchouli progress still need client acceptance.
+
+September 23 source integration supersedes the older Shattered Stone descriptions
+below: the ring makes nearby blasts spare non-terrain blocks and does not prevent
+wearer damage. See the [recovered contract](docs/audits/2026-09-23-shattered-stone-contract.md).
+Vortex colored-power accounting, actual gem/prism acquisition, consumer feedback,
+storage browsing and physical accessory slots are under integration. Their older
+substitution descriptions are historical findings, not approved parity targets.
+
+Earlier closure statements in this document record source/test audits, not
+verified full gameplay parity. The live baseline found a non-opening guide,
+clipped written-book content, and node presentation defects. Current authority
+is the [acceptance ledger](docs/audits/2026-09-22-video-acceptance.md) and
+[staggered execution record](docs/audits/2026-09-22-staggered-execution.md).
+
+The active guide pilot uses required Patchouli `1.21.1-93-FABRIC`, retaining
+`aura:encyclopedia_aura`. Build and client acceptance are recorded separately;
+full legacy guide coverage is not claimed. White crystals intentionally use
+eight gold nuggets around an amethyst shard for two crystals. Encyclopedia
+acquisition restores the original shaped white-crystal-plus-book recipe without
+the port's extra Arcane Prism. Neither recipe's history belongs in player-facing
+guide text.
+
 ## Baseline Source Evidence
 
 - Canonical artifact: `AuraCascade-592.jar`
@@ -113,10 +213,10 @@ Documented substitutions in this pass:
 - Amulet of the Angel's Wing: the old dedicated up/down keybind is replaced with an equipped-use interaction. Using the equipped amulet ascends to the next open standing spot, and looking down while using it descends.
 - Sash of the Angel's Heels: the modern pass keeps the hill-climb identity through passive jump assistance and a collision-charged wall climb instead of the exact legacy step-height plus burst-packet behavior.
 - Protection amulets: damage-family blocking is preserved, with deterministic modern healing conversion for blocked hits and a partial projectile heal for the yellow amulet. The exact legacy heal ratio is reconstructed rather than bytecode-confirmed in this environment.
-- Ring of the Shattered Stone: the pass preserves the explosion-channeling wearer protection role, but it still does not limit explosion block damage to dirt, stone, sand, and gravel within the wearer's protection radius.
+- Ring of the Shattered Stone: the pass preserves the explosion-channeling wearer protection role while filtering nearby dirt, stone, sand, and gravel out of explosion block damage inside the wearer's three-block protection radius.
 - Mirror of the Angel: right-click or direct hits now deflect nearby fireballs and wither skulls toward the nearest ghast when possible, otherwise along the player's look vector.
 - Portable Red Hole and Portable Black Hole: both now persist while dropped via unlimited item lifetime; the red hole explodes every five seconds while dropped, and the black hole continuously deletes cobblestone from player inventories while carried.
-- Prismatic Wand: selection, copy, and paste modes are implemented. The clipboard now stores only non-air block states with direct item forms, skips block entities and fluids during copy, and consumes the direct block items needed for placement rather than the full legacy drop-and-metadata logic. The modern guidebook, item tooltip, and localized wand status text now name those exact limits instead of leaving them implicit.
+- Prismatic Wand: selection, copy, and paste modes are implemented. The clipboard now captures non-air block states, source fluids, and representative block-entity data, then pastes by consuming merged block, stored-item, and bucket materials while replaying copied block-entity data after placement.
 - Sword of the Thief: villagers now have the documented 25% drop chance, but the drop is chosen from a surviving trade offer at death time rather than from an exact last-opened trade slot.
 
 ## Fairies And Late-Game World Pass
@@ -136,7 +236,7 @@ This execution pass ports the storage-book, bookshelf-network, and guidebook sli
 
 Documented substitutions in this pass:
 
-- Encyclopedia Aura: the legacy custom lexicon GUI and `PacketSyncQuestData` flow are replaced with a dynamically populated vanilla written book. The content still ships onboarding and implemented-system entries, but it no longer depends on a bespoke client GUI or network packet.
+- Encyclopedia Aura: the earlier vanilla written-book substitution failed live usability checks. A Patchouli integration now replaces that surface in the active pilot, preserving the registered item identity. Complete legacy content and client acceptance remain separate open gates.
 - Bookshelf Coordinator: the modern pass keeps the connected-bookshelf identity, line-of-sight shelf scan, and recovered power curve `5 * shelfCount * 1.05^shelfCount`, but exposes the interaction through direct use and status messages instead of a dedicated GUI.
 - Storage Bookshelf acquisition: the shelf has no standalone item form in this pass. Players obtain it by using any storage book on a vanilla bookshelf, and breaking it returns the vanilla bookshelf while the stored book is ejected separately.
 - Storage-book parity source of truth: the recovered bytecode returns `1 x 100000` for Extremely Dense books and `8 x 100000` for Mineral books. The legacy English lexicon pages overstate those values, so this port follows the class behavior and documents the text mismatch instead of preserving the inflated numbers.
@@ -173,16 +273,16 @@ Shipped evidence used for this final audit: `mcmod.info`, `assets/aura/lang/en_U
 
 ### Representative Client-Facing Evidence
 
-- Acquisition and placement: `aura_node_black`, `aura_node_capacitor`, `aura_node_conserve`, `aura_node_orange`, `monitor`, `travelers_bricks`, `rebounding_enigma`, `consumer_block_miner`, and `ritual_end` each now ship direct crafting data under `src/main/resources/data/aura/recipe/`, localized block names in `src/main/resources/assets/aura/lang/en_us.json`, blockstates plus item definitions under `src/main/resources/assets/aura/`, and self-drop loot tables under `src/main/resources/data/aura/loot_table/blocks/`. The late-game `consumer_block_loot`, `consumer_block_spawn`, and `ritual_nether` families keep their intentional four-pedestal vortex acquisition under `src/main/resources/data/aura/recipes/vortex/` rather than bench recipes, so the repo no longer presents them as missing survival content.
+- Acquisition and placement: `aura_node_black`, `aura_node_capacitor`, `aura_node_conserve`, `aura_node_orange`, `monitor`, `travelers_bricks`, `rebounding_enigma`, `consumer_block_miner`, `ritual_end`, and `bookshelf_coordinator` each now ship direct crafting data under `src/main/resources/data/aura/recipe/`, localized block names in `src/main/resources/assets/aura/lang/en_us.json`, blockstates plus item definitions under `src/main/resources/assets/aura/`, and self-drop loot tables under `src/main/resources/data/aura/loot_table/blocks/`. The fortified containment family keeps processor-backed acquisition under `src/main/resources/data/aura/recipes/processor/` instead of bench recipes, and the late-game `consumer_block_loot`, `consumer_block_spawn`, and `ritual_nether` families keep their intentional four-pedestal vortex acquisition under `src/main/resources/data/aura/recipes/vortex/` rather than bench recipes, so the repo no longer presents them as missing survival content or silent direct-crafting parity.
 - Discoverability and conversion: the Aura creative tab now keeps every registered item form reachable, `storage_bookshelf` stays a conversion-only block created by using a Storage Book on a vanilla bookshelf, and `aura_node_pump_creative` remains intentionally creative-only content rather than a missing survival recipe.
 - Visual surface: `src/main/resources/assets/aura/textures/**` now carries the shipped Aura block and item texture payload imported from `AuraCascade-592.jar`, the restored block and item models map the current snake_case ids onto that jar-backed art, the repaired animated-texture `.mcmeta` files now parse cleanly on the live client, and `src/test/java/pixlepix/auracascade/parity/VisualAssetParityAuditTest.java` guards the registered Aura surface against missing client resources, malformed texture metadata, or placeholder texture regressions.
 - Naming: Aura block items now resolve through block translation keys instead of leaking `item.aura.*`, the closure-slice block ids, the recovered fairy role names, and the ring and prismatic-wand status surfaces now have explicit English localization keys instead of relying on registry ids or direct string fallbacks, and `src/test/java/pixlepix/auracascade/parity/FinalClientParityAuditTest.java` now locks the sampled `monitor` item to `block.aura.monitor`.
-- Guidebook truthfulness: `src/main/java/pixlepix/auracascade/lexicon/EncyclopediaAuraContent.java` now tells players that Storage Bookshelves come from using a storage book on a vanilla bookshelf, that the Prismatic Wand skips block entities and fluids and consumes placed block items directly, that an untuned charm binds a plain `Fairy`, that the recovered kaleidoscopic legacy table was `Red = Silk Touch`, `Orange = Efficiency`, `Yellow = Fortune`, `Green = tree-felling`, `Blue = Knockback`, and `Violet = hard-material mining speed`, that all fifteen pairwise kaleidoscopic interactions are documented as a residual contract, and that the Ring of the Shattered Stone still does not restrict blasts to dirt, stone, sand, and gravel.
-- User-visible interaction: fresh live-client evidence for this closure slice is archived under `millrace-agents/runs/run-76955964dbb9474f848a0dfb36ae5bd5/live_client_validation/`, including `inventory-sample-set.png`, `held-item-surface.png`, `in-world-block-render.png`, and `latest.log`. That replay shows localized `Monitor` replacement text, sampled Aura inventory, held-item, and in-world renders using Aura art instead of placeholder squares, and no Aura-side `Missing textures in model`, `Unable to parse metadata from aura:`, failed-model, missing-model, or `item.aura.monitor` log hits.
+- Guidebook truthfulness: the summaries migrated to `src/main/resources/assets/aura/patchouli_books/encyclopedia_aura/en_us/entries/` tell players that Storage Bookshelves come from using a storage book on a vanilla bookshelf, that the Prismatic Wand captures non-air block states, source fluids, and supported block-entity data while consuming merged block, stored-item, and bucket materials, that an untuned charm binds a plain `Fairy`, that the Kaleidoscopic Enchanter expresses the recovered single-color table through `Red = temporary Silk Touch mining override`, `Orange = Efficiency sync`, `Yellow = temporary Fortune mining override`, `Green = connected-log tree-felling`, `Blue = Knockback sync`, and `Violet = hard-material haste window`, that the current pairwise runtime includes `Yellow + Green` harvests mature crops in a 3x3 footprint, and that the Ring of the Shattered Stone filters nearby dirt, stone, sand, and gravel out of explosion block damage inside its protection radius. These describe current implementation, not proof of original-mod equivalence; the Ring behavior is specifically disputed in the video acceptance ledger.
+- User-visible interaction truth surface: this workspace does not retain the earlier `live_client_validation/` replay archive, so the release-facing client evidence is the repo-owned asset and audit surface. `src/test/java/pixlepix/auracascade/parity/FinalClientParityAuditTest.java` locks the localized `Monitor` item naming surface and release-facing closure wording, `src/test/java/pixlepix/auracascade/parity/VisualAssetParityAuditTest.java` guards Aura textures, models, and animated-texture metadata, and the shipped `src/main/resources/assets/aura/**` files plus guidebook content keep the documented client-facing surface grounded in files that exist in this workspace.
 
 ### Implemented Equivalence
 
-- The port now ships a working Fabric 1.21.11 aura simulation with eight-color storage, straight-line node linking, transfer planning, controlled uphill movement, falling-power accounting, persistence, and inspection coverage.
+- The port now ships a working Fabric 1.21.1 aura simulation with eight-color storage, straight-line node linking, transfer planning, controlled uphill movement, falling-power accounting, persistence, and inspection coverage.
 - The node and control surface named by the shipped jar is implemented with real runtime behavior: Aura Node, Aura Capacitor, Conserving Aura Node, black and orange manipulators, Monitor, and Fluxing Node.
 - The distinct pump family is implemented with burning, illumination, momentum, projectile, redstone, alternating, and creative variants instead of collapsing the system into one generic power source.
 - The shipped consumer and progression families are implemented with aura-powered runtime behavior: processor, prismatic processor, smelter, grower, fisher, brewer, colorer, synthesizer, miner, looter, spawner, kaleidoscopic enchanter, Bookshelf Coordinator, Nether ritual, End ritual, Vortex Controller, and Vortex Pedestal.
@@ -193,34 +293,41 @@ Shipped evidence used for this final audit: `mcmod.info`, `assets/aura/lang/en_U
 
 - The modern port keeps accessories behind an internal inventory-backed bridge instead of a Baubles dependency and keeps Fluxing Node behavior behind a narrow internal energy seam instead of reintroducing the old RF API directly.
 - Fairy runtime is reconstructed as ring-backed tagged allays with custom item-data roles instead of the legacy custom fairy entity renderer and metadata item variants. The untuned charm now maps to the shipped basic `Fairy`, and the attuned role names match the recovered jar labels.
-- Encyclopedia Aura uses a vanilla written-book surface instead of the legacy custom lexicon GUI and packet flow, and the Bookshelf Coordinator uses direct interaction plus status messages instead of a dedicated GUI.
+- Encyclopedia Aura is being migrated to Patchouli after the written-book baseline failed; do not treat the old surface as accepted parity. The Bookshelf Coordinator still uses direct interaction plus status messages instead of the demonstrated contents browser and remains an open usability gap.
 - The restored acquisition surface keeps the recovered node-upgrade and late-game progression shapes, but the supporting `aura_node`, `aura_node_pump`, `consumer_block_miner`, `fortified_planks`, and four-pedestal vortex formulas use modern equivalent ingredients where legacy metadata items, single-component pylon recipes, or tag-less loaders do not translate directly into the current runtime.
 - Rituals preserve destructive late-game block rewrites and danger but do not rewrite biome data in-place on the modern chunk format.
-- The Angel's Wing, Angel's Heels, protection-amulet healing, thief-sword villager drop selection, Mirror of the Angel projectile handling, and Prismatic Wand copy-paste behavior are all implemented with modern substitutions where the exact legacy control or metadata model no longer exists.
-- Kaleidoscopic enchantments keep the shipped names and the recovered success-curve math. The jar-backed legacy single-color table was `Red = Silk Touch`, `Orange = Efficiency`, `Yellow = Fortune`, `Green = tree-felling`, `Blue = Knockback`, and `Violet = hard-material mining speed`, and the lexicon pages recover the full pairwise matrix: `Yellow + Green` crop harvest, `Blue + Violet` splash damage, `Green + Blue` life steal, `Yellow + Blue` fire, `Red + Violet` damage reduction, `Yellow + Violet` mob-drop multiplication, `Yellow + Red` double-ingot ore drops, `Red + Green` mining slowdown, `Red + Blue` recoil, `Green + Violet` attack reduction, and orange pairings that speed ores, stone, dirt/sand/grass/gravel, wood, and high-durability blocks. The modern runtime still uses the bounded substitution set `Red = ignite`, `Orange = knockback`, `Yellow = mining efficiency`, `Green = poison`, `Blue = bonus damage`, and `Violet = nausea` instead of those recovered live effects.
+- The Angel's Wing, Angel's Heels, protection-amulet healing, thief-sword villager drop selection, Mirror of the Angel projectile handling, and the Prismatic Wand's structured clipboard state model are all implemented with modern substitutions where the exact legacy control or metadata model no longer exists.
+- Kaleidoscopic enchantments keep the shipped names and recovered success-curve math, and the live runtime now maps the recovered single-color table to `Red = temporary Silk Touch mining override`, `Orange = Efficiency sync`, `Yellow = temporary Fortune mining override`, `Green = connected-log tree-felling`, `Blue = Knockback sync`, and `Violet = hard-material haste window`. The pairwise matrix is now expressed through modern runtime seams: `Yellow + Green` harvests mature crops in a 3x3 footprint, `Blue + Violet` deals splash damage around the struck target, `Green + Blue` heals the attacker after direct hits, `Yellow + Blue` adds fire aspect to direct melee hits, `Red + Violet` heals back part of nonfatal incoming damage while held, `Yellow + Violet` duplicates fresh mob drops near the kill, `Yellow + Red` smelts iron, gold, and copper ores and adds one extra ingot, `Red + Green` applies mining fatigue while the block is being worked, `Red + Blue` pushes the attacker backward after direct hits, `Green + Violet` applies temporary Weakness, and the orange pairings add targeted mining haste.
 - Storage-book capacities follow recovered class behavior when the old English lexicon text disagrees with the bytecode.
 
-### Unresolved Gaps
+### Shipped Runtime Bounds
 
-- Ring of the Shattered Stone still does not limit nearby explosion block damage to dirt, stone, sand, and gravel.
-- Prismatic Wand copy-paste still skips block entities and fluids and consumes direct placement items rather than the full legacy drop-plus-metadata path.
-- The Kaleidoscopic success curve is recovered from the shipped guidebook text, and the recovered residual contract is now exact: legacy single-color behavior was `Red = Silk Touch`, `Orange = Efficiency`, `Yellow = Fortune`, `Green = tree-felling`, `Blue = Knockback`, and `Violet = hard-material mining speed`; pairwise behavior covered `Yellow + Green` crop harvest, `Blue + Violet` splash damage, `Green + Blue` life steal, `Yellow + Blue` fire, `Red + Violet` damage reduction, `Yellow + Violet` mob-drop multiplication, `Yellow + Red` double-ingot ore drops, `Red + Green` mining slowdown, `Red + Blue` recoil, `Green + Violet` attack reduction, and orange mining-speed boosts for ores, stone, dirt/sand/grass/gravel, wood, and high-durability blocks. The current runtime still uses the bounded substitution set `Red = ignite`, `Orange = knockback`, `Yellow = mining efficiency`, `Green = poison`, `Blue = bonus damage`, and `Violet = nausea` instead of those recovered effects.
+- Ring of the Shattered Stone now filters nearby dirt, stone, sand, and gravel out of explosion block damage inside the wearer's three-block protection radius while keeping the wearer explosion-damage gate intact.
+- Prismatic Wand copy-paste now captures non-air block states, source fluids, and representative block-entity data, replays block-entity custom data after placement, and consumes merged block, stored-item, and bucket materials instead of only direct placement items.
+- Kaleidoscopic runtime bounds stay explicit: `Yellow + Green` is limited to mature `CropBlock`, nether wart, and sweet berry bushes in a 3x3 footprint; `Yellow + Red` is limited to iron, gold, and copper ore families expressed as smelted drops plus one extra ingot; `Red + Violet` heals back part of nonfatal damage while the kaleidoscopic item is held in the main hand; and violet hard-material boosts use `destroy speed >= 8.0` as the supported threshold.
 - The jar's fairy-name and wand-chat TODO comments are now closed on the localized surfaces touched by this pass, but unrelated modern-only status text still uses direct English copy where no shipped localization evidence exists.
 
 ## Dedicated Server Validation
 
-- Repo-local dedicated server smoke was exercised with Java 21 through the Loom server entrypoint after setting `run/eula.txt` to `eula=true`.
-- The server log for this pass lives at `millrace-agents/runs/run-3389d91e5f0a4f5e802d8023f25c209c/server_smoke.log`.
-- The log contains the Aura Cascade initialization lines and reaches `Done (4.828s)! For help, type "help"` on Minecraft `1.21.11`, which satisfies the dedicated-server load requirement for this stage.
-- The process was then intentionally interrupted to stop the smoke session, so Gradle reports exit `130` after the successful load. That post-start interrupt is not a runtime blocker.
-- First-run `server.properties` creation was logged before the world boot and then resolved automatically during the same startup. The remaining non-blocking warning is Fabric's dev-time untranslated item-tag warning.
+- `./gradlew --console=plain runServer` was re-run for the repo-local `1.21.1` smoke using Java `21`.
+- `run/logs/latest.log` reached `Loading Minecraft 1.21.1`, `Aura Cascade node, pump, consumer, storage, guidebook, and late-game runtime initialized.`, `Starting minecraft server version 1.21.1`, and `Done (...)! For help, type "help"`.
+- The same log no longer reports Aura `Parsing error loading recipe` entries for the repaired `src/main/resources/data/aura/recipe/` tree; the remaining non-fatal startup noise in this pass is the known `aura:kaleidoscopic_enchantable` missing-tag warning plus Fabric's dev-time untranslated item-tag warning.
+- `run/logs/latest.log` keeps the full repo-local smoke output for this pass, including any non-fatal startup warnings.
+- After those startup markers appeared, the foreground dev server was interrupted intentionally with `SIGINT` so the local smoke did not remain running.
+- Because `runServer` stays attached to that foreground JVM, the repo-local command exits `130` after the intentional interrupt.
+- This repo-local smoke is the current dedicated-server validation evidence for the `0.1.1+1.21.1` release surface.
 
 ## Release Validation
 
-- `JAVA_HOME=/tmp/millrace-tools/jdk-21 PATH=/tmp/millrace-tools/jdk-21/bin:$PATH ./gradlew test --tests pixlepix.auracascade.parity.FinalClientParityAuditTest` passed.
-- `JAVA_HOME=/tmp/millrace-tools/jdk-21 PATH=/tmp/millrace-tools/jdk-21/bin:$PATH ./gradlew test --tests pixlepix.auracascade.parity.VisualAssetParityAuditTest --tests pixlepix.auracascade.parity.FinalClientParityAuditTest` passed.
-- `JAVA_HOME=/tmp/millrace-tools/jdk-21 PATH=/tmp/millrace-tools/jdk-21/bin:$PATH ./gradlew test` passed.
-- `JAVA_HOME=/tmp/millrace-tools/jdk-21 PATH=/tmp/millrace-tools/jdk-21/bin:$PATH ./gradlew build` passed.
-- Built release artifact: `build/libs/aura-cascade-0.1.0+1.21.11.jar` (`1273991` bytes, SHA-256 `6b47c8c8ab931e9dbf3b4a56fc472f94b2910e614e24429aca14279fffd3d2a3`).
-- Built sources artifact: `build/libs/aura-cascade-0.1.0+1.21.11-sources.jar` (`1103344` bytes, SHA-256 `bb6120cb322ebe2bafeb06b107325278b4b6e35c5f2a381b0cf09283fa087532`).
-- `unzip -l build/libs/aura-cascade-0.1.0+1.21.11.jar` confirms that both `LICENSE` and `fabric.mod.json` are packaged into the shipped jar.
+Historical artifact records below belong to the earlier audit, not the current
+development build. Their hashes are retained as provenance; new checkpoint
+artifacts and validation are recorded in `docs/audits/2026-09-22-staggered-execution.md`.
+The documentation unit test checks record structure, not current artifact bytes.
+
+- `env JAVA_HOME=/tmp/millrace-tools/jdk-21 PATH='/tmp/millrace-tools/jdk-21/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' ./gradlew --console=plain test --tests pixlepix.auracascade.parity.ReleaseDocumentationAuditTest` passed.
+- `env JAVA_HOME=/tmp/millrace-tools/jdk-21 PATH='/tmp/millrace-tools/jdk-21/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' ./gradlew --console=plain test --tests pixlepix.auracascade.parity.FinalClientParityAuditTest` passed.
+- `env JAVA_HOME=/tmp/millrace-tools/jdk-21 PATH='/tmp/millrace-tools/jdk-21/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' ./gradlew --console=plain test` passed.
+- `env JAVA_HOME=/tmp/millrace-tools/jdk-21 PATH='/tmp/millrace-tools/jdk-21/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' ./gradlew --console=plain build` passed.
+- Built release artifact: `build/libs/aura-cascade-0.1.1+1.21.1.jar` (`1325404` bytes, SHA-256 `edbe73d8878375f0f0129670473b46067605e9e1156252ad6c4c52f279e221ed`).
+- Built sources artifact: `build/libs/aura-cascade-0.1.1+1.21.1-sources.jar` (`1117474` bytes, SHA-256 `6ec98cd450f91f5892f161c260f8166027fe13b34b72e5e86cc1182cea357abe`).
+- `unzip -l build/libs/aura-cascade-0.1.1+1.21.1.jar` confirms that both `LICENSE` and `fabric.mod.json` are packaged into the shipped jar.

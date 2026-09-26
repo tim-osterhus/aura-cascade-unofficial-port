@@ -1,5 +1,7 @@
 package pixlepix.auracascade.fairy;
 
+import java.util.List;
+
 public final class FairyRoleLogic {
     private FairyRoleLogic() {
     }
@@ -16,7 +18,6 @@ public final class FairyRoleLogic {
         FETCH_ITEMS,
         SUMMON_PASSIVE,
         BREED_ANIMALS,
-        SCARE_HOSTILE,
         EXTINGUISH_FIRE,
         DIG_SOFT_BLOCK,
         CREATE_LIGHT,
@@ -50,12 +51,35 @@ public final class FairyRoleLogic {
             case FETCHER -> observation.nearbyItems() ? Action.FETCH_ITEMS : Action.NONE;
             case BAITER -> Action.SUMMON_PASSIVE;
             case BREEDER -> observation.nearbyAnimals() ? Action.BREED_ANIMALS : Action.NONE;
-            case SCARER -> observation.nearbyHostile() ? Action.SCARE_HOSTILE : Action.NONE;
+            case SCARER -> Action.NONE;
             case EXTINGUISHER -> observation.ownerOnFire() ? Action.EXTINGUISH_FIRE : Action.NONE;
-            case DIGGER -> Action.DIG_SOFT_BLOCK;
+            case DIGGER -> Action.NONE;
             case LIGHTER -> observation.lowLight() ? Action.CREATE_LIGHT : Action.NONE;
-            case GLIDER -> observation.ownerFalling() ? Action.SLOW_FALL : Action.NONE;
+            case GLIDER -> Action.NONE;
             case TRAINER -> Action.GRANT_EXPERIENCE;
         };
+    }
+
+    static boolean retainTrackedArrow(boolean alive, double motionX, double motionY) {
+        return alive && (motionX != 0.0D || motionY != 0.0D);
+    }
+
+    static boolean isAuthorized(boolean canonicalEntity, List<FairyRole> equippedRoles, int slot, FairyRole entityRole) {
+        return canonicalEntity
+            && slot >= 0
+            && slot < equippedRoles.size()
+            && equippedRoles.get(slot) == entityRole;
+    }
+
+    static double diggerSpeedMultiplier(int ownedDiggerFairies) {
+        return Math.pow(1.08D, Math.min(ownedDiggerFairies - 1, 15));
+    }
+
+    static double gliderFallMultiplier(int ownedGliderFairies) {
+        return Math.pow(0.5D, Math.max(ownedGliderFairies, 0));
+    }
+
+    static boolean deniesNaturalSpawn(int nearbyScarers, int roll) {
+        return nearbyScarers > 0 && roll >= 0 && roll < 25 && roll <= nearbyScarers;
     }
 }

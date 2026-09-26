@@ -1,0 +1,37 @@
+{
+  "name": "Pumps and Control",
+  "category": "aura:aura_systems",
+  "icon": "aura:aura_node_pump",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Feed a Pump",
+      "text": "Burning Pumps consume dropped furnace fuel. Illumination Pumps consume adjacent glowstone or torches. Momentum Pumps draw power from falls. Projectile Pumps consume arrows, eggs, or snowballs that strike them."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wire and Rhythm",
+      "text": "Redstone Pumps follow a contiguous redstone-wire path, consuming powered wire along it. Their search stops at the first non-wire block. Alternating pumps vary their transfer rhythm over time."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shape the Network",
+      "text": "A powered pump pauses upward transfer. Black and Orange Manipulators refresh their reserve; powered, they still transfer Aura. Conserving Nodes send only at their own height. See $(l:aura:node_variants)Node Variants$(/l) for Manipulator and Capacitor controls."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Power-Saver Signal",
+      "text": "Place a Monitor beside one pump or consumer. It checks the first adjacent supported machine: an empty pump or consumer without valid work outputs 15; a pump holding power or consumer with valid work outputs 0. Ordinary Aura Nodes are ignored; it is not an aggregate-storage meter."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pump Readout",
+      "text": "The readout shows remaining eligible seconds; these pause without a target or while redstone inhibits the pump. Nominal speed is Aura per second at a one-block rise; actual transfer varies with color mix, height, and each color's mass and ascent."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Separate Pump Feeds",
+      "text": "Pumps send Aura only upward; they do not pass it sideways to another Pump. For a row of Pumps, give each one a linked input branch from a lower node."
+    }
+  ]
+}

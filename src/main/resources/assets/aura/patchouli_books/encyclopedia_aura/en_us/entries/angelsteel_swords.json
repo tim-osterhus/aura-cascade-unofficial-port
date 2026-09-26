@@ -1,0 +1,47 @@
+{
+  "name": "Angelsteel Swords",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_sword_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Choose a Color",
+      "text": "Each color has twelve registered sword recipes. Browse a color below; return here from any tier. See $(l:aura:arcane_progression)Arcane Progression$(/l) for ingot advancement."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Six Curses",
+      "text": "On a hit, the sword lays its color curse; higher degrees hit harder and extend it. Red kindles fire; Orange lifts its foe; Yellow calls lightning; Green deals and spreads magic harm; Blue strikes foes below half health; Violet swaps places with nearby living beings. Each curse pulses in its own rhythm."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Blue Swords",
+      "text": "Browse all twelve tiers: $(l:aura:angelsteel_swords_blue)Blue Swords$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Green Swords",
+      "text": "Browse all twelve tiers: $(l:aura:angelsteel_swords_green)Green Swords$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Orange Swords",
+      "text": "Browse all twelve tiers: $(l:aura:angelsteel_swords_orange)Orange Swords$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Red Swords",
+      "text": "Browse all twelve tiers: $(l:aura:angelsteel_swords_red)Red Angelsteel Swords$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Violet Swords",
+      "text": "Browse all twelve tiers: $(l:aura:angelsteel_swords_violet)Violet Swords$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Yellow Swords",
+      "text": "Browse all twelve tiers: $(l:aura:angelsteel_swords_yellow)Yellow Swords$(/l)"
+    }
+  ]
+}

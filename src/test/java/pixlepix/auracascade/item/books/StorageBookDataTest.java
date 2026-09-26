@@ -1,5 +1,7 @@
 package pixlepix.auracascade.item.books;
 
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,5 +43,29 @@ final class StorageBookDataTest {
         ItemStack modBook = new ItemStack(Items.BOOK);
         assertEquals(0, StorageBookData.insert(modBook, StorageBookVariant.MOD, new ItemStack(Items.DIRT, 1)));
         assertTrue(StorageBookData.entries(modBook).isEmpty());
+    }
+
+    @Test
+    void browserEntriesKeepLargeCountsAndExtractionMatchesComponents() {
+        ItemStack book = new ItemStack(Items.BOOK);
+        ItemStack namedIron = new ItemStack(Items.IRON_INGOT);
+        namedIron.set(DataComponents.CUSTOM_NAME, Component.literal("First batch"));
+        namedIron.setCount(128);
+        ItemStack otherNamedIron = new ItemStack(Items.IRON_INGOT);
+        otherNamedIron.set(DataComponents.CUSTOM_NAME, Component.literal("Second batch"));
+        otherNamedIron.setCount(64);
+
+        assertEquals(128, StorageBookData.insert(book, StorageBookVariant.DENSE, namedIron));
+        assertEquals(64, StorageBookData.insert(book, StorageBookVariant.DENSE, otherNamedIron));
+        assertEquals(2, StorageBookData.detailedEntries(book).size());
+        assertEquals(128, StorageBookData.detailedEntries(book).getFirst().count());
+
+        ItemStack persistedCopy = book.copy();
+        ItemStack extracted = StorageBookData.extract(persistedCopy, otherNamedIron, 20);
+        assertEquals(20, extracted.getCount());
+        assertTrue(ItemStack.isSameItemSameComponents(otherNamedIron, extracted));
+        assertEquals(128, StorageBookData.detailedEntries(persistedCopy).getFirst().count());
+        assertEquals(44, StorageBookData.detailedEntries(persistedCopy).get(1).count());
+        assertEquals(64, StorageBookData.detailedEntries(book).get(1).count());
     }
 }

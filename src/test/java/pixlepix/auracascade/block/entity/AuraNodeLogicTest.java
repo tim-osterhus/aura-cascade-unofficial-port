@@ -28,6 +28,23 @@ final class AuraNodeLogicTest {
     }
 
     @Test
+    void unpoweredManipulatorDestroysAuraWithoutDiscardingNetworkOrPower() {
+        var state = AuraNodeLogic.manipulatorState(AuraNodeVariant.BLACK_MANIPULATOR);
+        state.setStoredPower(123);
+        state.setHasScannedLinks(true);
+        state.replaceLinkedNodes(java.util.Set.of(new BlockPos(0, -4, 0)));
+        AuraNodeLogic.refreshManipulator(state, AuraNodeVariant.BLACK_MANIPULATOR, false);
+        assertEquals(0, state.storage().total());
+        assertEquals(123, state.storedPower());
+        assertTrue(state.hasScannedLinks());
+        assertEquals(1, state.linkedNodes().size());
+        state.storage().set(AuraColor.WHITE, 300);
+        AuraNodeLogic.refreshManipulator(state, AuraNodeVariant.BLACK_MANIPULATOR, true);
+        assertEquals(100_000, state.storage().get(AuraColor.BLACK));
+        assertEquals(0, state.storage().get(AuraColor.WHITE));
+    }
+
+    @Test
     void capacitorAndConservingNodeEnforceTheirTransferRules() {
         BlockPos origin = new BlockPos(0, 10, 0);
 

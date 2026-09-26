@@ -3,28 +3,6 @@
   "description": {
     "translate": "enchantment.aura.kaleidoscopic_red"
   },
-  "effects": {
-    "minecraft:post_attack": [
-      {
-        "affected": "victim",
-        "effect": {
-          "type": "minecraft:ignite",
-          "duration": {
-            "type": "minecraft:linear",
-            "base": 4.0,
-            "per_level_above_first": 3.0
-          }
-        },
-        "enchanted": "attacker",
-        "requirements": {
-          "condition": "minecraft:damage_source_properties",
-          "predicate": {
-            "is_direct": true
-          }
-        }
-      }
-    ]
-  },
   "max_cost": {
     "base": 30,
     "per_level_above_first": 8

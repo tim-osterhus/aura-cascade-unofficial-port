@@ -2,17 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "A": "minecraft:amethyst_shard",
-    "B": "aura:arcane_ingot_blue",
-    "G": "aura:arcane_ingot_green",
-    "O": "aura:arcane_ingot_orange",
-    "P": "aura:consumer_block_ore",
-    "W": "aura:arcane_ingot_white"
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "P": {
+      "item": "aura:arcane_prism"
+    },
+    "C": {
+      "item": "aura:consumer_block_ore"
+    }
   },
   "pattern": [
-    "WAW",
-    "PBP",
-    "OGO"
+    "GPG",
+    "GCG",
+    "GGG"
   ],
   "result": {
     "count": 1,

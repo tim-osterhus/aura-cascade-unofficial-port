@@ -9,9 +9,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.CustomData;
 import pixlepix.auracascade.fairy.FairyRole;
+import pixlepix.auracascade.util.NbtCompat;
 
 public final class FairyCharmItem extends Item {
     private static final String FAIRY_ROLE_TAG = "fairyRole";
@@ -27,7 +27,7 @@ public final class FairyCharmItem extends Item {
     public static FairyRole role(ItemStack stack) {
         CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         CompoundTag tag = customData.copyTag();
-        return FairyRole.byId(tag.getString(FAIRY_ROLE_TAG).orElse(FairyRole.defaultRole().id()));
+        return FairyRole.byId(NbtCompat.getStringOr(tag, FAIRY_ROLE_TAG, FairyRole.defaultRole().id()));
     }
 
     public static ItemStack withRole(ItemStack stack, FairyRole role) {
@@ -45,11 +45,10 @@ public final class FairyCharmItem extends Item {
     public void appendHoverText(
         ItemStack stack,
         TooltipContext tooltipContext,
-        TooltipDisplay tooltipDisplay,
-        Consumer<Component> tooltipAdder,
+        java.util.List<Component> tooltip,
         TooltipFlag tooltipFlag
     ) {
-        tooltipAdder.accept(Component.translatable(role(stack).translationKey()).withStyle(ChatFormatting.AQUA));
-        tooltipAdder.accept(Component.translatable("tooltip.aura.fairy_charm.cycle").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable(role(stack).translationKey()).withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.aura.fairy_charm.cycle").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

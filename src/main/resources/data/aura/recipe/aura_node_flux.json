@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": { "item": "aura:arcane_ingot_red" },
+    "N": { "item": "aura:aura_node" }
+  },
+  "pattern": ["RNR"],
+  "result": { "count": 1, "id": "aura:aura_node_flux" }
+}

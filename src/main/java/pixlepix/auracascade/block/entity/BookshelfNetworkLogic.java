@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Queue;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -13,6 +14,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import pixlepix.auracascade.block.AuraContent;
 
 public final class BookshelfNetworkLogic {
@@ -55,11 +58,19 @@ public final class BookshelfNetworkLogic {
         return visited;
     }
 
-    public static boolean hasLineOfSight(Level level, BlockPos fromPos, BlockPos toPos) {
+    public static boolean hasLineOfSight(BlockGetter level, BlockPos fromPos, BlockPos toPos) {
         Vec3 from = Vec3.atCenterOf(fromPos);
         Vec3 to = Vec3.atCenterOf(toPos);
-        BlockHitResult hit = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()));
-        return hit.getType() == HitResult.Type.MISS || hit.getBlockPos().equals(fromPos) || hit.getBlockPos().equals(toPos);
+        ClipContext context = new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()) {
+            @Override
+            public VoxelShape getBlockShape(BlockState state, BlockGetter view, BlockPos pos) {
+                // Endpoint cubes must not hide a later obstruction behind an immediate inside hit.
+                return pos.equals(fromPos) || pos.equals(toPos)
+                    ? Shapes.empty() : super.getBlockShape(state, view, pos);
+            }
+        };
+        BlockHitResult hit = level.clip(context);
+        return hit.getType() == HitResult.Type.MISS;
     }
 
     private static boolean isBookshelf(BlockState state) {

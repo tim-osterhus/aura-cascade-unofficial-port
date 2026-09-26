@@ -5,12 +5,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import pixlepix.auracascade.parity.AuraColor;
+import pixlepix.auracascade.util.NbtCompat;
 
 public final class AngelsteelSwordItem extends AngelsteelToolItem {
     public AngelsteelSwordItem(int degreeIndex) {
@@ -33,33 +32,40 @@ public final class AngelsteelSwordItem extends AngelsteelToolItem {
     }
 
     @Override
-    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        super.hurtEnemy(stack, target, attacker);
-        int duration = (degreeIndex * degreeIndex * 100) + 100;
-        switch (swordAura(stack).orElse(AuraColor.RED)) {
-            case RED -> target.igniteForSeconds(Math.max(4, duration / 20));
-            case ORANGE -> target.addEffect(new MobEffectInstance(MobEffects.LEVITATION, duration / 2, Math.max(0, degreeIndex / 3)));
-            case YELLOW -> target.addEffect(new MobEffectInstance(MobEffects.GLOWING, duration, 0));
-            case GREEN -> target.addEffect(new MobEffectInstance(MobEffects.POISON, duration, Math.max(0, degreeIndex / 4)));
-            case BLUE -> {
-                if (target.getHealth() <= (target.getMaxHealth() / 2.0F)) {
-                    target.hurt(target.damageSources().magic(), Math.max(2.0F, degreeIndex + 1.0F));
-                }
-            }
-            case VIOLET -> target.addEffect(new MobEffectInstance(MobEffects.NAUSEA, duration / 2, 0));
-            default -> {
-            }
+    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        if (!target.level().isClientSide()) {
+            AuraColor color = auraForHit(swordAura(stack));
+            int degree = Math.max(0, Math.min(10, degreeIndex));
+            target.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                AngelsteelCurseEffects.effect(color),
+                AngelsteelCurseMobEffect.curseDuration(degree),
+                degree
+            ));
         }
+        return true;
     }
 
     @Override
-    protected Optional<AuraColor> swordAura(ItemStack stack) {
+    public Optional<AuraColor> swordAura(ItemStack stack) {
         CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         CompoundTag tag = customData.copyTag();
-        String colorId = tag.getString(AngelsteelToolHelper.NBT_AURA_NAME).orElse("");
-        if (colorId.isEmpty()) {
+        String colorId = NbtCompat.getStringOr(tag, AngelsteelToolHelper.NBT_AURA_NAME, "");
+        return parseSwordAura(colorId);
+    }
+
+    static Optional<AuraColor> parseSwordAura(String colorId) {
+        if (colorId == null || colorId.isBlank()) {
             return Optional.empty();
         }
-        return Optional.of(AuraColor.byId(colorId));
+        try {
+            AuraColor color = AuraColor.byId(colorId);
+            return AngelsteelCurseEffects.isAttunedColor(color) ? Optional.of(color) : Optional.empty();
+        } catch (IllegalArgumentException ignored) {
+            return Optional.empty();
+        }
+    }
+
+    static AuraColor auraForHit(Optional<AuraColor> aura) {
+        return aura.orElse(AuraColor.RED);
     }
 }

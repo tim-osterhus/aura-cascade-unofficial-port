@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": "minecraft:brewing_stand",
-    "C": "aura:aura_crystal_violet",
-    "G": "minecraft:glass_bottle"
+    "B": {
+      "item": "minecraft:brewing_stand"
+    },
+    "C": {
+      "item": "aura:aura_crystal_violet"
+    },
+    "G": {
+      "item": "minecraft:glass_bottle"
+    }
   },
   "pattern": [
     "CGC",

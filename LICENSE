@@ -1,5 +1,6 @@
 MIT License
 
+Copyright (c) 2015 Adly Templeton
 Copyright (c) Aura Cascade contributors and Millrace contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,6 +25,9 @@ Additional attribution and provenance notice:
 
 - Original Aura Cascade creator credited in the shipped `AuraCascade-592.jar` metadata: `pixlepix`.
 - Shipped jar credit for the 1.8.x port: `williewillus`.
+- Original project texture credits: `Futureazoo`, `Drullkus`, and `pixlepix`.
+- The original project credits `Vazkii` for its Botania-derived lexicon and design inspiration. This port uses Patchouli for its encyclopedia implementation.
+- Original MIT notice: https://github.com/baileyholl/Aura-Cascade/blob/MC188/LICENSE.md
 - This repository is an unofficial modern Fabric port and not an official continuation.
 - This repo now includes visual asset imports derived from `AuraCascade-592.jar!/assets/aura/textures/**`; the restored resource mapping and any modern path normalization are documented in `PORTING_NOTES.md`.
 - The current repo mixes clean-room rewrites with behavior and content mapping derived from the shipped jar. See `PORTING_NOTES.md` for parity evidence, substitutions, and any future provenance-sensitive imports.

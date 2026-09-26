@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "E": "minecraft:redstone",
-    "P": "aura:aura_node_pump"
+    "E": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "aura:aura_node_pump"
+    }
   },
   "pattern": [
     " E ",

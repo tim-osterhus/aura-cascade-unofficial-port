@@ -9,7 +9,7 @@ public interface AuraAccessoryBridge {
 
     boolean isEquipped(Player player, ItemStack stack, AuraAccessorySlot slot);
 
-    void equip(Player player, ItemStack stack, AuraAccessorySlot slot);
+    boolean equip(Player player, ItemStack stack, AuraAccessorySlot slot);
 
     void unequip(Player player, ItemStack stack, AuraAccessorySlot slot);
 }

@@ -7,6 +7,8 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import pixlepix.auracascade.util.NbtCompat;
 
 public final class AuraNodeState {
     private static final String STORAGE_TAG = "storage";
@@ -100,22 +102,22 @@ public final class AuraNodeState {
     }
 
     public static AuraNodeState fromTag(CompoundTag tag) {
-        AuraStorage storage = AuraStorage.fromTag(tag.getCompound(STORAGE_TAG).orElseGet(CompoundTag::new));
-        ListTag links = tag.getList(LINKED_NODES_TAG).orElseGet(ListTag::new);
+        AuraStorage storage = AuraStorage.fromTag(NbtCompat.getCompoundOrEmpty(tag, STORAGE_TAG));
+        ListTag links = NbtCompat.getListOrEmpty(tag, LINKED_NODES_TAG, Tag.TAG_COMPOUND);
         LinkedHashSet<BlockPos> linkedNodes = new LinkedHashSet<>();
         for (int index = 0; index < links.size(); index++) {
-            CompoundTag entry = links.getCompound(index).orElseGet(CompoundTag::new);
+            CompoundTag entry = links.getCompound(index);
             linkedNodes.add(new BlockPos(
-                entry.getInt(X_TAG).orElse(0),
-                entry.getInt(Y_TAG).orElse(0),
-                entry.getInt(Z_TAG).orElse(0)
+                NbtCompat.getIntOr(entry, X_TAG, 0),
+                NbtCompat.getIntOr(entry, Y_TAG, 0),
+                NbtCompat.getIntOr(entry, Z_TAG, 0)
             ));
         }
         return new AuraNodeState(
             storage,
             linkedNodes,
-            tag.getBoolean(HAS_SCANNED_LINKS_TAG).orElse(false),
-            tag.getInt(STORED_POWER_TAG).orElse(0)
+            NbtCompat.getBooleanOr(tag, HAS_SCANNED_LINKS_TAG, false),
+            NbtCompat.getIntOr(tag, STORED_POWER_TAG, 0)
         );
     }
 }

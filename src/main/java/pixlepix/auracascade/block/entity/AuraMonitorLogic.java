@@ -1,6 +1,5 @@
 package pixlepix.auracascade.block.entity;
 
-import java.util.Collection;
 import pixlepix.auracascade.aura.AuraInspectionState;
 
 public final class AuraMonitorLogic {
@@ -15,11 +14,4 @@ public final class AuraMonitorLogic {
         return active ? 15 : nodeSignal(inspectionState, capacity);
     }
 
-    public static int aggregate(Collection<Integer> signals) {
-        int strongest = 0;
-        for (int signal : signals) {
-            strongest = Math.max(strongest, signal);
-        }
-        return Math.min(15, Math.max(0, strongest));
-    }
 }

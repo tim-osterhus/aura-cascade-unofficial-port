@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import pixlepix.auracascade.support.RecipeIngredientReader;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,19 +46,16 @@ final class AuraRecipeResourceCoverageTest {
                     if (json.has("ingredients")) {
                         JsonArray ingredients = json.getAsJsonArray("ingredients");
                         for (JsonElement ingredient : ingredients) {
-                            assertIngredient(ingredient.getAsString());
+                            for (String ingredientId : RecipeIngredientReader.readIngredientIds(ingredient)) {
+                                assertIngredient(ingredientId);
+                            }
                         }
                     }
                     if (json.has("key")) {
                         JsonObject key = json.getAsJsonObject("key");
                         for (String symbol : key.keySet()) {
-                            JsonElement value = key.get(symbol);
-                            if (value.isJsonArray()) {
-                                for (JsonElement option : value.getAsJsonArray()) {
-                                    assertIngredient(option.getAsString());
-                                }
-                            } else {
-                                assertIngredient(value.getAsString());
+                            for (String ingredientId : RecipeIngredientReader.readIngredientIds(key.get(symbol))) {
+                                assertIngredient(ingredientId);
                             }
                         }
                     }
@@ -87,6 +85,10 @@ final class AuraRecipeResourceCoverageTest {
         }
 
         outputs.addAll(List.of(
+            "minecraft:bone_meal", "minecraft:orange_dye", "minecraft:magenta_dye", "minecraft:light_blue_dye",
+            "minecraft:yellow_dye", "minecraft:lime_dye", "minecraft:pink_dye", "minecraft:gray_dye",
+            "minecraft:light_gray_dye", "minecraft:cyan_dye", "minecraft:purple_dye", "minecraft:lapis_lazuli",
+            "minecraft:cocoa_beans", "minecraft:green_dye", "minecraft:red_dye", "minecraft:ink_sac",
             "aura:arcane_prism",
             "aura:encyclopedia_aura",
             "aura:fairy_charm",

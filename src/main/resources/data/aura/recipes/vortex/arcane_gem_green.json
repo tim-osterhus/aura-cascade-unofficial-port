@@ -1,0 +1,10 @@
+{
+  "type": "aura:vortex",
+  "ingredients": [
+    { "item": "minecraft:diamond", "aura": { "color": "white", "amount": 60000 } },
+    { "item": "aura:arcane_ingot_green", "aura": { "color": "white", "amount": 20000 } },
+    { "item": "aura:arcane_ingot_green", "aura": { "color": "white", "amount": 20000 } },
+    { "item": "aura:arcane_ingot_green", "aura": { "color": "white", "amount": 20000 } }
+  ],
+  "result": { "item": "aura:arcane_gem_green" }
+}

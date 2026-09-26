@@ -1,0 +1,37 @@
+{
+  "name": "Late Systems",
+  "category": "aura:late_game",
+  "icon": "aura:ring_of_shattered_stone",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Beyond the First Circuit",
+      "text": "Movement: $(l:aura:travelers_bricks)Traveler's Bricks$(/l) and $(l:aura:rebounding_enigma)Rebounding Enigma$(/l). Fortified works, Miner, Looter, and Spawner extend powered networks. Nether and End rites transform nearby blocks and biome."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shattered Stone Ring",
+      "text": "Equip the ring within 3 blocks of an explosion center on each axis. Across the affected blast, it spares ores and other nonterrain blocks; grass, stone, regular, chiseled, and cut sandstone, sand, dirt, cobblestone, and gravel remain destructible. It does not protect its wearer from damage."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Looter and Spawner",
+      "text": "A powered Looter draws one item from the dungeon chest table above itself after 100 work steps at 5,000 power each. A Spawner chooses a natural monster for the local biome and structure after 15 steps at 190 each."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Miner's Charge",
+      "text": "Stored power feeds the Miner and its roaming singularity below. Watch its charge readout; after at least 21 charges, pulse redstone at the Miner to release ore. Greater charge yields more. If it goes 100 ticks without a charge, it expires."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contain the Miner",
+      "text": "Surround the Miner and the charge's path with Fortified Blocks before powering it; a failed enclosure causes a blast. In the Processor, pair End Stone with Dirt, Cobblestone, Oak, Spruce, Birch, Jungle, Acacia, or Dark Oak Planks, Glass, Obsidian, or Stone."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "World Rituals",
+      "text": "Feed stored power to a Nether or End Ritual. Each needs 100 work steps at 5,000 power per step; it remaps blocks and biome within about 150 blocks, then removes itself when its queue ends. The End rite leaves water unchanged. See $(l:aura:consumers_vortex)Vortex$(/l) for the Nether recipe."
+    }
+  ]
+}

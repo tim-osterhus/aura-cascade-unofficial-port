@@ -1,100 +1,106 @@
 package pixlepix.auracascade.item;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.core.BlockPos;
+import pixlepix.auracascade.util.NbtCompat;
 
 public final class PrismaticWandState {
     private static final String MODE_TAG = "mode";
     private static final String FIRST_POS_TAG = "firstPos";
     private static final String SECOND_POS_TAG = "secondPos";
-    private static final String CLIPBOARD_TAG = "clipboard";
+    private static final String SOURCE_MIN_TAG = "sourceMin";
+    private static final String SOURCE_MAX_TAG = "sourceMax";
+    private static final String PLAYER_OFFSET_TAG = "playerOffset";
+    private static final String OLD_CLIPBOARD_TAG = "clipboard";
 
     private PrismaticWandState() {
     }
 
     public static Mode mode(ItemStack stack) {
-        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        CompoundTag tag = customData.copyTag();
-        return Mode.byId(tag.getString(MODE_TAG).orElse(Mode.SELECTION.id()));
+        return Mode.byId(NbtCompat.getStringOr(data(stack), MODE_TAG, Mode.SELECTION.id()));
     }
 
     public static Mode cycleMode(ItemStack stack) {
-        Mode nextMode = mode(stack).next();
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putString(MODE_TAG, nextMode.id()));
-        return nextMode;
+        Mode next = mode(stack).next();
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            tag.putString(MODE_TAG, next.id());
+            tag.remove(OLD_CLIPBOARD_TAG);
+        });
+        return next;
     }
 
     public static boolean setSelectionPoint(ItemStack stack, BlockPos pos) {
-        boolean settingFirst = firstPosition(stack) == null || secondPosition(stack) != null;
+        BlockPos previous = readPosition(data(stack), FIRST_POS_TAG);
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
-            if (settingFirst) {
-                tag.putString(FIRST_POS_TAG, serializePos(pos));
-                tag.remove(SECOND_POS_TAG);
+            if (previous != null) {
+                tag.putString(SECOND_POS_TAG, encode(previous));
             } else {
-                tag.putString(SECOND_POS_TAG, serializePos(pos));
+                tag.remove(SECOND_POS_TAG);
             }
+            tag.putString(FIRST_POS_TAG, encode(pos));
         });
-        return settingFirst;
+        return previous == null;
     }
 
     public static Selection selection(ItemStack stack) {
-        BlockPos first = firstPosition(stack);
-        BlockPos second = secondPosition(stack);
-        if (first == null || second == null) {
+        CompoundTag tag = data(stack);
+        BlockPos first = readPosition(tag, FIRST_POS_TAG);
+        BlockPos second = readPosition(tag, SECOND_POS_TAG);
+        return first == null || second == null ? null : new Selection(first, second);
+    }
+
+    public static boolean copySelection(ItemStack stack, BlockPos playerPosition) {
+        Selection selected = selection(stack);
+        if (selected == null) {
+            return false;
+        }
+        BlockPos min = selected.min();
+        BlockPos max = selected.max();
+        BlockPos offset = min.subtract(playerPosition);
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            tag.putString(SOURCE_MIN_TAG, encode(min));
+            tag.putString(SOURCE_MAX_TAG, encode(max));
+            tag.putString(PLAYER_OFFSET_TAG, encode(offset));
+            tag.remove(OLD_CLIPBOARD_TAG);
+        });
+        return true;
+    }
+
+    public static CopiedRegion copiedRegion(ItemStack stack) {
+        CompoundTag tag = data(stack);
+        BlockPos min = readPosition(tag, SOURCE_MIN_TAG);
+        BlockPos max = readPosition(tag, SOURCE_MAX_TAG);
+        BlockPos offset = readPosition(tag, PLAYER_OFFSET_TAG);
+        if (min == null || max == null || offset == null
+            || min.getX() > max.getX() || min.getY() > max.getY() || min.getZ() > max.getZ()) {
             return null;
         }
-        return new Selection(first, second);
+        return new CopiedRegion(min, max, offset);
     }
 
-    public static void storeClipboard(ItemStack stack, List<ClipboardBlock> blocks) {
-        String serialized = blocks.stream().map(ClipboardBlock::serialize).reduce((left, right) -> left + "\n" + right).orElse("");
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putString(CLIPBOARD_TAG, serialized));
+    private static CompoundTag data(ItemStack stack) {
+        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
     }
 
-    public static List<ClipboardBlock> clipboard(ItemStack stack) {
-        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        CompoundTag tag = customData.copyTag();
-        String serialized = tag.getString(CLIPBOARD_TAG).orElse("");
-        ArrayList<ClipboardBlock> blocks = new ArrayList<>();
-        if (serialized.isEmpty()) {
-            return blocks;
-        }
-        for (String line : serialized.split("\n")) {
-            if (!line.isEmpty()) {
-                blocks.add(ClipboardBlock.deserialize(line));
-            }
-        }
-        return blocks;
-    }
-
-    private static String serializePos(BlockPos pos) {
+    private static String encode(BlockPos pos) {
         return pos.getX() + "," + pos.getY() + "," + pos.getZ();
     }
 
-    private static BlockPos firstPosition(ItemStack stack) {
-        return readPosition(stack, FIRST_POS_TAG);
-    }
-
-    private static BlockPos secondPosition(ItemStack stack) {
-        return readPosition(stack, SECOND_POS_TAG);
-    }
-
-    private static BlockPos readPosition(ItemStack stack, String key) {
-        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        CompoundTag tag = customData.copyTag();
-        String raw = tag.getString(key).orElse("");
-        return raw.isEmpty() ? null : deserializePos(raw);
-    }
-
-    private static BlockPos deserializePos(String raw) {
-        String[] pieces = raw.split(",", 3);
-        return new BlockPos(Integer.parseInt(pieces[0]), Integer.parseInt(pieces[1]), Integer.parseInt(pieces[2]));
+    private static BlockPos readPosition(CompoundTag tag, String key) {
+        String raw = NbtCompat.getStringOr(tag, key, "");
+        String[] parts = raw.split(",", -1);
+        if (parts.length != 3) {
+            return null;
+        }
+        try {
+            return new BlockPos(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     public enum Mode {
@@ -118,10 +124,6 @@ public final class PrismaticWandState {
 
         public String displayName() {
             return displayName;
-        }
-
-        public String translationKey() {
-            return translationKey;
         }
 
         public Component displayComponent() {
@@ -164,20 +166,6 @@ public final class PrismaticWandState {
         }
     }
 
-    public record ClipboardBlock(int dx, int dy, int dz, int stateId, String itemId) {
-        public String serialize() {
-            return dx + "|" + dy + "|" + dz + "|" + stateId + "|" + itemId;
-        }
-
-        public static ClipboardBlock deserialize(String raw) {
-            String[] pieces = raw.split("\\|", 5);
-            return new ClipboardBlock(
-                Integer.parseInt(pieces[0]),
-                Integer.parseInt(pieces[1]),
-                Integer.parseInt(pieces[2]),
-                Integer.parseInt(pieces[3]),
-                pieces[4]
-            );
-        }
+    public record CopiedRegion(BlockPos min, BlockPos max, BlockPos playerOffset) {
     }
 }

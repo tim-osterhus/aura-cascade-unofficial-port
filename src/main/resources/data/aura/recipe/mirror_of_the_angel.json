@@ -6,9 +6,15 @@
     "r  "
   ],
   "key": {
-    "g": "minecraft:glass_pane",
-    "r": "aura:arcane_ingot_red",
-    "p": "aura:arcane_prism"
+    "g": {
+      "item": "minecraft:glass_pane"
+    },
+    "r": {
+      "item": "aura:arcane_ingot_red"
+    },
+    "p": {
+      "item": "aura:arcane_prism"
+    }
   },
   "result": {
     "id": "aura:mirror_of_the_angel",

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "aura_qa_multiplayer",
+  "version": "1.0.0",
+  "name": "Aura Private Multiplayer QA",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "pixlepix.auracascade.qa.multiplayer.MultiplayerServerProbe",
+      "pixlepix.auracascade.qa.multiplayer.ConsumerLifetimeProbe"
+    ],
+    "client": ["pixlepix.auracascade.qa.multiplayer.MultiplayerClientProbe"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.1",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "aura": "*"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "aura_qa_observer",
+  "version": "1.0.0",
+  "name": "Aura Packaged QA Observer",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["pixlepix.auracascade.qa.PackagedObserverClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.1",
+    "minecraft": "1.21.1",
+    "fabric-api": "*"
+  }
+}

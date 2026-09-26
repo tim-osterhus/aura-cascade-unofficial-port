@@ -1,38 +1,10 @@
 {
   "type": "aura:vortex",
   "ingredients": [
-    {
-      "item": "aura:consumer_block_potion",
-      "aura": {
-        "color": "blue",
-        "amount": 2200
-      }
-    },
-    {
-      "item": "aura:consumer_block_dye",
-      "aura": {
-        "color": "green",
-        "amount": 2200
-      }
-    },
-    {
-      "item": "aura:arcane_prism",
-      "aura": {
-        "color": "yellow",
-        "amount": 2600
-      }
-    },
-    {
-      "item": "aura:arcane_ingot_violet",
-      "aura": {
-        "color": "violet",
-        "amount": 3200
-      }
-    }
+    { "item": "aura:arcane_gem_black", "aura": { "color": "white", "amount": 250000 } },
+    { "item": "aura:arcane_gem_black", "aura": { "color": "white", "amount": 250000 } },
+    { "item": "aura:arcane_gem_black", "aura": { "color": "white", "amount": 250000 } },
+    { "item": "aura:arcane_gem_black", "aura": { "color": "white", "amount": 250000 } }
   ],
-  "result": {
-    "item": "aura:consumer_block_enchant",
-    "count": 1
-  },
-  "max_progress": 240
+  "result": { "item": "aura:consumer_block_enchant", "count": 1 }
 }

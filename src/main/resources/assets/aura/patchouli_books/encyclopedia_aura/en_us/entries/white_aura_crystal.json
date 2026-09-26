@@ -1,0 +1,19 @@
+{
+  "name": "White Aura Crystal",
+  "category": "aura:walkthrough",
+  "icon": "aura:aura_crystal_white",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Shape a Steady Crystal",
+      "text": "Place an amethyst shard at the center, ringed by eight gold nuggets, to shape two White Aura Crystals. Steady White Aura flows along level paths or downward. Begin $(l:aura:first_aura_circuit)your first circuit$(/l)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "White Aura Crystal",
+      "recipe": "aura:aura_crystal_white",
+      "text": "Use a White Aura Crystal directly on a Node or Pump for 1,000 matching Aura. Dropped crystals also work; place them on the side away from nearby Nodes."
+    }
+  ]
+}

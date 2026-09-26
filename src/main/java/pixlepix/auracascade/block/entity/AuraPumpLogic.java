@@ -7,19 +7,19 @@ import pixlepix.auracascade.aura.AuraStorage;
 import pixlepix.auracascade.parity.AuraColor;
 
 public final class AuraPumpLogic {
-    private static final int GLOWSTONE_POWER = 240;
-    private static final int GLOWSTONE_SPEED = 18;
-    private static final int TORCH_POWER = 80;
-    private static final int TORCH_SPEED = 6;
-    private static final int FALL_SPEED = 10;
-    private static final int ARROW_POWER = 200;
-    private static final int ARROW_SPEED = 16;
-    private static final int EGG_POWER = 60;
-    private static final int EGG_SPEED = 6;
-    private static final int SNOWBALL_POWER = 40;
-    private static final int SNOWBALL_SPEED = 4;
-    private static final int REDSTONE_BASE_POWER = 80;
-    private static final int REDSTONE_SPEED = 12;
+    private static final int GLOWSTONE_POWER = 180;
+    private static final int GLOWSTONE_SPEED = 750;
+    private static final int TORCH_POWER = 30;
+    private static final int TORCH_SPEED = 750;
+    private static final int FALL_SPEED = 500;
+    private static final int ARROW_POWER = 20;
+    private static final int ARROW_SPEED = 1_000;
+    private static final int EGG_POWER = 90;
+    private static final int EGG_SPEED = 500;
+    private static final int SNOWBALL_POWER = 10;
+    private static final int SNOWBALL_SPEED = 500;
+    private static final int REDSTONE_BASE_POWER = 10;
+    private static final int REDSTONE_SPEED = 1_500;
     private static final int CREATIVE_POWER = 2;
     private static final int CREATIVE_SPEED = 10_000_000;
 
@@ -27,7 +27,7 @@ public final class AuraPumpLogic {
     }
 
     public static FuelOffer burningFuel(int furnaceBurnTime) {
-        return new FuelOffer(Math.max(20, (furnaceBurnTime * 3) / 5), 18);
+        return new FuelOffer(furnaceBurnTime / 5, 300);
     }
 
     public static FuelOffer glowstoneFuel() {
@@ -39,7 +39,7 @@ public final class AuraPumpLogic {
     }
 
     public static FuelOffer fallFuel(float fallDistance) {
-        return new FuelOffer(Math.max(0, (int) Math.floor(fallDistance * 20.0F)), FALL_SPEED);
+        return new FuelOffer(Math.max(0, (int) (fallDistance * 2.0F)), FALL_SPEED);
     }
 
     public static FuelOffer arrowFuel() {
@@ -55,7 +55,7 @@ public final class AuraPumpLogic {
     }
 
     public static FuelOffer redstoneFuel(int distance) {
-        int scaledPower = (int) Math.ceil(REDSTONE_BASE_POWER * Math.pow(1.4D, Math.max(1, distance)));
+        int scaledPower = (int) (REDSTONE_BASE_POWER * Math.pow(1.4D, distance));
         return new FuelOffer(scaledPower, REDSTONE_SPEED);
     }
 
@@ -66,14 +66,14 @@ public final class AuraPumpLogic {
     public static PumpState addFuel(AuraPumpVariant variant, PumpState current, FuelOffer offer) {
         int offerPower = offer.power();
         int offerSpeed = offer.speed();
-        if (variant.isAlternating()) {
-            offerSpeed *= 3;
-        }
-
         if ((offerPower * offerSpeed) > (current.power() * current.speed())) {
-            return new PumpState(offerPower, offerSpeed);
+            return new PumpState(offerPower, variant.isAlternating() ? offerSpeed * 3 : offerSpeed);
         }
         return current;
+    }
+
+    public static PumpState spendForTarget(PumpState current) {
+        return new PumpState(current.power() - 1, current.speed());
     }
 
     public static float alternatingFactor(long gameTime) {
@@ -95,9 +95,9 @@ public final class AuraPumpLogic {
             return requested;
         }
 
-        double baseAmount = (double) pumpState.speed() / rise;
+        int baseAmount = pumpState.speed() / rise;
         if (variant.isAlternating()) {
-            baseAmount *= alternatingFactor(gameTime);
+            baseAmount = (int) (baseAmount * alternatingFactor(gameTime));
         }
 
         for (AuraColor color : AuraColor.values()) {
@@ -111,11 +111,11 @@ public final class AuraPumpLogic {
                 continue;
             }
 
-            double requestedAmount = baseAmount * source.storage().composition(color);
-            requestedAmount /= relativeMass;
-            requestedAmount *= color.ascentBoost(environment);
+            int requestedAmount = (int) (baseAmount * source.storage().composition(color));
+            requestedAmount = (int) (requestedAmount / relativeMass);
+            requestedAmount = (int) (requestedAmount * color.ascentBoost(environment));
 
-            int movedAmount = Math.min(sourceAmount, (int) Math.floor(requestedAmount));
+            int movedAmount = Math.min(sourceAmount, requestedAmount);
             if (movedAmount > 0) {
                 requested.set(color, movedAmount);
             }

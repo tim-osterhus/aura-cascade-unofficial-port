@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "N": "aura:aura_node",
-    "O": "aura:arcane_ingot_orange"
+    "N": {
+      "item": "aura:aura_node"
+    },
+    "O": {
+      "item": "aura:arcane_ingot_orange"
+    }
   },
   "pattern": [
     " O ",

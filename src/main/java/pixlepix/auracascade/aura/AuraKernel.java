@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import pixlepix.auracascade.parity.AuraColor;
@@ -57,10 +58,21 @@ public final class AuraKernel {
         Map<BlockPos, AuraNodeState> connectedNodes,
         AuraTransferContext context
     ) {
+        return planNaturalTransfers(origin, source, connectedNodes, context, targetPos -> true);
+    }
+
+    public static Map<BlockPos, AuraStorage> planNaturalTransfers(
+        BlockPos origin,
+        AuraNodeState source,
+        Map<BlockPos, AuraNodeState> connectedNodes,
+        AuraTransferContext context,
+        Predicate<BlockPos> canTransferPosition
+    ) {
         Objects.requireNonNull(origin, "origin");
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(connectedNodes, "connectedNodes");
         Objects.requireNonNull(context, "context");
+        Objects.requireNonNull(canTransferPosition, "canTransferPosition");
 
         if (!context.naturalFlowEnabled() || connectedNodes.isEmpty()) {
             return Map.of();
@@ -69,7 +81,7 @@ public final class AuraKernel {
         LinkedHashMap<BlockPos, Double> weights = new LinkedHashMap<>();
         double totalWeight = context.passiveRetentionWeight();
         for (BlockPos targetPos : connectedNodes.keySet()) {
-            if (targetPos.getY() > origin.getY()) {
+            if (targetPos.getY() > origin.getY() || !canTransferPosition.test(targetPos)) {
                 continue;
             }
             double weight = connectionWeight(origin, targetPos);
@@ -281,12 +293,31 @@ public final class AuraKernel {
             for (BlockPos downstreamTarget : entry.getValue()) {
                 if (cardinalDirection(nodePos, downstreamTarget).orElse(null) == transferDirection) {
                     currents.add(new AuraInducedCurrent(nodePos, downstreamTarget, transferDirection, orangeAmount));
-                    break;
                 }
             }
         }
 
         return currents;
+    }
+
+    public static OrangeBurstPlan planOrangeBurst(AuraStorage source, int requestedAmount, int opposingAmount) {
+        Objects.requireNonNull(source, "source");
+
+        int netAmount = requestedAmount - opposingAmount;
+        if (netAmount <= 0) {
+            return new OrangeBurstPlan(new AuraStorage(), opposingAmount - requestedAmount);
+        }
+
+        AuraStorage nonOrange = source.copy();
+        int storedOrange = nonOrange.get(AuraColor.ORANGE);
+        nonOrange.set(AuraColor.ORANGE, 0);
+        int totalAura = source.total();
+        if (totalAura <= 0) {
+            return new OrangeBurstPlan(new AuraStorage(), 0);
+        }
+
+        double legacyFactor = Math.min(1.0D, netAmount / (double) totalAura) - storedOrange;
+        return new OrangeBurstPlan(nonOrange.scaled(Math.max(0.0D, legacyFactor)), 0);
     }
 
     public static void applyPassiveTick(AuraNodeState state, AuraTickContext context) {
@@ -372,5 +403,11 @@ public final class AuraKernel {
             }
         }
         return count;
+    }
+
+    public record OrangeBurstPlan(AuraStorage transfer, int opposingRemainder) {
+        public OrangeBurstPlan {
+            Objects.requireNonNull(transfer, "transfer");
+        }
     }
 }

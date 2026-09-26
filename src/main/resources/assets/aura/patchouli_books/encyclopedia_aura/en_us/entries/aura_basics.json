@@ -1,0 +1,37 @@
+{
+  "name": "Aura Basics",
+  "category": "aura:aura_systems",
+  "icon": "aura:aura_node",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Eight Colors",
+      "text": "Nodes store colored Aura and exchange it along straight network links. White is steady; Black moves vertically; Orange moves horizontally and can induce current. Red, Yellow, Green, Blue, and Violet alter flow, weight, ascent, or decay."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weight and Ascent",
+      "text": "Yellow rises readily but periodically loses charge. Green's effective weight shifts by day and night. Blue rises more readily in rain and less in dry weather. Violet grows between lower and upper bounds, fades below its dissipation threshold, and clears above 2,600 stored units on a passive tick."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Natural Flow",
+      "text": "Each second, nodes divide eligible stored Aura among linked lower or same-height neighbors and their own reserve. A nearer link weighs (20 minus distance) squared; every regular node reserves weight 400. More links split the share. Aura moves only when source and neighbor differ by over 25, and each color obeys its direction rules."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Piston Storage",
+      "text": "Line up two nodes horizontally or vertically with cobblestone between them; a sticky piston moves it. Cobblestone blocks their Aura link; retract it to reconnect. Wait up to 200 ticks for links to refresh. This gates one route, letting a node retain Aura; other open links may still transfer it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Falling Power",
+      "text": "Falling Aura adds stored power below. A longer fall, greater transferred amount, and heavier color yield more; upward Pumps spend Aura to move it back up."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Read a Device",
+      "text": "Look at a Node, Pump, Consumer, or Vortex block to read its colored Aura, stored power, run time, progress, or receipt."
+    }
+  ]
+}

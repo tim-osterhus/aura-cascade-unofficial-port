@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.Objects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import pixlepix.auracascade.parity.AuraColor;
+import pixlepix.auracascade.util.NbtCompat;
 
 public final class AuraStorage {
     private static final String ENTRIES_TAG = "entries";
@@ -144,12 +146,12 @@ public final class AuraStorage {
 
     public static AuraStorage fromTag(CompoundTag tag) {
         AuraStorage storage = new AuraStorage();
-        ListTag entries = tag.getList(ENTRIES_TAG).orElseGet(ListTag::new);
+        ListTag entries = NbtCompat.getListOrEmpty(tag, ENTRIES_TAG, Tag.TAG_COMPOUND);
         for (int index = 0; index < entries.size(); index++) {
-            CompoundTag entry = entries.getCompound(index).orElseGet(CompoundTag::new);
-            String colorId = entry.getString(COLOR_TAG).orElse(AuraColor.WHITE.id());
+            CompoundTag entry = entries.getCompound(index);
+            String colorId = NbtCompat.getStringOr(entry, COLOR_TAG, AuraColor.WHITE.id());
             AuraColor color = AuraColor.byId(colorId);
-            storage.set(color, entry.getInt(AMOUNT_TAG).orElse(0));
+            storage.set(color, NbtCompat.getIntOr(entry, AMOUNT_TAG, 0));
         }
         return storage;
     }

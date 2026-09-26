@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -18,12 +18,19 @@ import pixlepix.auracascade.parity.AuraColor;
 
 public final class AuraVortexRecipeCatalog {
     private static final String[] RESOURCE_PATHS = {
+        "data/aura/recipes/vortex/arcane_gem_white.json",
+        "data/aura/recipes/vortex/arcane_gem_black.json",
+        "data/aura/recipes/vortex/arcane_gem_orange.json",
+        "data/aura/recipes/vortex/arcane_gem_red.json",
+        "data/aura/recipes/vortex/arcane_gem_yellow.json",
+        "data/aura/recipes/vortex/arcane_gem_green.json",
+        "data/aura/recipes/vortex/arcane_gem_blue.json",
+        "data/aura/recipes/vortex/arcane_gem_violet.json",
         "data/aura/recipes/vortex/consumer_block_loot.json",
         "data/aura/recipes/vortex/consumer_block_spawn.json",
         "data/aura/recipes/vortex/kaleidoscopic_enchanter.json",
-        "data/aura/recipes/vortex/fluxing_node.json",
-        "data/aura/recipes/vortex/prismatic_processor.json",
-        "data/aura/recipes/vortex/ritual_nether.json"
+        "data/aura/recipes/vortex/ritual_nether.json",
+        "data/aura/recipes/vortex/ring_of_binding.json"
     };
 
     private static volatile List<AuraVortexRecipe> cachedRecipes;
@@ -94,7 +101,7 @@ public final class AuraVortexRecipeCatalog {
     }
 
     private static Item itemById(String id, String resourcePath) {
-        Item item = BuiltInRegistries.ITEM.getValue(Identifier.parse(id));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
         if (item == null || item == Items.AIR) {
             throw new IllegalStateException("Unknown item " + id + " in " + resourcePath);
         }

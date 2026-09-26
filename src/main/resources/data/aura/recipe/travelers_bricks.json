@@ -2,8 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "B": "minecraft:nether_bricks",
-    "I": "aura:arcane_ingot_black"
+    "B": {
+      "item": "minecraft:nether_bricks"
+    },
+    "I": {
+      "item": "aura:arcane_ingot_black"
+    }
   },
   "pattern": [
     "BBB",

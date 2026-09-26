@@ -1,0 +1,27 @@
+{
+  "name": "Enchanting",
+  "category": "aura:enchantments",
+  "icon": "aura:consumer_block_enchant",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Six Colors",
+      "text": "Red = temporary Silk Touch mining override and suppresses block XP. Orange multiplies harvestable-tool break speed by 1.15 per level. Yellow sets Fortune to its level on non-crop harvests."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Green, Blue, Violet",
+      "text": "Green fells up to 25 times its level in face-connected blocks of the same log type, counting the first. Blue pushes attacked targets by 0.5 per level along your yaw. Violet adds 0.5 per level to player-sourced outgoing damage."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pair Strength",
+      "text": "For two colors, pair strength is ceil(sqrt(level A x level B)), including two levels of the same color. See $(l:aura:enchant_matrix)Enchant Matrix$(/l) for every pairing, and $(l:aura:consumers_vortex)Consumers and Vortex$(/l) for Enchanter inputs."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Chance to Bind",
+      "text": "The first color level always lands. Later levels or colors succeed at three-quarters of the prior chance; taking one color beyond level four quarters the next chance. A failed attempt still consumes its crystal."
+    }
+  ]
+}

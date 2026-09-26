@@ -1,0 +1,37 @@
+{
+  "name": "Angelsteel Tools",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_axe_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Choose a Tool",
+      "text": "Open a focused recipe index for each Angelsteel tool family. See $(l:aura:arcane_progression)Arcane Progression$(/l) to advance ingots through tier 12."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Axes",
+      "text": "Browse $(l:aura:angelsteel_axes)Angelsteel Axes$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pickaxes",
+      "text": "Browse $(l:aura:angelsteel_pickaxes)Angelsteel Pickaxes$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shovels",
+      "text": "Browse $(l:aura:angelsteel_shovels)Angelsteel Shovels$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mining Gifts",
+      "text": "Match each tool to its block. Efficiency multiplies speed by 1.3 per level; Shatter triples it per level at hardness two or more; Disintegrate does so at hardness one or less. Fortune lends its buff level only when higher than the tool's for eligible non-crop drops. Swords gain no mining gifts."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tier Bonuses",
+      "text": "Each higher tier digs faster and grants two random bonus points among Efficiency, Fortune, Shatter, and Disintegrate. The tooltip shows the roll; bonus points appear when the tool first enters a server inventory."
+    }
+  ]
+}

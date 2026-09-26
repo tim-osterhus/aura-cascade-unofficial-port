@@ -1,0 +1,22 @@
+{
+  "name": "Ring Recipes",
+  "category": "aura:storage_gear",
+  "icon": "aura:ring_of_shattered_stone",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Recipe Index",
+      "text": "Recipe cards for this equipment role. Return to $(l:aura:accessory_loadout)Accessory Loadout$(/l)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ring of Binding",
+      "text": "The Ring of Binding uses four vortex pedestals. See $(l:aura:consumers_vortex)Consumers and Vortex$(/l) for its component and power requirements."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Shattered Stone Ring",
+      "recipe": "aura:ring_of_shattered_stone"
+    }
+  ]
+}

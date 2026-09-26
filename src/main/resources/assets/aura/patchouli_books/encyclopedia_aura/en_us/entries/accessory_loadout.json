@@ -1,0 +1,37 @@
+{
+  "name": "Accessory Loadout",
+  "category": "aura:storage_gear",
+  "icon": "aura:ring_of_shattered_stone",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Open the Menu",
+      "text": "Press B (default) to open the physical Accessories menu: Amulet, Ring, Ring, and Belt, in that order. Right-click an accessory to place it in the first empty matching slot; this does not swap."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Move Gear",
+      "text": "Use normal clicks or shift-click to move items between the four slots and your inventory. Right-click equip fails when the matching slot or both ring slots are full."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bind a Ring",
+      "text": "A Ring of Binding comes from four pedestals: Diamond Block (50,000 Blue), Obsidian (50,000 White), Gold Block (50,000 Yellow), and Redstone Block (50,000 Red). See $(l:aura:fairy_roles)Fairy Charms$(/l)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Amulet Recipes",
+      "text": "Browse $(l:aura:accessory_amulets)Amulet Recipes$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ring Recipes",
+      "text": "Browse $(l:aura:accessory_rings)Ring Recipes$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Belt Recipe",
+      "text": "Browse $(l:aura:accessory_belt)Belt Recipe$(/l)"
+    }
+  ]
+}

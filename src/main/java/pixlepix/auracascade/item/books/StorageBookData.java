@@ -8,6 +8,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import pixlepix.auracascade.util.NbtCompat;
 
 public final class StorageBookData {
     private static final String STORAGE_ENTRIES_TAG = "storageEntries";
@@ -27,6 +28,16 @@ public final class StorageBookData {
             }
         }
         return copies;
+    }
+
+    public static List<Entry> detailedEntries(ItemStack bookStack) {
+        ArrayList<Entry> entries = new ArrayList<>();
+        for (StoredEntry storedEntry : storedEntries(bookStack)) {
+            if (!storedEntry.stack().isEmpty() && storedEntry.count() > 0) {
+                entries.add(new Entry(storedEntry.stack(), storedEntry.count()));
+            }
+        }
+        return List.copyOf(entries);
     }
 
     public static int storedTypes(ItemStack bookStack) {
@@ -111,6 +122,51 @@ public final class StorageBookData {
         return ItemStack.EMPTY;
     }
 
+    public static ItemStack extract(ItemStack bookStack, ItemStack target, int requestedCount) {
+        if (bookStack.isEmpty() || target.isEmpty() || requestedCount <= 0) {
+            return ItemStack.EMPTY;
+        }
+
+        ArrayList<StoredEntry> storedEntries = new ArrayList<>(storedEntries(bookStack));
+        ItemStack extracted = ItemStack.EMPTY;
+        int remainingRequested = requestedCount;
+        for (int index = 0; index < storedEntries.size(); index++) {
+            StoredEntry storedEntry = storedEntries.get(index);
+            if (storedEntry.stack().isEmpty()
+                || !ItemStack.isSameItemSameComponents(storedEntry.stack(), target)) {
+                continue;
+            }
+
+            int extractedCount = Math.min(storedEntry.count(), remainingRequested);
+            if (extractedCount <= 0) {
+                continue;
+            }
+
+            if (extracted.isEmpty()) {
+                extracted = storedEntry.stack().copyWithCount(extractedCount);
+            } else {
+                extracted.grow(extractedCount);
+            }
+            int remaining = storedEntry.count() - extractedCount;
+            if (remaining == 0) {
+                storedEntries.remove(index);
+                index--;
+            } else {
+                storedEntries.set(index, new StoredEntry(storedEntry.stack(), remaining));
+            }
+            remainingRequested -= extractedCount;
+            if (remainingRequested == 0) {
+                break;
+            }
+        }
+        if (extracted.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
+        storeEntries(bookStack, storedEntries);
+        return extracted;
+    }
+
     public static String summary(ItemStack bookStack) {
         return storedTypes(bookStack) + " types / " + storedItemCount(bookStack) + " items";
     }
@@ -118,7 +174,7 @@ public final class StorageBookData {
     private static List<StoredEntry> storedEntries(ItemStack bookStack) {
         CustomData customData = bookStack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         CompoundTag tag = customData.copyTag();
-        return tag.read(STORAGE_ENTRIES_TAG, STORED_ENTRY_CODEC.listOf()).orElse(List.of());
+        return NbtCompat.read(tag, STORAGE_ENTRIES_TAG, STORED_ENTRY_CODEC.listOf()).orElse(List.of());
     }
 
     private static List<ItemStack> representativeStacks(List<StoredEntry> storedEntries) {
@@ -134,7 +190,7 @@ public final class StorageBookData {
             if (storedEntries.isEmpty()) {
                 tag.remove(STORAGE_ENTRIES_TAG);
             } else {
-                tag.store(STORAGE_ENTRIES_TAG, STORED_ENTRY_CODEC.listOf(), storedEntries);
+                NbtCompat.store(tag, STORAGE_ENTRIES_TAG, STORED_ENTRY_CODEC.listOf(), storedEntries);
             }
         });
     }
@@ -143,6 +199,18 @@ public final class StorageBookData {
         private StoredEntry {
             stack = stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
             count = Math.max(0, count);
+        }
+    }
+
+    public record Entry(ItemStack stack, int count) {
+        public Entry {
+            stack = stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
+            count = Math.max(0, count);
+        }
+
+        @Override
+        public ItemStack stack() {
+            return stack.copy();
         }
     }
 }

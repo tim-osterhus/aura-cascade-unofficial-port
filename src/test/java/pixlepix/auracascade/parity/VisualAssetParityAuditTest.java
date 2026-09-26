@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import pixlepix.auracascade.support.TestMinecraftBootstrap;
+import pixlepix.auracascade.client.AuraItemModels;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -85,6 +86,59 @@ final class VisualAssetParityAuditTest {
                 assertAuraTexturesResolve(jsonPath, json.getAsJsonObject());
             }
         }
+    }
+
+    @Test
+    void angelsteelCursesHaveLocalizedNamesAndOriginalTextureSprites() throws IOException {
+        var sources = readJson(Path.of("src/main/resources/assets/minecraft/atlases/mob_effects.json"))
+            .getAsJsonObject().getAsJsonArray("sources");
+        var language = readJson(ASSET_ROOT.resolve("lang/en_us.json")).getAsJsonObject();
+        Set<String> found = new TreeSet<>();
+        for (var element : sources) {
+            var source = element.getAsJsonObject();
+            assertEquals("single", source.get("type").getAsString());
+            String sprite = source.get("sprite").getAsString();
+            assertTrue(found.add(sprite));
+            assertTrue(language.has("effect." + sprite.replace(':', '.')));
+            String texture = source.get("resource").getAsString().replace("aura:", "");
+            assertTrue(Files.isRegularFile(ASSET_ROOT.resolve("textures/" + texture + ".png")));
+        }
+        assertEquals(Set.of("aura:angelsteel_curse_red", "aura:angelsteel_curse_orange",
+            "aura:angelsteel_curse_yellow", "aura:angelsteel_curse_green",
+            "aura:angelsteel_curse_blue", "aura:angelsteel_curse_violet"), found);
+    }
+
+    @Test
+    void everyAngelsteelDegreeSelectsTheSixOriginalAttunementTextures() throws IOException {
+        List<AuraColor> colors = List.of(AuraColor.RED, AuraColor.ORANGE, AuraColor.YELLOW,
+            AuraColor.GREEN, AuraColor.BLUE, AuraColor.VIOLET);
+        assertEquals(0.0F, AuraItemModels.attunementValue(AuraColor.WHITE));
+        assertEquals(0.0F, AuraItemModels.attunementValue(AuraColor.BLACK));
+        for (int degree = 1; degree <= 12; degree++) {
+            var overrides = readJson(ASSET_ROOT.resolve("models/item/angelsteel_sword_" + degree + ".json"))
+                .getAsJsonObject().getAsJsonArray("overrides");
+            assertEquals(colors.size(), overrides.size(), "degree " + degree);
+            for (int index = 0; index < colors.size(); index++) {
+                AuraColor color = colors.get(index);
+                JsonObject override = overrides.get(index).getAsJsonObject();
+                assertEquals(AuraItemModels.attunementValue(color),
+                    override.getAsJsonObject("predicate").get("aura:attunement").getAsFloat());
+                assertEquals("aura:item/angelsteel_sword_" + color.id(), override.get("model").getAsString());
+                JsonObject model = readJson(ASSET_ROOT.resolve("models/item/angelsteel_sword_" + color.id() + ".json"))
+                    .getAsJsonObject();
+                assertEquals("aura:item/angel_sword_" + color.id(),
+                    model.getAsJsonObject("textures").get("layer0").getAsString());
+            }
+        }
+    }
+
+    @Test
+    void temporaryFairyLightHasAnExplicitInvisibleModel() throws IOException {
+        JsonObject state = readJson(ASSET_ROOT.resolve("blockstates/fairy_torch.json")).getAsJsonObject();
+        assertEquals("aura:block/fairy_torch",
+            state.getAsJsonObject("variants").getAsJsonObject("").get("model").getAsString());
+        JsonObject model = readJson(ASSET_ROOT.resolve("models/block/fairy_torch.json")).getAsJsonObject();
+        assertTrue(model.getAsJsonArray("elements").isEmpty());
     }
 
     @Test

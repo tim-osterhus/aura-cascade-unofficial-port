@@ -1,0 +1,87 @@
+{
+  "name": "Aura Colors",
+  "category": "aura:aura_systems",
+  "icon": "aura:aura_crystal_white",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Color in Motion",
+      "text": "Most Aura follows the common weight and flow. Black travels vertically only; Orange travels horizontally only and can set nearby nodes into a current."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "White",
+      "text": "White follows the ordinary weight and ascent rules, and keeps its charge between passive ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Black",
+      "text": "Black has zero effective weight. It travels vertically only, cannot be lifted by a pump, and does not generate power as it falls."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Orange",
+      "text": "Orange has zero effective weight and travels horizontally only. Its transfer induces current in nearby Aura Nodes along that direction."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Red",
+      "text": "Red Aura catches TNT within three blocks just before it bursts and Creepers at the brink of detonation. TNT lends a 200,000 Aura lift budget; each Creeper lends 50,000. Linked nodes above divide the budget by their rise, capped by the source node's stored Red Aura. The explosion effect is visual only."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Yellow",
+      "text": "Yellow doubles its ascent boost, then loses stored charge during passive ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Green",
+      "text": "Green weighs twice the usual amount by day and half as much at night, changing its lift and falling-power balance."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Blue",
+      "text": "Rain gives Blue a fourfold ascent boost; in dry weather its ascent factor falls to one half."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Violet",
+      "text": "Violet grows in node storage, faster from smaller reserves. It dissipates at 25 or less and clears above 2,600."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Black Crystal",
+      "recipe": "aura:aura_crystal_black"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Crystal",
+      "recipe": "aura:aura_crystal_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Crystal",
+      "recipe": "aura:aura_crystal_orange"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Yellow Crystal",
+      "recipe": "aura:aura_crystal_yellow"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Crystal",
+      "recipe": "aura:aura_crystal_green"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Crystal",
+      "recipe": "aura:aura_crystal_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Crystal",
+      "recipe": "aura:aura_crystal_violet"
+    }
+  ]
+}

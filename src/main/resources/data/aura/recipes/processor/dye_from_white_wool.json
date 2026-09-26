@@ -1,0 +1,8 @@
+{
+  "type": "aura:processor",
+  "prismatic_only": true,
+  "ingredients": [
+    { "item": "minecraft:white_wool", "count": 1 }
+  ],
+  "result": { "item": "minecraft:bone_meal", "count": 1 }
+}

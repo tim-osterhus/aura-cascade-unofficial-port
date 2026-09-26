@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "package": "pixlepix.auracascade.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ServerExplosionMixin",
+    "CreeperAccessor",
+    "KaleidoscopicDamageMixin",
+    "KaleidoscopicMiningMixin",
+    "KaleidoscopicLootMixin",
+    "KaleidoscopicOreDropsMixin",
+    "FairyNaturalSpawnMixin",
+    "FairyMiningSpeedMixin",
+    "FairyFallDistanceMixin",
+    "ForbiddenFruitFinishMixin",
+    "ConsumerItemLifetimeMixin",
+    "PortableRedHoleLifetimeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

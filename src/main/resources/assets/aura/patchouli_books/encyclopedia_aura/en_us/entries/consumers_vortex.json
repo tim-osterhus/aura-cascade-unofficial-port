@@ -1,0 +1,77 @@
+{
+  "name": "Consumers and Vortex",
+  "category": "aura:aura_systems",
+  "icon": "aura:consumer_block_ore",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Stored Power",
+      "text": "Falling Aura can add stored power to its receiving network block. Consumers draw that separate pool from adjacent blocks even when no work can be completed. Colored Aura storage is not their fuel."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Consumer Readout",
+      "text": "Progress shows current / maximum work. Power per progress is the base step cost. Last Power is the stored-power total after a receipt, not the transfer amount; Stored Power is the current remainder."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Work Costs I",
+      "text": "Each pair is maximum progress / base power per progress: Processor 60 / 150; Prismatic Processor 9 / 1,000; Smelter 3 / 190; Grower 2 / 50."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Work Costs II",
+      "text": "Fisher 200 / 200; Brewer 25 / 500; Colorer 12 / 50; Synthesizer 50 / 10,000; Enchanter 1,000 / 500. The first number is the progress limit; the second is base power per step."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Enchanter Inputs",
+      "text": "Drop a supported weapon or digger tool and one colored Arcane Ingot near the Enchanter. Its color shapes the gift; it is spent on every attempt, whether the enchantment succeeds or fails. See $(l:aura:kaleidoscopic_enchantments)Enchanting$(/l) and $(l:aura:enchant_matrix)Enchant Matrix$(/l) for color effects."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Work Rhythm",
+      "text": "Work can advance twice per second; idle cycles still spend power. Within one update, each step costs double the last: two steps cost 3 base units, three 7, four 15. The ladder resets next update; only a quarter remains near cycle's end. The Monitor reports readiness; it does not gate progress."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Machine Workflows",
+      "text": "Read machine instructions in $(l:aura:consumer_fieldwork)Consumer Workflows$(/l). Wool-to-Ingot, Wool Colorant, and Prism guidance is in $(l:aura:arcane_progression)Arcane Progression$(/l); this entry keeps shared costs and vortex setup together."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tagged Ore",
+      "text": "Drop an item from c:ores/<material> near a Processor. If c:dusts/<material> contains an output, one ore yields two dust here or three in the Prismatic Processor. Catalog recipes take priority; without a matching dust tag, the ore stays untouched."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Place a Vortex",
+      "text": "Center the controller with one pedestal at each cardinal side. Drop one recipe item above each pedestal; it captures one. Item positions are interchangeable, but all four components must match a recipe."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Falling Receipts",
+      "text": "Send falling Aura into each pedestal to build its recipe receipt; pedestals do not spend their stored Aura. Colored costs require that color. A White requirement is a wildcard and accepts power from any falling-power color."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Complete the Infusion",
+      "text": "Match one component at each pedestal. Watch each received / required receipt; when all four meet their costs, the controller consumes the items and creates the result. There is no extra progress timer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Enchanter and Looter",
+      "text": "Use four Black Arcane Gems for the Kaleidoscopic Enchanter: 250,000 White power at each pedestal. Four Yellow Gems make a Cascading Looter: 100,000 Yellow power at each. See $(l:aura:arcane_progression)Arcane Progression$(/l) for gem recipes."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Spawner and Nether",
+      "text": "Four Violet Gems make a Cascading Spawner at 100,000 Violet power each. Four Red Gems make the Ritual of the Nether at 100,000 Red power each. White is a wildcard only where White is the listed requirement."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Synthesizer",
+      "text": "Connect a stored-power network block beside the Cascading Synthesizer. It needs no dropped input and emits a first-tier Angelsteel Ingot on completion. See $(l:aura:arcane_progression)Arcane Progression$(/l) for the next steps."
+    }
+  ]
+}

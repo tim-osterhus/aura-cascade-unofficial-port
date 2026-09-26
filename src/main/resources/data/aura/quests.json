@@ -1,0 +1,100 @@
+[
+  {
+    "id": "crystals",
+    "title": "Aura Crystals",
+    "goal": "aura:aura_crystal_white",
+    "reward": "aura:aura_crystal_white",
+    "reward_count": 64
+  },
+  {
+    "id": "nodes",
+    "title": "Aura Nodes",
+    "goal": "aura:aura_node",
+    "reward": "aura:aura_node",
+    "reward_count": 16
+  },
+  {
+    "id": "pumps",
+    "title": "Aura Pumps",
+    "goal": "aura:aura_node_pump",
+    "reward": "minecraft:stick",
+    "reward_count": 64
+  },
+  {
+    "id": "furnace",
+    "title": "Aura Furnace",
+    "goal": "aura:consumer_block_furnace",
+    "reward": "aura:aura_crystal_white",
+    "reward_count": 64
+  },
+  {
+    "id": "red_crystals",
+    "title": "Red Aura",
+    "goal": "aura:aura_crystal_red",
+    "reward": "minecraft:tnt",
+    "reward_count": 4
+  },
+  {
+    "id": "processor",
+    "title": "Aura Processor",
+    "goal": "aura:consumer_block_ore",
+    "reward": "minecraft:coal",
+    "reward_count": 8
+  },
+  {
+    "id": "dye",
+    "title": "Aura Colorer",
+    "goal": "aura:consumer_block_dye",
+    "reward": "minecraft:white_wool",
+    "reward_count": 32
+  },
+  {
+    "id": "arcane_ingot",
+    "title": "Arcane Ingots",
+    "goal": "aura:arcane_ingot_white",
+    "reward": "aura:arcane_ingot_white",
+    "reward_count": 15
+  },
+  {
+    "id": "vortex_infusion",
+    "title": "Vortex Infusion",
+    "goal": "aura:aura_node_crafting_center",
+    "reward": "aura:aura_node_crafting_pedestal",
+    "reward_count": 4
+  },
+  {
+    "id": "arcane_gem",
+    "title": "Arcane Gems",
+    "goal": "aura:arcane_gem_white",
+    "reward": "aura:arcane_gem_white",
+    "reward_count": 8
+  },
+  {
+    "id": "arcane_prism",
+    "title": "Arcane Prism",
+    "goal": "aura:arcane_prism",
+    "reward": "aura:arcane_prism",
+    "reward_count": 1
+  },
+  {
+    "id": "synthesizer",
+    "title": "Aura Synthesizer",
+    "goal": "aura:consumer_block_angel",
+    "reward": "aura:aura_crystal_white",
+    "reward_count": 64
+  },
+  {
+    "id": "angelsteel",
+    "title": "Angelsteel",
+    "goal": "aura:angelsteel_ingot_2",
+    "reward": "aura:angelsteel_ingot_1",
+    "reward_count": 15
+  },
+  {
+    "id": "fairies",
+    "title": "Fairy Binding",
+    "goal": "aura:ring_of_binding",
+    "reward": "aura:fairy_charm",
+    "reward_count": 1
+  }
+]

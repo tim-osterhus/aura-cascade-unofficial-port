@@ -1,0 +1,22 @@
+{
+  "name": "Travel Charms",
+  "category": "aura:fairies",
+  "icon": "aura:fairy_charm",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Charm Recipes",
+      "text": "Recipe index. For binding and release controls, return to $(l:aura:fairy_roles)Fairy Charms$(/l)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Glider's Grace",
+      "text": "Wear the Ring of Binding: nearby Gliders bound to it halve your fall distance, and each companion halves it again. A long enough fall can still hurt."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Glider Charm",
+      "recipe": "aura:fairy_charm_glider"
+    }
+  ]
+}

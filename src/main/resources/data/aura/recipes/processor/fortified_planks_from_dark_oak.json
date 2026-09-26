@@ -1,0 +1,8 @@
+{
+  "type": "aura:processor",
+  "ingredients": [
+    { "item": "minecraft:end_stone", "count": 1 },
+    { "item": "minecraft:dark_oak_planks", "count": 1 }
+  ],
+  "result": { "item": "aura:fortified_planks", "count": 1 }
+}

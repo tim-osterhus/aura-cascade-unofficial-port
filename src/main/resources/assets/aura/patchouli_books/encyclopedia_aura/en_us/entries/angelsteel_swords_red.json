@@ -1,0 +1,72 @@
+{
+  "name": "Red Angelsteel Swords",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_sword_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Twelve Tiers",
+      "text": "Twelve Red sword patterns. Return to $(l:aura:angelsteel_swords)Angelsteel Swords$(/l) or see $(l:aura:arcane_progression)Arcane Progression$(/l) for ingot tiers."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 1 Sword",
+      "recipe": "aura:angelsteel_sword_1_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 2 Sword",
+      "recipe": "aura:angelsteel_sword_2_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 3 Sword",
+      "recipe": "aura:angelsteel_sword_3_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 4 Sword",
+      "recipe": "aura:angelsteel_sword_4_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 5 Sword",
+      "recipe": "aura:angelsteel_sword_5_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 6 Sword",
+      "recipe": "aura:angelsteel_sword_6_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 7 Sword",
+      "recipe": "aura:angelsteel_sword_7_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 8 Sword",
+      "recipe": "aura:angelsteel_sword_8_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 9 Sword",
+      "recipe": "aura:angelsteel_sword_9_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 10 Sword",
+      "recipe": "aura:angelsteel_sword_10_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 11 Sword",
+      "recipe": "aura:angelsteel_sword_11_red"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Tier 12 Sword",
+      "recipe": "aura:angelsteel_sword_12_red"
+    }
+  ]
+}

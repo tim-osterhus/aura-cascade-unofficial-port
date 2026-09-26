@@ -1,15 +1,21 @@
 package pixlepix.auracascade.item;
 
 import java.util.Arrays;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import pixlepix.auracascade.AuraCascadeMod;
+import pixlepix.auracascade.util.NbtCompat;
 
 public final class AngelsteelToolHelper {
     public static final int MAX_DEGREE = 12;
@@ -17,20 +23,20 @@ public final class AngelsteelToolHelper {
     public static final String NBT_AURA_NAME = "aura";
     public static final TagKey<net.minecraft.world.item.Item> REPAIR_ITEMS = TagKey.create(
         net.minecraft.core.registries.Registries.ITEM,
-        net.minecraft.resources.Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, "angelsteel_ingots")
+        ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, "angelsteel_ingots")
     );
 
-    private static final ToolMaterial[] MATERIALS = new ToolMaterial[MAX_DEGREE];
+    private static final Tier[] MATERIALS = new Tier[MAX_DEGREE];
 
     static {
         for (int degreeIndex = 0; degreeIndex < MAX_DEGREE; degreeIndex++) {
-            MATERIALS[degreeIndex] = new ToolMaterial(
+            MATERIALS[degreeIndex] = new AngelsteelTier(
                 BlockTags.INCORRECT_FOR_NETHERITE_TOOL,
                 10,
                 (float) Math.floor(5.0D * Math.pow(1.15D, degreeIndex)),
                 (float) Math.floor(3.0D * Math.pow(1.15D, degreeIndex)),
                 10,
-                REPAIR_ITEMS
+                Ingredient.of(REPAIR_ITEMS)
             );
         }
     }
@@ -38,7 +44,7 @@ public final class AngelsteelToolHelper {
     private AngelsteelToolHelper() {
     }
 
-    public static ToolMaterial material(int degreeIndex) {
+    public static Tier material(int degreeIndex) {
         return MATERIALS[clampDegree(degreeIndex)];
     }
 
@@ -62,7 +68,7 @@ public final class AngelsteelToolHelper {
     public static int[] getBuffs(ItemStack stack) {
         CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         CompoundTag tag = customData.copyTag();
-        int[] raw = tag.getIntArray(NBT_BUFF_ARRAY_NAME).orElse(new int[0]);
+        int[] raw = NbtCompat.getIntArrayOr(tag, NBT_BUFF_ARRAY_NAME, new int[0]);
         if (raw.length == 4) {
             return raw;
         }
@@ -73,31 +79,103 @@ public final class AngelsteelToolHelper {
 
     public static void ensureBuffs(ItemStack stack, int degreeIndex, net.minecraft.util.RandomSource random) {
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
-            int[] existing = tag.getIntArray(NBT_BUFF_ARRAY_NAME).orElse(new int[0]);
+            int[] existing = NbtCompat.getIntArrayOr(tag, NBT_BUFF_ARRAY_NAME, new int[0]);
             if (existing.length != 4) {
                 tag.putIntArray(NBT_BUFF_ARRAY_NAME, randomBuffSet(degreeIndex, random));
             }
         });
     }
 
-    public static float destroySpeedBonus(ItemStack stack, net.minecraft.world.level.block.state.BlockState state) {
+    public static boolean isAngelsteelMiningTool(ItemStack stack) {
+        return stack.getItem() instanceof AngelsteelToolItem item && item.supportsMiningBuffs();
+    }
+
+    public static float destroySpeedMultiplier(int[] buffs, float hardness, boolean correctTool) {
+        if (!correctTool) {
+            return 1.0F;
+        }
+        double multiplier = Math.pow(1.3D, Math.max(0, buffs[0]));
+        if (hardness <= 1.0F) {
+            multiplier *= Math.pow(3.0D, Math.max(0, buffs[3]));
+        }
+        if (hardness >= 2.0F) {
+            multiplier *= Math.pow(3.0D, Math.max(0, buffs[2]));
+        }
+        return (float) multiplier;
+    }
+
+    public static float destroySpeedMultiplier(ItemStack stack, net.minecraft.world.level.block.state.BlockState state) {
+        if (!isAngelsteelMiningTool(stack)) {
+            return 1.0F;
+        }
         int[] buffs = getBuffs(stack);
-        float bonus = buffs[0] * 0.75F;
-        float hardness = state.getDestroySpeed(EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO);
-        if (hardness > 2.0F) {
-            bonus += buffs[2] * 0.85F;
-        }
-        if (hardness >= 0.0F && hardness < 1.0F) {
-            bonus += buffs[3] * 0.85F;
-        }
-        return bonus;
+        float hardness = state.getDestroySpeed(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO);
+        return destroySpeedMultiplier(buffs, hardness, stack.isCorrectToolForDrops(state));
+    }
+
+    public static int fortuneLevelToApply(int buffFortune, int vanillaFortune, boolean correctTool, boolean crop) {
+        return correctTool && !crop && buffFortune > vanillaFortune ? buffFortune : 0;
     }
 
     public static int fortuneLevel(ItemStack stack) {
         return getBuffs(stack)[1];
     }
 
+    public static ItemStack dropFortuneTool(ItemStack stack, BlockState state, Holder<Enchantment> fortune) {
+        if (!isAngelsteelMiningTool(stack)) {
+            return stack;
+        }
+        int level = fortuneLevelToApply(fortuneLevel(stack), stack.getEnchantments().getLevel(fortune),
+            stack.isCorrectToolForDrops(state), state.getBlock() instanceof CropBlock);
+        if (level <= 0) {
+            return stack;
+        }
+        // Drop-local enchantment only: recursive breaks must never mutate the held tool.
+        ItemStack lootTool = stack.copy();
+        lootTool.enchant(fortune, level);
+        return lootTool;
+    }
+
     public static int totalBuffPoints(ItemStack stack) {
         return Arrays.stream(getBuffs(stack)).sum();
+    }
+
+    private record AngelsteelTier(
+        TagKey<net.minecraft.world.level.block.Block> incorrectBlocksForDrops,
+        int uses,
+        float speed,
+        float attackDamageBonus,
+        int enchantmentValue,
+        Ingredient repairIngredient
+    ) implements Tier {
+        @Override
+        public TagKey<net.minecraft.world.level.block.Block> getIncorrectBlocksForDrops() {
+            return incorrectBlocksForDrops;
+        }
+
+        @Override
+        public int getUses() {
+            return uses;
+        }
+
+        @Override
+        public float getSpeed() {
+            return speed;
+        }
+
+        @Override
+        public float getAttackDamageBonus() {
+            return attackDamageBonus;
+        }
+
+        @Override
+        public int getEnchantmentValue() {
+            return enchantmentValue;
+        }
+
+        @Override
+        public Ingredient getRepairIngredient() {
+            return repairIngredient;
+        }
     }
 }

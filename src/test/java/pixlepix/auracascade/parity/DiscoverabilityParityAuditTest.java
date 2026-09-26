@@ -7,9 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
-import pixlepix.auracascade.lexicon.EncyclopediaAuraContent;
 import pixlepix.auracascade.support.TestMinecraftBootstrap;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -36,21 +34,15 @@ final class DiscoverabilityParityAuditTest {
 
     @Test
     void guidebookLocalizationAndParityNotesAgreeOnDiscoverabilityAndStorageBookshelfStory() throws IOException {
-        TestMinecraftBootstrap.ensureBootstrapped();
-
-        String guidebook = EncyclopediaAuraContent.createBook(null)
-            .getPages(false)
-            .stream()
-            .map(page -> page.getString())
-            .collect(Collectors.joining("\n"));
+        String guidebook = readGuideEntries();
         JsonObject lang = readJson(Path.of("src/main/resources/assets/aura/lang/en_us.json"));
         String portingNotes = Files.readString(Path.of("PORTING_NOTES.md"), StandardCharsets.UTF_8);
 
         assertAll(
-            () -> assertEquals("Aura Cascade", lang.get("itemGroup.aura").getAsString()),
+            () -> assertEquals("Aura Cascade Reimagined", lang.get("itemGroup.aura").getAsString()),
             () -> assertEquals("Created a Storage Bookshelf with %s", lang.get("message.aura.storage_bookshelf_created").getAsString()),
             () -> assertTrue(guidebook.contains("Everything with an item form stays in the Aura creative tab")),
-            () -> assertTrue(guidebook.contains("conversion-only block")),
+            () -> assertTrue(guidebook.contains("conversion-only Storage Bookshelf")),
             () -> assertTrue(portingNotes.contains("BlockStorageBookshelf.shouldDisplayInTab()")),
             () -> assertTrue(portingNotes.contains("ItemStorageBook.shouldDisplayInTab()")),
             () -> assertTrue(portingNotes.contains("creative tab now keeps every registered Aura item form reachable")),
@@ -60,5 +52,16 @@ final class DiscoverabilityParityAuditTest {
 
     private static JsonObject readJson(Path path) throws IOException {
         return JsonParser.parseString(Files.readString(path, StandardCharsets.UTF_8)).getAsJsonObject();
+    }
+
+    private static String readGuideEntries() throws IOException {
+        Path entries = Path.of("src/main/resources/assets/aura/patchouli_books/encyclopedia_aura/en_us/entries");
+        StringBuilder guidebook = new StringBuilder();
+        try (var paths = Files.list(entries)) {
+            for (Path path : paths.filter(file -> file.getFileName().toString().endsWith(".json")).sorted().toList()) {
+                guidebook.append(Files.readString(path, StandardCharsets.UTF_8)).append('\n');
+            }
+        }
+        return guidebook.toString();
     }
 }

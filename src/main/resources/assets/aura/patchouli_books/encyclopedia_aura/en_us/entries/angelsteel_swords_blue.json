@@ -1,0 +1,72 @@
+{
+  "name": "Blue Swords",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_sword_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Twelve Tiers",
+      "text": "Twelve Blue sword patterns. Return to $(l:aura:angelsteel_swords)Angelsteel Swords$(/l) or see $(l:aura:arcane_progression)Arcane Progression$(/l) for ingot tiers."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 1 Sword",
+      "recipe": "aura:angelsteel_sword_1_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 2 Sword",
+      "recipe": "aura:angelsteel_sword_2_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 3 Sword",
+      "recipe": "aura:angelsteel_sword_3_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 4 Sword",
+      "recipe": "aura:angelsteel_sword_4_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 5 Sword",
+      "recipe": "aura:angelsteel_sword_5_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 6 Sword",
+      "recipe": "aura:angelsteel_sword_6_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 7 Sword",
+      "recipe": "aura:angelsteel_sword_7_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 8 Sword",
+      "recipe": "aura:angelsteel_sword_8_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 9 Sword",
+      "recipe": "aura:angelsteel_sword_9_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 10 Sword",
+      "recipe": "aura:angelsteel_sword_10_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 11 Sword",
+      "recipe": "aura:angelsteel_sword_11_blue"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Tier 12 Sword",
+      "recipe": "aura:angelsteel_sword_12_blue"
+    }
+  ]
+}

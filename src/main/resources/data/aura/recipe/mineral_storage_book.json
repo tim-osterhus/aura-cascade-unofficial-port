@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "aura:basic_storage_book",
-    "minecraft:iron_block",
-    "aura:arcane_gem_orange"
+    {
+      "item": "aura:basic_storage_book"
+    },
+    {
+      "item": "minecraft:iron_block"
+    },
+    {
+      "item": "aura:arcane_gem_orange"
+    }
   ],
   "result": {
     "id": "aura:mineral_storage_book",

@@ -1,0 +1,52 @@
+{
+  "name": "Work Charms",
+  "category": "aura:fairies",
+  "icon": "aura:fairy_charm",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Charm Recipes",
+      "text": "Fetcher brings nearby item drops to you. Stealer sends a nearby player's held item to your feet. Baiter may summon a cow, chicken, pig, or sheep; Trainer may release five XP. Bind with the Ring of Binding."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Their Small Services",
+      "text": "Fetcher moves drops within four blocks of itself to you after pickup delay ends. Stealer checks players within two blocks every 200 ticks, dropping a held stack at your feet. Baiter rolls 1-in-3600 per tick for a cow, chicken, pig, or sheep. Trainer rolls 1-in-1,200 per tick for five XP."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ready Hands",
+      "text": "Every three ticks, a Breeder finds the first ready adult animal within one block and makes it eager to breed with you. With the Binding Ring worn, nearby Diggers compound your breaking speed in 1.08 steps, up to fifteen steps."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Stealer Charm",
+      "recipe": "aura:fairy_charm_stealer"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Fetcher Charm",
+      "recipe": "aura:fairy_charm_fetcher"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Baiter Charm",
+      "recipe": "aura:fairy_charm_baiter"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Breeder Charm",
+      "recipe": "aura:fairy_charm_breeder"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Digger Charm",
+      "recipe": "aura:fairy_charm_digger"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Training Charm",
+      "recipe": "aura:fairy_charm_trainer"
+    }
+  ]
+}

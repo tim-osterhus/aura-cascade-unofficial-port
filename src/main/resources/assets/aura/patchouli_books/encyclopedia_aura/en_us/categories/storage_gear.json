@@ -1,0 +1,6 @@
+{
+  "name": "Storage and Gear",
+  "description": "Follow the $(l:aura:storage_network)bookshelf network$(/l) and learn the $(l:aura:gear_utility)tools and materials$(/l) that support it.",
+  "icon": "aura:basic_storage_book",
+  "sortnum": 2
+}

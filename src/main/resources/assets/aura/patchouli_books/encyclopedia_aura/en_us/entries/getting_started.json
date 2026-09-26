@@ -1,0 +1,25 @@
+{
+  "name": "Getting Started",
+  "category": "aura:walkthrough",
+  "icon": "aura:encyclopedia_aura",
+  "sortnum": 0,
+  "priority": true,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "A First Reference",
+      "text": "A White Aura Crystal begins this path. Combine one with a Book to assemble the Encyclopedia; its recipe follows. Use the crystal on a Node, then learn how a fueled Pump lifts Aura and falling Aura stores power."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Encyclopedia Aura",
+      "recipe": "aura:encyclopedia_aura",
+      "text": "The recipe yields one Encyclopedia Aura."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Choose a Path",
+      "text": "Begin with $(l:aura:white_aura_crystal)the White Aura Crystal$(/l), then continue to $(l:aura:first_aura_circuit)the first circuit$(/l). The $(l:aura:aura_systems)Aura Systems$(/l) section follows power through the network."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "type": "aura:processor",
+  "prismatic_only": true,
+  "ingredients": [
+    { "item": "minecraft:blue_wool", "count": 1 }
+  ],
+  "result": { "item": "minecraft:lapis_lazuli", "count": 1 }
+}

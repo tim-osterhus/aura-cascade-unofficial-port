@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "T": "minecraft:torch",
-    "P": "aura:aura_node_pump",
-    "Y": "aura:arcane_ingot_yellow"
+    "T": {
+      "item": "minecraft:torch"
+    },
+    "P": {
+      "item": "aura:aura_node_pump"
+    },
+    "Y": {
+      "item": "aura:arcane_ingot_yellow"
+    }
   },
   "pattern": [
     "TTT",

@@ -6,10 +6,18 @@
     " e "
   ],
   "key": {
-    "g": "aura:arcane_gem_black",
-    "p": "aura:arcane_prism",
-    "i": "aura:arcane_ingot_black",
-    "e": "minecraft:ender_eye"
+    "g": {
+      "item": "aura:arcane_gem_black"
+    },
+    "p": {
+      "item": "aura:arcane_prism"
+    },
+    "i": {
+      "item": "aura:arcane_ingot_black"
+    },
+    "e": {
+      "item": "minecraft:ender_eye"
+    }
   },
   "result": {
     "id": "aura:portable_black_hole",

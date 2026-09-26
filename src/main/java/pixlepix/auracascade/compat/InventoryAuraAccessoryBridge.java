@@ -1,6 +1,5 @@
 package pixlepix.auracascade.compat;
 
-import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -10,39 +9,53 @@ import pixlepix.auracascade.item.AuraAccessoryItem;
 final class InventoryAuraAccessoryBridge implements AuraAccessoryBridge {
     @Override
     public List<ItemStack> equipped(Player player, AuraAccessorySlot slot) {
-        ArrayList<ItemStack> equipped = new ArrayList<>();
-        for (ItemStack stack : inventoryStacks(player)) {
-            if (stack.isEmpty() || !(stack.getItem() instanceof AuraAccessoryItem accessoryItem) || accessoryItem.slot() != slot) {
-                continue;
-            }
-            if (AuraAccessoryState.isEquipped(stack, slot)) {
-                equipped.add(stack);
-            }
-        }
-        return List.copyOf(equipped);
+        return AuraAccessoryInventory.equipped(player, slot);
     }
 
     @Override
     public boolean isEquipped(Player player, ItemStack stack, AuraAccessorySlot slot) {
-        return AuraAccessoryState.isEquipped(stack, slot);
+        return equipped(player, slot).stream().anyMatch(equipped -> equipped == stack);
     }
 
     @Override
-    public void equip(Player player, ItemStack stack, AuraAccessorySlot slot) {
-        AuraAccessoryState.equipExclusive(slot, stack, inventoryStacks(player));
+    public boolean equip(Player player, ItemStack stack, AuraAccessorySlot slot) {
+        if (player.level().isClientSide() || player.isSpectator() || !player.isAlive()
+            || stack.isEmpty() || !(stack.getItem() instanceof AuraAccessoryItem item) || item.slot() != slot) {
+            return false;
+        }
+        Inventory inventory = player.getInventory();
+        boolean inInventory = false;
+        for (int index = 0; index < inventory.getContainerSize(); index++) {
+            if (inventory.getItem(index) == stack) {
+                inInventory = true;
+                break;
+            }
+        }
+        int target = AuraAccessoryInventory.firstEmpty(player, slot);
+        if (!inInventory || target < 0) {
+            return false;
+        }
+        AuraAccessoryInventory.set(player, target, stack.copyWithCount(1));
+        stack.shrink(1);
+        inventory.setChanged();
+        return true;
     }
 
     @Override
     public void unequip(Player player, ItemStack stack, AuraAccessorySlot slot) {
-        AuraAccessoryState.setEquipped(stack, slot, false);
-    }
-
-    private static List<ItemStack> inventoryStacks(Player player) {
-        Inventory inventory = player.getInventory();
-        ArrayList<ItemStack> stacks = new ArrayList<>(inventory.getContainerSize());
-        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
-            stacks.add(inventory.getItem(slot));
+        if (player.level().isClientSide() || player.isSpectator() || !player.isAlive()) {
+            return;
         }
-        return stacks;
+        for (int index = 0; index < AuraAccessoryInventory.SLOT_COUNT; index++) {
+            if (AuraAccessoryInventory.slotType(index) != slot || AuraAccessoryInventory.get(player, index) != stack) {
+                continue;
+            }
+            ItemStack removed = stack.copy();
+            AuraAccessoryInventory.set(player, index, ItemStack.EMPTY);
+            if (!player.getInventory().add(removed)) {
+                player.drop(removed, false);
+            }
+            return;
+        }
     }
 }

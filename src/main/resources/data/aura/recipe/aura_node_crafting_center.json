@@ -2,16 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "A": "minecraft:amethyst_shard",
-    "B": "minecraft:crying_obsidian",
-    "N": "aura:aura_node",
-    "P": "aura:arcane_prism",
-    "V": "aura:aura_node_crafting_pedestal"
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "R": {
+      "item": "aura:arcane_ingot_red"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
   },
   "pattern": [
-    "AVA",
-    "NPN",
-    "ABA"
+    "GGG",
+    "RDR",
+    "RRR"
   ],
   "result": {
     "count": 1,

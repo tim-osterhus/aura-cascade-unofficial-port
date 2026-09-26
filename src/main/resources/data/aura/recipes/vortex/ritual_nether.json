@@ -1,38 +1,10 @@
 {
   "type": "aura:vortex",
   "ingredients": [
-    {
-      "item": "aura:consumer_block_spawn",
-      "aura": {
-        "color": "violet",
-        "amount": 2600
-      }
-    },
-    {
-      "item": "aura:arcane_prism",
-      "aura": {
-        "color": "red",
-        "amount": 3200
-      }
-    },
-    {
-      "item": "aura:arcane_gem_red",
-      "aura": {
-        "color": "red",
-        "amount": 2200
-      }
-    },
-    {
-      "item": "aura:arcane_gem_orange",
-      "aura": {
-        "color": "orange",
-        "amount": 2200
-      }
-    }
+    { "item": "aura:arcane_gem_red", "aura": { "color": "red", "amount": 100000 } },
+    { "item": "aura:arcane_gem_red", "aura": { "color": "red", "amount": 100000 } },
+    { "item": "aura:arcane_gem_red", "aura": { "color": "red", "amount": 100000 } },
+    { "item": "aura:arcane_gem_red", "aura": { "color": "red", "amount": 100000 } }
   ],
-  "result": {
-    "item": "aura:ritual_nether",
-    "count": 1
-  },
-  "max_progress": 260
+  "result": { "item": "aura:ritual_nether", "count": 1 }
 }

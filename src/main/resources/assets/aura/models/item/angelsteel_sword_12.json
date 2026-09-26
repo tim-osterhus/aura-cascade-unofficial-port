@@ -2,5 +2,43 @@
   "parent": "aura:item/standard_tool",
   "textures": {
     "layer0": "aura:item/angel_sword"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "aura:attunement": 0.125
+      },
+      "model": "aura:item/angelsteel_sword_red"
+    },
+    {
+      "predicate": {
+        "aura:attunement": 0.25
+      },
+      "model": "aura:item/angelsteel_sword_orange"
+    },
+    {
+      "predicate": {
+        "aura:attunement": 0.375
+      },
+      "model": "aura:item/angelsteel_sword_yellow"
+    },
+    {
+      "predicate": {
+        "aura:attunement": 0.5
+      },
+      "model": "aura:item/angelsteel_sword_green"
+    },
+    {
+      "predicate": {
+        "aura:attunement": 0.625
+      },
+      "model": "aura:item/angelsteel_sword_blue"
+    },
+    {
+      "predicate": {
+        "aura:attunement": 0.75
+      },
+      "model": "aura:item/angelsteel_sword_violet"
+    }
+  ]
 }

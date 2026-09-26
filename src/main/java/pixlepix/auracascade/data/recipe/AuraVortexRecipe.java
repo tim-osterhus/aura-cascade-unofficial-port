@@ -20,5 +20,18 @@ public record AuraVortexRecipe(
             count = Math.max(1, count);
             auraRequirement = auraRequirement.copy();
         }
+
+        public pixlepix.auracascade.parity.AuraColor requiredColor() {
+            for (var color : pixlepix.auracascade.parity.AuraColor.values()) {
+                if (auraRequirement.get(color) > 0) {
+                    return color;
+                }
+            }
+            throw new IllegalStateException("Vortex component has no power requirement");
+        }
+
+        public int requiredPower() {
+            return auraRequirement.get(requiredColor());
+        }
     }
 }

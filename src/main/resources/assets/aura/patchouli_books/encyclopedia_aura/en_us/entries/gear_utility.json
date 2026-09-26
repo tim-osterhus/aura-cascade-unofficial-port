@@ -1,0 +1,77 @@
+{
+  "name": "Gear and Utility",
+  "category": "aura:storage_gear",
+  "icon": "aura:prismatic_wand",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Arcane Materials",
+      "text": "Arcane ingots and gems lead toward the Arcane Prism and Angelsteel. See $(l:aura:angelsteel_tools)Angelsteel Tools$(/l) and $(l:aura:angelsteel_swords)Angelsteel Swords$(/l) for all tiered craft patterns."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Prismatic Wand",
+      "text": "Open $(l:aura:prismatic_wand)Prismatic Wand$(/l) for selection, copying, placement, limits, and costs."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fury's Rhythm",
+      "text": "Land hits five to ninety-nine ticks apart to keep a fury chain. Each link compounds the next strike's force by five percent, up to one hundred links. Strike sooner or leave a longer pause, and the chain begins again."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A Dropped Red Hole",
+      "text": "When dropped, the Red Hole explodes about every five seconds and fades after roughly twenty-five minutes of world time. Retrieve it first if you do not want a recurring blast left nearby."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Mirror of the Angel",
+      "recipe": "aura:mirror_of_the_angel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Transmuting Sword",
+      "recipe": "aura:transmuting_sword"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Barbarian Sword",
+      "recipe": "aura:sword_of_the_barbarian"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Thief Sword",
+      "recipe": "aura:sword_of_the_thief"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Portable Red Hole",
+      "recipe": "aura:portable_red_hole"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Portable Black Hole",
+      "recipe": "aura:portable_black_hole"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mirror of the Angel",
+      "text": "Use the Mirror near a fireball or strike one with it. A nearby Ghast- or Blaze-fired fireball guides the deflection; Wither Skulls are not redirected."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Transmuting Sword",
+      "text": "A living hit target changes within these pairs: Cow/Mooshroom, Creeper/Enderman, Sheep/Pig, Ghast/Blaze, Slime/Magma Cube, and Ocelot/Wolf. A transformed creature keeps its name and current health."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Thief Sword",
+      "text": "Hold the sword when a Villager dies for a one-in-four chance to take the first item from its trade offers."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Black Hole",
+      "text": "Keep the Black Hole in your inventory; every five seconds it consumes carried Cobblestone. Store building supplies before carrying it."
+    }
+  ]
+}

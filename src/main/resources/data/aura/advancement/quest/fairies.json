@@ -1,0 +1,22 @@
+{
+  "parent": "aura:quest/root",
+  "display": {
+    "icon": {
+      "id": "aura:ring_of_binding"
+    },
+    "title": {
+      "text": "Fairy Binding"
+    },
+    "description": {
+      "text": "Carry this discovery when opening the Aura Encyclopedia."
+    },
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "book_open": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

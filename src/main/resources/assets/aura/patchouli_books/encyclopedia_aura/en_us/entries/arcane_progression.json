@@ -1,0 +1,102 @@
+{
+  "name": "Arcane Progression",
+  "category": "aura:aura_systems",
+  "icon": "aura:arcane_prism",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "From Crystal to Prism",
+      "text": "Start with a Processor: iron and wool make Arcane Ingots; the Prismatic Processor turns wool into color supplies. Four pedestals turn a diamond and three matching ingots into a gem; eight distinct gems craft a Prism."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Cascading Processor",
+      "recipe": "aura:consumer_block_ore"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Arcane Ingots",
+      "text": "Drop one Iron Ingot and one wool block at the Processor to make one Arcane Ingot. All sixteen wool colors feed eight ingot colors on the next page."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wool to Ingot Colors",
+      "text": "White wool yields White. Lime and Green yield Green; Brown, Black, Gray, and Light Gray yield Black; Red yields Red; Orange yields Orange; Yellow yields Yellow; Blue, Light Blue, and Cyan yield Blue; Magenta, Pink, and Purple yield Violet."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Vortex Controller",
+      "recipe": "aura:aura_node_crafting_center"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Vortex Pedestal",
+      "recipe": "aura:aura_node_crafting_pedestal"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Matching Gem Recipes",
+      "text": "At four pedestals, use one diamond requiring 60,000 White power and three same-color Arcane Ingots requiring 20,000 White each. White accepts falling power of any color. See $(l:aura:consumers_vortex)Consumers and Vortex$(/l) for the ring setup."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Eight Gem Colors",
+      "text": "The matching ingots produce White, Black, Orange, Red, Yellow, Green, Blue, or Violet Gems. Each color follows the same four-pedestal recipe; the White power requirement remains a wildcard for falling power."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Arcane Prism",
+      "text": "Drop one gem of each distinct color (White, Black, Orange, Red, Yellow, Green, Blue, and Violet) near a normal Cascading Processor. It returns one Arcane Prism. This is a Processor recipe, not a vortex infusion."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cascading Synthesizer",
+      "text": "Connect a stored-power network block beside the Synthesizer. It needs no dropped input and emits one first-tier Angelsteel Ingot on completion: 50 progress at 10,000 base power per step."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Cascading Synthesizer",
+      "recipe": "aura:consumer_block_angel"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Angelsteel Tiers",
+      "text": "Drop three grounded Angelsteel Ingots of the same tier within three blocks of one another; they combine into one ingot of the next tier. Repeat up to tier 12. See $(l:aura:angelsteel_tools)Angelsteel Tools$(/l) and $(l:aura:angelsteel_swords)Angelsteel Swords$(/l) for crafting."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fluxing Node",
+      "text": "Combine a node and two Red Arcane Ingots to form a Fluxing Node."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Fluxing Node",
+      "recipe": "aura:aura_node_flux"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Export Stored Power",
+      "text": "Place insertable energy-storage blocks in a face-connected group touching the Fluxing Node and each other. Each second it exports stored power to up to four compatible receivers; five or more pause export. It spends one stored power per 15 energy inserted, rounded up."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Prismatic Processor",
+      "text": "After making an Arcane Prism, craft the Prismatic Processor with the prism centered over the base Processor and glass in the remaining positions."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Prismatic Processor",
+      "recipe": "aura:consumer_block_ore_adv"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wool Colorants I",
+      "text": "At the Prismatic Processor, one wool block yields one result: White wool to Bone Meal; Orange wool to Orange Dye; Magenta wool to Magenta Dye; Light Blue wool to Light Blue Dye; Yellow wool to Yellow Dye; Lime wool to Lime Dye; Pink wool to Pink Dye; Gray wool to Gray Dye."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wool Colorants II",
+      "text": "One wool block yields one result: Light Gray wool to Light Gray Dye; Cyan wool to Cyan Dye; Purple wool to Purple Dye; Blue wool to Lapis Lazuli; Brown wool to Cocoa Beans; Green wool to Green Dye; Red wool to Red Dye; Black wool to Ink Sac."
+    }
+  ]
+}

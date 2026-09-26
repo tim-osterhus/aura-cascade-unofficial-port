@@ -1,11 +1,22 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    "aura:arcane_gem_white",
-    "minecraft:glowstone_dust"
-  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:brick"
+    },
+    "G": {
+      "item": "aura:arcane_gem_white"
+    }
+  },
+  "pattern": ["BGB"],
   "result": {
     "id": "aura:fairy_charm",
-    "count": 1
+    "count": 1,
+    "components": {
+      "minecraft:custom_data": {
+        "fairyRole": "fairy"
+      }
+    }
   }
 }

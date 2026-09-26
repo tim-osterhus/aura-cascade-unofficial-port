@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": { "item": "minecraft:golden_sword" },
+    "C": {
+      "fabric:type": "fabric:custom_data",
+      "base": { "item": "aura:fairy_charm" },
+      "nbt": { "fairyRole": "fairy" }
+    }
+  },
+  "pattern": [" X ", "XCX", " X "],
+  "result": {
+    "id": "aura:fairy_charm",
+    "count": 1,
+    "components": { "minecraft:custom_data": { "fairyRole": "fighter" } }
+  }
+}

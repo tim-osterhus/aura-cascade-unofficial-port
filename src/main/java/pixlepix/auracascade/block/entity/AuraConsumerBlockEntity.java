@@ -8,59 +8,62 @@ import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BonemealableBlock;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
+import pixlepix.auracascade.aura.AuraConsumerInspectionState;
+import pixlepix.auracascade.aura.WorldInteractionVisuals;
 import pixlepix.auracascade.block.AuraContent;
 import pixlepix.auracascade.data.recipe.AuraWorldRecipe;
 import pixlepix.auracascade.data.recipe.AuraWorldRecipeCatalog;
 import pixlepix.auracascade.enchantment.AuraEnchantments;
 import pixlepix.auracascade.item.AuraItems;
 import pixlepix.auracascade.parity.AuraColor;
+import pixlepix.auracascade.util.NbtCompat;
 
 public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSource {
     private static final String STORED_POWER_TAG = "stored_power";
     private static final String PROGRESS_TAG = "progress";
-    private static final List<Holder<Potion>> BREW_RESULTS = List.of(
-        Potions.AWKWARD,
-        Potions.SWIFTNESS,
-        Potions.FIRE_RESISTANCE,
-        Potions.WATER_BREATHING,
-        Potions.NIGHT_VISION,
-        Potions.HEALING,
-        Potions.STRENGTH,
-        Potions.SLOW_FALLING
-    );
-
+    private static final String LAST_RECEIVED_POWER_TAG = "last_received_power";
     private int storedPower;
     private int progress;
+    private int lastReceivedPower;
+    private Vec3 craftAnimationCenter;
+    private int craftAnimationTick;
 
     public AuraConsumerBlockEntity(BlockPos pos, BlockState blockState) {
         super(AuraContent.AURA_CONSUMER_BLOCK_ENTITY, pos, blockState);
@@ -73,41 +76,61 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
     }
 
     private void serverTick(Level level, BlockPos pos) {
+        pixlepix.auracascade.item.ConsumerItemKeepAlive.tick(level, pos);
         int previousPower = storedPower;
         int previousProgress = progress;
+        int previousLastReceivedPower = lastReceivedPower;
+        long gameTime = level.getGameTime();
 
-        if (level.getGameTime() % 20L == 18L) {
+        if (gameTime % 20L == 18L) {
             storedPower = AuraConsumerLogic.bleedStoredPower(storedPower);
         }
 
-        storedPower += collectAdjacentPower(level, pos);
-
-        AuraConsumerVariant variant = variant();
-        if (hasWork(level, pos, variant) && storedPower >= variant.powerPerProgress()) {
-            int steps = AuraConsumerLogic.progressStepsForTick(storedPower, variant.powerPerProgress());
-            for (int step = 0; step < steps; step++) {
-                int stepCost = AuraConsumerLogic.powerCostForStep(variant.powerPerProgress(), step);
-                if (stepCost <= 0 || storedPower < stepCost) {
-                    break;
-                }
-
-                storedPower -= stepCost;
-                progress++;
-                if (progress > variant.maxProgress()) {
-                    if (performWork(level, pos, variant)) {
-                        progress = 0;
-                    } else {
-                        progress = variant.maxProgress();
-                        break;
-                    }
-                }
-            }
+        int receivedPower = collectAdjacentPower(level, pos);
+        storedPower += receivedPower;
+        if (gameTime % 20L == 0L) {
+            lastReceivedPower = 0;
+        }
+        if (receivedPower > 0) {
+            // The legacy "Last Power" readout snapshots the stored total after a transfer.
+            lastReceivedPower = storedPower;
         }
 
-        if (storedPower != previousPower || progress != previousProgress) {
+        AuraConsumerVariant variant = variant();
+        if (AuraConsumerLogic.shouldAdvanceProgress(gameTime)) {
+            AuraConsumerLogic.ProgressState next = AuraConsumerLogic.advanceProgress(
+                progress,
+                storedPower,
+                variant,
+                () -> performWork(level, pos, variant)
+            );
+            progress = next.progress();
+            storedPower = next.storedPower();
+        }
+        tickCraftAnimation(level, variant);
+
+        if (storedPower != previousPower || progress != previousProgress || lastReceivedPower != previousLastReceivedPower) {
             setChanged();
             level.sendBlockUpdated(pos, getBlockState(), getBlockState(), 3);
         }
+    }
+
+    public AuraConsumerInspectionState inspectionState() {
+        AuraConsumerVariant variant = variant();
+        return new AuraConsumerInspectionState(
+            progress,
+            variant.maxProgress(),
+            variant.powerPerProgress(),
+            lastReceivedPower,
+            storedPower
+        );
+    }
+
+    public boolean hasValidWork() {
+        Level currentLevel = level;
+        return currentLevel != null
+            && !currentLevel.isClientSide()
+            && hasWork(currentLevel, worldPosition, variant());
     }
 
     @Override
@@ -117,17 +140,19 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        storedPower = input.getIntOr(STORED_POWER_TAG, 0);
-        progress = input.getIntOr(PROGRESS_TAG, 0);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        storedPower = NbtCompat.getIntOr(tag, STORED_POWER_TAG, NbtCompat.getIntOr(tag, "storedPower", 0));
+        progress = NbtCompat.getIntOr(tag, PROGRESS_TAG, 0);
+        lastReceivedPower = NbtCompat.getIntOr(tag, LAST_RECEIVED_POWER_TAG, NbtCompat.getIntOr(tag, "lastPower", 0));
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.putInt(STORED_POWER_TAG, storedPower);
-        output.putInt(PROGRESS_TAG, progress);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putInt(STORED_POWER_TAG, storedPower);
+        tag.putInt(PROGRESS_TAG, progress);
+        tag.putInt(LAST_RECEIVED_POWER_TAG, lastReceivedPower);
     }
 
     @Override
@@ -143,7 +168,11 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
     private int collectAdjacentPower(Level level, BlockPos pos) {
         int collected = 0;
         for (Direction direction : Direction.values()) {
-            BlockEntity blockEntity = level.getBlockEntity(pos.relative(direction));
+            BlockPos neighbor = pos.relative(direction);
+            if (!level.hasChunkAt(neighbor)) {
+                continue;
+            }
+            BlockEntity blockEntity = level.getBlockEntity(neighbor);
             if (blockEntity instanceof AuraNetworkBlockEntity auraNetworkBlockEntity) {
                 collected += auraNetworkBlockEntity.extractStoredPower(Integer.MAX_VALUE);
             }
@@ -153,26 +182,31 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
 
     private boolean hasWork(Level level, BlockPos pos, AuraConsumerVariant variant) {
         return switch (variant.family()) {
-            case PROCESSOR -> findMatchingRecipe(nearbyItems(level, pos), variant.prismatic()).isPresent();
+            case PROCESSOR -> {
+                List<ItemEntity> items = nearbyItems(level, pos);
+                yield findMatchingRecipe(items, variant.prismatic()).isPresent()
+                    || findCommonDustConversion(items, level).isPresent();
+            }
             case SMELTER -> findSmeltResult(level, nearbyItems(level, pos)).isPresent();
-            case GROWER -> findGrowTarget(level, pos).isPresent();
+            case GROWER -> true;
             case FISHER -> hasWaterPool(level, pos);
-            case BREWER -> findWaterBottle(nearbyItems(level, pos)).isPresent();
+            case BREWER -> nearbyItems(level, pos).stream().anyMatch(item -> AuraConsumerBrewLogic.canBrew(item.getItem()));
             case COLORER -> !nearbySheep(level, pos).isEmpty();
+            // The legacy AngelSteelTile produces its first-tier ingot from power alone.
             case SYNTHESIZER -> true;
-            case ENCHANTER -> findEnchantTarget(nearbyItems(level, pos)).isPresent() && findArcaneIngot(nearbyItems(level, pos)).isPresent();
+            case ENCHANTER -> findEnchantInput(level, nearbyItems(level, pos)).isPresent();
         };
     }
 
     private boolean performWork(Level level, BlockPos pos, AuraConsumerVariant variant) {
         return switch (variant.family()) {
             case PROCESSOR -> processRecipe(level, pos, nearbyItems(level, pos), variant.prismatic(), AuraWorldRecipe.RecipeKind.PROCESSOR);
-            case SMELTER -> smeltNearbyItem(level, pos, nearbyItems(level, pos));
+            case SMELTER -> smeltNearbyItem(level, nearbyItems(level, pos));
             case GROWER -> boostGrowth(level, pos);
             case FISHER -> spawnFish(level, pos);
-            case BREWER -> brewPotion(level, pos, nearbyItems(level, pos));
+            case BREWER -> brewPotions(level, nearbyItems(level, pos));
             case COLORER -> recolorSheep(level, pos);
-            case SYNTHESIZER -> processRecipe(level, pos, nearbyItems(level, pos), false, AuraWorldRecipe.RecipeKind.SYNTHESIZER) || synthesizeAngelsteel(level, pos);
+            case SYNTHESIZER -> synthesizeAngelsteel(level, pos);
             case ENCHANTER -> enchantNearbyItem(level, pos, nearbyItems(level, pos));
         };
     }
@@ -184,7 +218,18 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
         boolean allowPrismaticRecipes,
         AuraWorldRecipe.RecipeKind kind
     ) {
+        Optional<DustConversion> dustConversion = kind == AuraWorldRecipe.RecipeKind.PROCESSOR
+            ? findCommonDustConversion(items, level)
+            : Optional.empty();
         Optional<AuraWorldRecipe> recipe = findMatchingRecipe(items, allowPrismaticRecipes, kind);
+        AuraConsumerLogic.ProcessorRoute route = AuraConsumerLogic.processorRoute(
+            dustConversion.isPresent(),
+            recipe.isPresent()
+        );
+        if (kind == AuraWorldRecipe.RecipeKind.PROCESSOR
+            && route == AuraConsumerLogic.ProcessorRoute.DUST) {
+            return processCommonDustConversion(level, dustConversion.orElseThrow(), allowPrismaticRecipes);
+        }
         if (recipe.isEmpty()) {
             return false;
         }
@@ -194,17 +239,76 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
             return false;
         }
 
+        ItemEntity anchor = lastReservedItem(items, reserved);
+        if (anchor == null) {
+            return false;
+        }
+        ItemEntity output = replacementDrop(level, anchor, recipe.get().result());
         consumeReservedItems(reserved);
-        spawnOutput(level, pos, recipe.get().result());
+        level.addFreshEntity(output);
+        beginCraftAnimation(output.position());
         return true;
+    }
+
+    private boolean processCommonDustConversion(Level level, DustConversion conversion, boolean prismatic) {
+        ItemEntity output = replacementDrop(
+            level,
+            conversion.oreEntity(),
+            new ItemStack(conversion.dustItem(), prismatic ? 3 : 2)
+        );
+        consumeReservedItems(Map.of(conversion.oreEntity(), 1));
+        level.addFreshEntity(output);
+        beginCraftAnimation(output.position());
+        return true;
+    }
+
+    private ItemEntity lastReservedItem(List<ItemEntity> items, Map<ItemEntity, Integer> reserved) {
+        ItemEntity last = null;
+        for (ItemEntity item : items) {
+            if (reserved.containsKey(item)) {
+                last = item;
+            }
+        }
+        return last;
+    }
+
+    private Optional<DustConversion> findCommonDustConversion(List<ItemEntity> items, Level level) {
+        HolderLookup<Item> itemLookup = level.registryAccess().lookupOrThrow(Registries.ITEM);
+        List<TagKey<Item>> oreTags = itemLookup.listTagIds()
+            .filter(tag -> AuraConsumerLogic.commonDustTagForOre(tag).isPresent())
+            .sorted(Comparator.comparing(tag -> tag.location().toString()))
+            .toList();
+
+        for (ItemEntity oreEntity : items) {
+            ItemStack oreStack = oreEntity.getItem();
+            for (TagKey<Item> oreTag : oreTags) {
+                if (!oreStack.is(oreTag)) {
+                    continue;
+                }
+
+                Optional<TagKey<Item>> maybeDustTag = AuraConsumerLogic.commonDustTagForOre(oreTag);
+                if (maybeDustTag.isEmpty()) {
+                    continue;
+                }
+                Optional<HolderSet.Named<Item>> maybeDusts = itemLookup.get(maybeDustTag.get());
+                if (maybeDusts.isEmpty()) {
+                    continue;
+                }
+
+                Optional<Item> maybeDust = maybeDusts.get().stream()
+                    .map(Holder::value)
+                    .filter(item -> item != Items.AIR)
+                    .findFirst();
+                if (maybeDust.isPresent()) {
+                    return Optional.of(new DustConversion(oreEntity, maybeDust.get()));
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     private Optional<AuraWorldRecipe> findMatchingRecipe(List<ItemEntity> items, boolean allowPrismaticRecipes) {
         return findMatchingRecipe(items, allowPrismaticRecipes, AuraWorldRecipe.RecipeKind.PROCESSOR);
-    }
-
-    private Optional<AuraWorldRecipe> findSynthRecipe(List<ItemEntity> items) {
-        return findMatchingRecipe(items, false, AuraWorldRecipe.RecipeKind.SYNTHESIZER);
     }
 
     private Optional<AuraWorldRecipe> findMatchingRecipe(
@@ -265,42 +369,44 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
         }
     }
 
-    private Optional<ItemEntity> findWaterBottle(List<ItemEntity> items) {
-        return items.stream()
-            .filter(itemEntity -> isWaterBottle(itemEntity.getItem()))
-            .findFirst();
-    }
+    private Optional<EnchantInput> findEnchantInput(Level level, List<ItemEntity> items) {
+        for (ItemEntity target : items) {
+            ItemStack targetStack = target.getItem();
+            if (!KaleidoscopicEnchanterLogic.isValidTarget(targetStack)) {
+                continue;
+            }
 
-    private Optional<ItemEntity> findEnchantTarget(List<ItemEntity> items) {
-        return items.stream()
-            .filter(itemEntity -> KaleidoscopicEnchanterLogic.isValidTarget(itemEntity.getItem()))
-            .findFirst();
-    }
+            for (ItemEntity ingot : items) {
+                Optional<AuraColor> maybeColor = AuraItems.arcaneIngotColor(ingot.getItem());
+                if (maybeColor.isEmpty() || AuraEnchantments.kaleidoscopic(maybeColor.get()).isEmpty()) {
+                    continue;
+                }
 
-    private Optional<ItemEntity> findArcaneIngot(List<ItemEntity> items) {
-        return items.stream()
-            .filter(itemEntity -> AuraItems.arcaneIngotColor(itemEntity.getItem()).isPresent())
-            .findFirst();
+                AuraColor color = maybeColor.get();
+                if (KaleidoscopicEnchanterLogic.canApply(targetStack, color, level.registryAccess())) {
+                    return Optional.of(new EnchantInput(target, ingot, color));
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     private boolean synthesizeAngelsteel(Level level, BlockPos pos) {
         spawnOutput(level, pos, new ItemStack(AuraItems.angelsteelIngot(0)));
+        beginCraftAnimation(Vec3.atCenterOf(pos).add(0.0D, 1.0D, 0.0D));
         return true;
     }
 
     private boolean enchantNearbyItem(Level level, BlockPos pos, List<ItemEntity> items) {
-        Optional<ItemEntity> maybeTarget = findEnchantTarget(items);
-        Optional<ItemEntity> maybeIngot = findArcaneIngot(items);
-        if (maybeTarget.isEmpty() || maybeIngot.isEmpty()) {
+        Optional<EnchantInput> maybeInput = findEnchantInput(level, items);
+        if (maybeInput.isEmpty()) {
             return false;
         }
 
-        ItemStack targetStack = maybeTarget.get().getItem();
-        ItemStack ingotStack = maybeIngot.get().getItem();
-        AuraColor color = AuraItems.arcaneIngotColor(ingotStack).orElse(null);
-        if (color == null || !KaleidoscopicEnchanterLogic.canApply(targetStack, color, level.registryAccess())) {
-            return false;
-        }
+        EnchantInput input = maybeInput.get();
+        ItemStack targetStack = input.target().getItem();
+        ItemStack ingotStack = input.ingot().getItem();
+        AuraColor color = input.color();
 
         Map<AuraColor, Integer> levels = KaleidoscopicEnchanterLogic.levels(targetStack, level.registryAccess());
         double successRate = KaleidoscopicEnchanterLogic.successRate(
@@ -308,9 +414,10 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
             KaleidoscopicEnchanterLogic.maxLevel(levels)
         );
 
+        // The original consumes one Arcane Ingot even when the enchantment roll fails.
         ingotStack.shrink(1);
         if (ingotStack.isEmpty()) {
-            maybeIngot.get().discard();
+            input.ingot().discard();
         }
 
         if (level.getRandom().nextDouble() < successRate) {
@@ -323,40 +430,88 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
             }
         }
 
+        beginCraftAnimation(input.target().position());
+
         return true;
     }
 
-    private boolean brewPotion(Level level, BlockPos pos, List<ItemEntity> items) {
-        Optional<ItemEntity> waterBottle = findWaterBottle(items);
-        if (waterBottle.isEmpty()) {
-            return false;
-        }
+    private boolean brewPotions(Level level, List<ItemEntity> items) {
+        boolean brewedAny = false;
+        for (ItemEntity potionEntity : items) {
+            Optional<ItemStack> maybeResult = AuraConsumerBrewLogic.result(potionEntity.getItem(), level.getRandom());
+            if (maybeResult.isEmpty()) {
+                continue;
+            }
 
-        ItemStack stack = waterBottle.get().getItem();
-        stack.shrink(1);
-        if (stack.isEmpty()) {
-            waterBottle.get().discard();
-        }
+            double x = potionEntity.getX();
+            double y = potionEntity.getY();
+            double z = potionEntity.getZ();
+            Vec3 velocity = potionEntity.getDeltaMovement();
+            CompoundTag entityData = new CompoundTag();
+            potionEntity.addAdditionalSaveData(entityData);
+            int pickupDelay = entityData.getShort("PickupDelay");
+            ItemStack input = potionEntity.getItem();
+            input.shrink(1);
+            if (input.isEmpty()) {
+                potionEntity.discard();
+            }
 
-        Holder<Potion> resultPotion = BREW_RESULTS.get(level.getRandom().nextInt(BREW_RESULTS.size()));
-        spawnOutput(level, pos, PotionContents.createItemStack(Items.POTION, resultPotion));
-        return true;
+            ItemEntity resultEntity = new ItemEntity(
+                level,
+                x,
+                y,
+                z,
+                maybeResult.get()
+            );
+            resultEntity.setDeltaMovement(velocity);
+            resultEntity.setPickUpDelay(pickupDelay);
+            level.addFreshEntity(resultEntity);
+            beginCraftAnimation(resultEntity.position());
+            brewedAny = true;
+        }
+        return brewedAny;
     }
 
-    private boolean smeltNearbyItem(Level level, BlockPos pos, List<ItemEntity> items) {
+    private boolean smeltNearbyItem(Level level, List<ItemEntity> items) {
         Optional<SmeltCandidate> candidate = findSmeltResult(level, items);
         if (candidate.isEmpty()) {
             return false;
         }
 
-        ItemStack input = candidate.get().itemEntity().getItem();
+        ItemEntity source = candidate.get().itemEntity();
+        ItemEntity output = replacementDrop(level, source, candidate.get().result());
+        ItemStack input = source.getItem();
         input.shrink(1);
         if (input.isEmpty()) {
-            candidate.get().itemEntity().discard();
+            source.discard();
         }
 
-        spawnOutput(level, pos, candidate.get().result());
+        level.addFreshEntity(output);
+        beginCraftAnimation(output.position());
         return true;
+    }
+
+    private void beginCraftAnimation(Vec3 center) {
+        craftAnimationCenter = center;
+        craftAnimationTick = 0;
+    }
+
+    private void tickCraftAnimation(Level level, AuraConsumerVariant variant) {
+        if (craftAnimationCenter == null || !(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        Vector3f color = switch (variant.family()) {
+            case SYNTHESIZER -> new Vector3f(1.0F, 0.78F, 0.3F);
+            case ENCHANTER -> new Vector3f(0.75F, 0.45F, 1.0F);
+            default -> new Vector3f(0.4F, 0.9F, 1.0F);
+        };
+        DustParticleOptions particle = new DustParticleOptions(color, 1.0F);
+        for (Vec3 point : WorldInteractionVisuals.craftSamples(craftAnimationCenter, craftAnimationTick)) {
+            serverLevel.sendParticles(particle, point.x, point.y, point.z, 1, 0.0D, 0.0D, 0.0D, 0.0D);
+        }
+        if (++craftAnimationTick >= WorldInteractionVisuals.CRAFT_TICKS) {
+            craftAnimationCenter = null;
+        }
     }
 
     private Optional<SmeltCandidate> findSmeltResult(Level level, List<ItemEntity> items) {
@@ -388,42 +543,18 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
             return false;
         }
 
-        Optional<BlockPos> growTarget = findGrowTarget(level, pos);
-        if (growTarget.isEmpty()) {
-            return false;
-        }
-
-        BlockPos targetPos = growTarget.get();
-        BlockState state = level.getBlockState(targetPos);
-        if (!(state.getBlock() instanceof BonemealableBlock bonemealableBlock)) {
-            return false;
-        }
-        if (!bonemealableBlock.isValidBonemealTarget(level, targetPos, state)) {
-            return false;
-        }
-
-        RandomSource random = level.getRandom();
-        if (!bonemealableBlock.isBonemealSuccess(level, random, targetPos, state)) {
-            return false;
-        }
-
-        bonemealableBlock.performBonemeal(serverLevel, random, targetPos, state);
-        return true;
-    }
-
-    private Optional<BlockPos> findGrowTarget(Level level, BlockPos pos) {
-        BlockState middle = level.getBlockState(pos.above());
-        if (!(middle.is(Blocks.DIRT) || middle.is(Blocks.GRASS_BLOCK) || middle.is(Blocks.FARMLAND))) {
-            return Optional.empty();
-        }
-
         BlockPos targetPos = pos.above(2);
-        BlockState targetState = level.getBlockState(targetPos);
-        if (targetState.getBlock() instanceof BonemealableBlock bonemealableBlock
-            && bonemealableBlock.isValidBonemealTarget(level, targetPos, targetState)) {
-            return Optional.of(targetPos);
+        RandomSource random = serverLevel.getRandom();
+        BlockState initialState = serverLevel.getBlockState(targetPos);
+        Block initialBlock = initialState.getBlock();
+        for (int tick = 0; tick < AuraConsumerLogic.GROWER_RANDOM_TICKS; tick++) {
+            BlockState currentState = serverLevel.getBlockState(targetPos);
+            if (!AuraConsumerLogic.shouldContinueGrowerBatch(initialBlock, currentState)) {
+                break;
+            }
+            currentState.randomTick(serverLevel, targetPos, random);
         }
-        return Optional.empty();
+        return true;
     }
 
     private boolean spawnFish(Level level, BlockPos pos) {
@@ -431,14 +562,27 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
             return false;
         }
 
-        ItemStack caughtFish = switch (level.getRandom().nextInt(8)) {
-            case 0, 1, 2, 3 -> new ItemStack(Items.COD);
-            case 4, 5 -> new ItemStack(Items.SALMON);
-            case 6 -> new ItemStack(Items.PUFFERFISH);
-            default -> new ItemStack(Items.TROPICAL_FISH);
-        };
-        spawnOutput(level, pos, caughtFish);
-        return true;
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return false;
+        }
+
+        Vec3 origin = Vec3.atCenterOf(pos.above());
+        FishingHook hook = new FishingHook(EntityType.FISHING_BOBBER, serverLevel);
+        hook.setPos(origin);
+        LootParams lootParams = new LootParams.Builder(serverLevel)
+            .withParameter(LootContextParams.ORIGIN, origin)
+            .withParameter(LootContextParams.TOOL, new ItemStack(Items.FISHING_ROD))
+            .withParameter(LootContextParams.THIS_ENTITY, hook)
+            .withLuck(0.0F)
+            .create(LootContextParamSets.FISHING);
+        List<ItemStack> catches = serverLevel.getServer()
+            .reloadableRegistries()
+            .getLootTable(BuiltInLootTables.FISHING)
+            .getRandomItems(lootParams);
+        for (ItemStack caught : catches) {
+            spawnOutput(level, pos, caught);
+        }
+        return !catches.isEmpty();
     }
 
     private boolean hasWaterPool(Level level, BlockPos pos) {
@@ -446,7 +590,7 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
         BlockPos max = pos.offset(2, -1, 2);
         for (BlockPos cursor : BlockPos.betweenClosed(min, max)) {
             BlockState state = level.getBlockState(cursor);
-            if (!(state.is(Blocks.WATER))) {
+            if (!AuraConsumerLogic.isFisherWater(state)) {
                 return false;
             }
         }
@@ -485,12 +629,14 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
         level.addFreshEntity(itemEntity);
     }
 
-    private boolean isWaterBottle(ItemStack stack) {
-        if (!stack.is(Items.POTION)) {
-            return false;
-        }
-        PotionContents potionContents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-        return potionContents.is(Potions.WATER);
+    static ItemEntity replacementDrop(Level level, ItemEntity source, ItemStack stack) {
+        CompoundTag sourceData = new CompoundTag();
+        source.addAdditionalSaveData(sourceData);
+        Vec3 motion = source.getDeltaMovement();
+        ItemEntity output = new ItemEntity(level, source.getX(), source.getY(), source.getZ(),
+            stack.copy(), motion.x, motion.y, motion.z);
+        output.setPickUpDelay(sourceData.getShort("PickupDelay"));
+        return output;
     }
 
     private AuraConsumerVariant variant() {
@@ -499,6 +645,12 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
     }
 
     private record SmeltCandidate(ItemEntity itemEntity, ItemStack result) {
+    }
+
+    private record EnchantInput(ItemEntity target, ItemEntity ingot, AuraColor color) {
+    }
+
+    private record DustConversion(ItemEntity oreEntity, Item dustItem) {
     }
 
     private static final class BuiltInItemSort {

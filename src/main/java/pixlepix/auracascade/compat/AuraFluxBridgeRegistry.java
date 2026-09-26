@@ -5,7 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
 public final class AuraFluxBridgeRegistry {
-    private static AuraFluxBridge bridge = AuraFluxBridge.NOOP;
+    private static final AuraFluxBridge DEFAULT_BRIDGE = new AuraFluxEnergyBridge();
+    private static AuraFluxBridge bridge = DEFAULT_BRIDGE;
 
     private AuraFluxBridgeRegistry() {
     }
@@ -15,7 +16,7 @@ public final class AuraFluxBridgeRegistry {
     }
 
     public static synchronized void reset() {
-        bridge = AuraFluxBridge.NOOP;
+        bridge = DEFAULT_BRIDGE;
     }
 
     public static synchronized int export(Level level, BlockPos sourcePos, int availablePower) {

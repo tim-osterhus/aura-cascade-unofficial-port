@@ -1,0 +1,57 @@
+{
+  "name": "Combat Charms",
+  "category": "aura:fairies",
+  "icon": "aura:fairy_charm",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Charm Recipes",
+      "text": "Fighter strikes a nearby hostile within two blocks every three ticks for 1.5 damage. Savior strikes for 10 when you are below five health and a hostile is close. Bind a typed charm while wearing the Ring of Binding."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hexes and Gifts",
+      "text": "Every three ticks, a Debuffer visits a nearby foe with all six maladies: poison, confusion, weakness, wither, slowness, and hunger; each lasts 200 ticks. Every 2,400 ticks, a Buffer grants you one random gift for 2,400 ticks: regeneration, resistance, strength, absorption, jump, or speed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shoves and Spawns",
+      "text": "A Pusher jolts foes within two blocks with 0.4 force every three ticks; knockback resistance can blunt it. Every three ticks, a Shooter checks your nearby arrows; one below 10 damage gains 10 and turns critical. Scarers within 50 blocks of a natural spawn point make arrivals less likely; each one strengthens the hush."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Fighter Charm",
+      "recipe": "aura:fairy_charm_fighter"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Debuffer Charm",
+      "recipe": "aura:fairy_charm_debuffer"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Buffer Charm",
+      "recipe": "aura:fairy_charm_buffer"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Pusher Charm",
+      "recipe": "aura:fairy_charm_pusher"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Shooter Charm",
+      "recipe": "aura:fairy_charm_shooter"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Savior Charm",
+      "recipe": "aura:fairy_charm_savior"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Scarer Charm",
+      "recipe": "aura:fairy_charm_scarer"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import pixlepix.auracascade.support.RecipeIngredientReader;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,6 +26,22 @@ final class AuraAcquisitionParityCoverageTest {
     @Test
     void restoredCraftingAcquisitionRecipesStayPresentAndStable() throws IOException {
         assertAll(
+            () -> assertCraftingRecipe(
+                "aura_node_crafting_center.json", "aura:aura_node_crafting_center", List.of("GGG", "RDR", "RRR"),
+                Set.of("minecraft:gold_ingot", "aura:arcane_ingot_red", "minecraft:diamond")
+            ),
+            () -> assertCraftingRecipe(
+                "aura_node_crafting_pedestal.json", "aura:aura_node_crafting_pedestal", List.of("BBB", "BNB", "BBB"),
+                Set.of("minecraft:lapis_lazuli", "aura:aura_node")
+            ),
+            () -> assertCraftingRecipe(
+                "aura_node_flux.json", "aura:aura_node_flux", List.of("RNR"),
+                Set.of("aura:arcane_ingot_red", "aura:aura_node")
+            ),
+            () -> assertCraftingRecipe(
+                "consumer_block_ore_adv.json", "aura:consumer_block_ore_adv", List.of("GPG", "GCG", "GGG"),
+                Set.of("minecraft:glass", "aura:arcane_prism", "aura:consumer_block_ore")
+            ),
             () -> assertCraftingRecipe(
                 "aura_node_black.json",
                 "aura:aura_node_black",
@@ -148,47 +165,47 @@ final class AuraAcquisitionParityCoverageTest {
             () -> assertWorldRecipe(
                 "processor/fortified_cobblestone.json",
                 "aura:fortified_cobblestone",
-                List.of("minecraft:obsidian", "minecraft:cobblestone")
+                List.of("minecraft:end_stone", "minecraft:cobblestone")
             ),
             () -> assertWorldRecipe(
                 "processor/fortified_stone.json",
                 "aura:fortified_stone",
-                List.of("minecraft:obsidian", "minecraft:stone")
+                List.of("minecraft:end_stone", "minecraft:stone")
             ),
             () -> assertWorldRecipe(
                 "processor/fortified_planks.json",
                 "aura:fortified_planks",
-                List.of("minecraft:obsidian", "minecraft:oak_planks")
+                List.of("minecraft:end_stone", "minecraft:oak_planks")
             ),
             () -> assertWorldRecipe(
                 "processor/fortified_glass.json",
                 "aura:fortified_glass",
-                List.of("minecraft:obsidian", "minecraft:glass")
+                List.of("minecraft:end_stone", "minecraft:glass")
             ),
             () -> assertWorldRecipe(
                 "processor/fortified_obsidian.json",
                 "aura:fortified_obsidian",
-                List.of("minecraft:obsidian", "minecraft:obsidian")
+                List.of("minecraft:end_stone", "minecraft:obsidian")
             ),
             () -> assertWorldRecipe(
                 "processor/fortified_dirt.json",
                 "aura:fortified_dirt",
-                List.of("minecraft:obsidian", "minecraft:dirt")
+                List.of("minecraft:end_stone", "minecraft:dirt")
             ),
             () -> assertWorldRecipe(
                 "vortex/consumer_block_loot.json",
                 "aura:consumer_block_loot",
-                List.of("aura:consumer_block_ore_adv", "aura:sword_of_the_thief", "aura:arcane_prism", "aura:arcane_gem_yellow")
+                java.util.Collections.nCopies(4, "aura:arcane_gem_yellow")
             ),
             () -> assertWorldRecipe(
                 "vortex/consumer_block_spawn.json",
                 "aura:consumer_block_spawn",
-                List.of("aura:consumer_block_loot", "aura:mob_storage_book", "aura:arcane_prism", "aura:arcane_gem_violet")
+                java.util.Collections.nCopies(4, "aura:arcane_gem_violet")
             ),
             () -> assertWorldRecipe(
                 "vortex/ritual_nether.json",
                 "aura:ritual_nether",
-                List.of("aura:consumer_block_spawn", "aura:arcane_prism", "aura:arcane_gem_red", "aura:arcane_gem_orange")
+                java.util.Collections.nCopies(4, "aura:arcane_gem_red")
             )
         );
     }
@@ -233,14 +250,7 @@ final class AuraAcquisitionParityCoverageTest {
         JsonObject key = json.getAsJsonObject("key");
         java.util.LinkedHashSet<String> ingredients = new java.util.LinkedHashSet<>();
         for (String symbol : key.keySet()) {
-            JsonElement value = key.get(symbol);
-            if (value.isJsonArray()) {
-                for (JsonElement option : value.getAsJsonArray()) {
-                    ingredients.add(option.getAsString());
-                }
-            } else {
-                ingredients.add(value.getAsString());
-            }
+            ingredients.addAll(RecipeIngredientReader.readIngredientIds(key.get(symbol)));
         }
         return Set.copyOf(ingredients);
     }

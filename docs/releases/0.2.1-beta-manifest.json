@@ -1,0 +1,18 @@
+{
+  "reviewed": true,
+  "projectId": 1519395,
+  "version": "0.2.1+1.21.1",
+  "displayName": "Aura Cascade Reimagined 0.2.1+1.21.1 Beta",
+  "artifactPath": "build/libs/aura-cascade-0.2.1+1.21.1.jar",
+  "expectedJarSHA256": "2290a1a344fa8e1e43d631729b5f88d422923d573db90d1a592945fecc1aacc8",
+  "releaseType": "beta",
+  "gameVersionNames": ["1.21.1", "Fabric", "Client", "Server"],
+  "changelogType": "markdown",
+  "changelog": "## Aura Cascade Reimagined 0.2.1 Beta\n\nVisual-feedback hotfix for Minecraft 1.21.1 / Fabric. Requires Java 21, Fabric Loader 0.19.1+, Fabric API and Patchouli 1.21.1-93-FABRIC. Energy API is bundled. Back up existing worlds before upgrading.\n\n- Adds visible particles to dropped-item crafting, including Angel's Steel ground combinations and machine outputs.\n- Briefly previews available connections when placing aura-network blocks, even before adding crystals.\n- Selects the Aura creative inventory tab on the first opening per client session, while preserving subsequent tab choices.\n- Keeps observed aura-color HUD rows visible at actual zero values during transfers and prevents nearby entity targeting from hiding block inspection.\n- Separates all nine Encyclopedia opening links onto individual rows.\n- Updates the display name and homepage to Aura Cascade Reimagined. Existing registry IDs remain unchanged.\n\nUnofficial modern port of Aura Cascade by pixlepix; original 1.8.x port by williewillus. Original texture credits and MIT notices are retained.",
+  "relations": {
+    "projects": [
+      {"slug": "fabric-api", "type": "requiredDependency"},
+      {"slug": "patchouli", "type": "requiredDependency"}
+    ]
+  }
+}

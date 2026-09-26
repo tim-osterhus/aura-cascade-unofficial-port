@@ -1,0 +1,17 @@
+{
+  "name": "Rebounding Enigma",
+  "category": "aura:late_game",
+  "icon": "aura:rebounding_enigma",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "The Next Leap",
+      "text": "Rebounding Enigma is 0.8 blocks high; it emits full light. Touching sets upward motion to 10 blocks per tick and preserves horizontal motion. No fall-damage protection; plan your landing. See $(l:aura:late_systems)Late Systems$(/l)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Enigma Recipe",
+      "recipe": "aura:rebounding_enigma"
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import pixlepix.auracascade.util.NbtCompat;
 
 public final class AuraAccessoryState {
     static final String EQUIPPED_SLOT_TAG = "aura_accessory_slot";
@@ -15,7 +16,7 @@ public final class AuraAccessoryState {
     public static Optional<AuraAccessorySlot> equippedSlot(ItemStack stack) {
         CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         CompoundTag tag = customData.copyTag();
-        String slotId = tag.getString(EQUIPPED_SLOT_TAG).orElse("");
+        String slotId = NbtCompat.getStringOr(tag, EQUIPPED_SLOT_TAG, "");
         if (slotId.isEmpty()) {
             return Optional.empty();
         }

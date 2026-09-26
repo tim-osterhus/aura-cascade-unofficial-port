@@ -1,0 +1,27 @@
+{
+  "name": "World Charms",
+  "category": "aura:fairies",
+  "icon": "aura:fairy_charm",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Charm Recipes",
+      "text": "An Extinguisher clears your burning and removes lava at the fairy's position each tick. Bind its typed charm while wearing the Ring of Binding."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A Lighter's Glow",
+      "text": "When a Lighter reaches an empty spot below light level 10, it leaves a hidden light bright enough to guide you. The glow fades on its own, so it will not claim the space forever."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Extinguisher Charm",
+      "recipe": "aura:fairy_charm_extinguisher"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Lighter Charm",
+      "recipe": "aura:fairy_charm_lighter"
+    }
+  ]
+}

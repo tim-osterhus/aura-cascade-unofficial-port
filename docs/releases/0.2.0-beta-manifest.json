@@ -1,0 +1,18 @@
+{
+  "reviewed": true,
+  "projectId": 1519395,
+  "version": "0.2.0+1.21.1",
+  "displayName": "Aura Cascade Unofficial Port 0.2.0+1.21.1 Beta",
+  "artifactPath": "build/libs/aura-cascade-0.2.0+1.21.1.jar",
+  "expectedJarSHA256": "cff6b2cdf435dc8c6318967c0e860d86e5990061af866628b4462317d7ba4a63",
+  "releaseType": "beta",
+  "gameVersionNames": ["1.21.1", "Fabric", "Client", "Server"],
+  "changelogType": "markdown",
+  "changelog": "## Aura Cascade 0.2.0 Beta\n\nRequires Minecraft 1.21.1, Fabric Loader 0.19.1+, Java 21, Fabric API and Patchouli 1.21.1-93-FABRIC. Energy API is bundled. Back up existing worlds before upgrading.\n\n- Replaces the clipped written-book guide with a navigable Encyclopedia Aura: linked topics, recipes, machine instructions and quests.\n- Restores aura/node feedback, distinct vortex pedestal accounting, searchable bookshelf storage, physical accessory slots and fairy behavior.\n- Restores wool-based Arcane Ingots, advanced wool processing, End Stone fortification and Kaleidoscopic Enchanter inputs.\n- Corrects mining bonus composition, item preservation, bookshelf visibility, ordinary explosion damage, recurring Portable Red Hole blasts, and numerous combat, utility and persistence behaviors.\n- White Aura Crystals use one Amethyst Shard surrounded by eight Gold Nuggets, yielding two crystals.\n\nEquip accessories in their equipment slots. Consult the Encyclopedia for machine setup and recipes. The Prismatic Wand copies live blocks in loaded regions, consumes Survival materials and does not duplicate container contents.\n\nThis beta has bounded gameplay, UI, persistence and multiplayer validation, not an exhaustive survival or large-server soak test. External energy-receiver and third-party modpack interactions remain areas for beta feedback.\n\nUnofficial port of Aura Cascade by pixlepix; original 1.8.x port by williewillus. Original texture credits and MIT copyright notices are retained.",
+  "relations": {
+    "projects": [
+      {"slug": "fabric-api", "type": "requiredDependency"},
+      {"slug": "patchouli", "type": "requiredDependency"}
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "Fairy Charms",
+  "category": "aura:fairies",
+  "icon": "aura:fairy_charm",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Bind a Companion",
+      "text": "Use a typed Fairy Charm while wearing a Ring of Binding to bind its fixed role. Binding consumes the charm; a ring holds up to 15. Sneak-using the ring releases bound charms rather than cycling roles."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Known Roles",
+      "text": "Fighter Fairy, Debuffer Fairy, Buffer Fairy, Stealer Fairy, Pusher Fairy, Shooter Fairy, Savior Fairy, Fetcher Fairy, Baiter Fairy, Breeder Fairy, Scarer Fairy, Extinguisher Fairy, Digger Fairy, Lighter Fairy, Glider Fairy, and Training Fairy each carry a distinct role."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Charm Basics",
+      "text": "Open $(l:aura:fairy_charm_basics)Charm Basics$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Combat Charms",
+      "text": "Open $(l:aura:fairy_combat_charms)Combat Charms$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Work Charms",
+      "text": "Open $(l:aura:fairy_work_charms)Work Charms$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "World Charms",
+      "text": "Open $(l:aura:fairy_world_charms)World Charms$(/l)"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Travel Charms",
+      "text": "Open $(l:aura:fairy_travel_charms)Travel Charms$(/l)"
+    }
+  ]
+}

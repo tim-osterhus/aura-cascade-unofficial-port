@@ -1,0 +1,67 @@
+{
+  "name": "Amulet Recipes",
+  "category": "aura:storage_gear",
+  "icon": "aura:red_protection_amulet",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Recipe Index",
+      "text": "Recipe cards for this equipment role. Return to $(l:aura:accessory_loadout)Accessory Loadout$(/l)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Angel's Wing Amulet",
+      "recipe": "aura:amulet_of_the_angels_wing"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Forbidden Fruit Amulet",
+      "recipe": "aura:amulet_of_the_forbidden_fruit"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Red Protection Amulet",
+      "recipe": "aura:red_protection_amulet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Amulet",
+      "recipe": "aura:orange_protection_amulet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Yellow Amulet",
+      "recipe": "aura:yellow_protection_amulet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Green Amulet",
+      "recipe": "aura:green_protection_amulet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Blue Protection Amulet",
+      "recipe": "aura:blue_protection_amulet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Amulet",
+      "recipe": "aura:violet_protection_amulet"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Protection Colors",
+      "text": "While worn: Red blocks fire, Orange explosions, Green falls, and Blue drowning; those blocked hits heal except direct flame. Yellow halves projectile damage without healing. Violet blocks Wither damage but does not heal."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Activate the Wing",
+      "text": "Equip the Wing in the Amulet slot and press Activate Wing (V by default). Look level or upward to ascend; look steeply down to descend to a clear standing place. Change the key in Controls."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Forbidden Fruit",
+      "text": "Finish eating or drinking with it equipped: each food or drink grants the same gift on every use. Apples bring regeneration; potions and milk also qualify. The gift follows completed use, even in Creative mode. Canceling a meal or drink grants nothing."
+    }
+  ]
+}

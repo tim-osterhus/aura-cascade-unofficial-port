@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -24,21 +24,42 @@ public final class AuraWorldRecipeCatalog {
         "data/aura/recipes/processor/arcane_ingot_green.json",
         "data/aura/recipes/processor/arcane_ingot_blue.json",
         "data/aura/recipes/processor/arcane_ingot_violet.json",
-        "data/aura/recipes/processor/arcane_gem_white.json",
-        "data/aura/recipes/processor/arcane_gem_black.json",
-        "data/aura/recipes/processor/arcane_gem_orange.json",
-        "data/aura/recipes/processor/arcane_gem_red.json",
-        "data/aura/recipes/processor/arcane_gem_yellow.json",
-        "data/aura/recipes/processor/arcane_gem_green.json",
-        "data/aura/recipes/processor/arcane_gem_blue.json",
-        "data/aura/recipes/processor/arcane_gem_violet.json",
         "data/aura/recipes/processor/fortified_cobblestone.json",
         "data/aura/recipes/processor/fortified_stone.json",
         "data/aura/recipes/processor/fortified_planks.json",
         "data/aura/recipes/processor/fortified_glass.json",
         "data/aura/recipes/processor/fortified_obsidian.json",
         "data/aura/recipes/processor/fortified_dirt.json",
-        "data/aura/recipes/synthesizer/arcane_prism.json"
+        "data/aura/recipes/processor/arcane_prism.json",
+        "data/aura/recipes/processor/arcane_ingot_black_from_brown_wool.json",
+        "data/aura/recipes/processor/arcane_ingot_black_from_gray_wool.json",
+        "data/aura/recipes/processor/arcane_ingot_black_from_light_gray_wool.json",
+        "data/aura/recipes/processor/arcane_ingot_green_from_lime_wool.json",
+        "data/aura/recipes/processor/arcane_ingot_blue_from_light_blue_wool.json",
+        "data/aura/recipes/processor/arcane_ingot_blue_from_cyan_wool.json",
+        "data/aura/recipes/processor/arcane_ingot_violet_from_magenta_wool.json",
+        "data/aura/recipes/processor/arcane_ingot_violet_from_pink_wool.json",
+        "data/aura/recipes/processor/dye_from_white_wool.json",
+        "data/aura/recipes/processor/dye_from_orange_wool.json",
+        "data/aura/recipes/processor/dye_from_magenta_wool.json",
+        "data/aura/recipes/processor/dye_from_light_blue_wool.json",
+        "data/aura/recipes/processor/dye_from_yellow_wool.json",
+        "data/aura/recipes/processor/dye_from_lime_wool.json",
+        "data/aura/recipes/processor/dye_from_pink_wool.json",
+        "data/aura/recipes/processor/dye_from_gray_wool.json",
+        "data/aura/recipes/processor/dye_from_light_gray_wool.json",
+        "data/aura/recipes/processor/dye_from_cyan_wool.json",
+        "data/aura/recipes/processor/dye_from_purple_wool.json",
+        "data/aura/recipes/processor/dye_from_blue_wool.json",
+        "data/aura/recipes/processor/dye_from_brown_wool.json",
+        "data/aura/recipes/processor/dye_from_green_wool.json",
+        "data/aura/recipes/processor/dye_from_red_wool.json",
+        "data/aura/recipes/processor/dye_from_black_wool.json",
+        "data/aura/recipes/processor/fortified_planks_from_spruce.json",
+        "data/aura/recipes/processor/fortified_planks_from_birch.json",
+        "data/aura/recipes/processor/fortified_planks_from_jungle.json",
+        "data/aura/recipes/processor/fortified_planks_from_acacia.json",
+        "data/aura/recipes/processor/fortified_planks_from_dark_oak.json"
     };
 
     private static volatile List<AuraWorldRecipe> cachedRecipes;
@@ -111,7 +132,7 @@ public final class AuraWorldRecipeCatalog {
     }
 
     private static Item itemById(String id, String resourcePath) {
-        Item item = BuiltInRegistries.ITEM.getValue(Identifier.parse(id));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
         if (item == null || item == Items.AIR) {
             throw new IllegalStateException("Unknown item " + id + " in " + resourcePath);
         }

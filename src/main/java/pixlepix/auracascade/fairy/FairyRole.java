@@ -6,22 +6,22 @@ import net.minecraft.network.chat.Component;
 
 public enum FairyRole {
     BASIC(0, "fairy", "Fairy", "text.aura.fairy_role.fairy", 20),
-    FIGHTER(1, "fighter", "Fighter Fairy", 6),
-    DEBUFFER(2, "debuffer", "Debuffer Fairy", 10),
-    BUFFER(3, "buffer", "Buffer Fairy", 80),
-    STEALER(4, "stealer", "Stealer Fairy", 60),
-    PUSHER(5, "pusher", "Pusher Fairy", 10),
-    SHOOTER(6, "shooter", "Shooter Fairy", 8),
-    SAVIOR(7, "savior", "Savior Fairy", 10),
-    FETCHER(8, "fetcher", "Fetcher Fairy", 10),
-    BAITER(9, "baiter", "Baiter Fairy", 200),
-    BREEDER(10, "breeder", "Breeder Fairy", 40),
+    FIGHTER(1, "fighter", "Fighter Fairy", 3),
+    DEBUFFER(2, "debuffer", "Debuffer Fairy", 3),
+    BUFFER(3, "buffer", "Buffer Fairy", 2400),
+    STEALER(4, "stealer", "Stealer Fairy", 200),
+    PUSHER(5, "pusher", "Pusher Fairy", 3),
+    SHOOTER(6, "shooter", "Shooter Fairy", 3),
+    SAVIOR(7, "savior", "Savior Fairy", 3),
+    FETCHER(8, "fetcher", "Fetcher Fairy", 1),
+    BAITER(9, "baiter", "Baiter Fairy", 1),
+    BREEDER(10, "breeder", "Breeder Fairy", 3),
     SCARER(11, "scarer", "Scarer Fairy", 16),
-    EXTINGUISHER(12, "extinguisher", "Extinguisher Fairy", 8),
+    EXTINGUISHER(12, "extinguisher", "Extinguisher Fairy", 1),
     DIGGER(13, "digger", "Digger Fairy", 20),
-    LIGHTER(14, "lighter", "Lighter Fairy", 20),
-    GLIDER(15, "glider", "Glider Fairy", 4),
-    TRAINER(16, "trainer", "Training Fairy", "text.aura.fairy_role.training", 120);
+    GLIDER(14, "glider", "Glider Fairy", 4),
+    LIGHTER(15, "lighter", "Lighter Fairy", 1),
+    TRAINER(16, "trainer", "Training Fairy", "text.aura.fairy_role.training", 1);
 
     private final int legacyIndex;
     private final String id;
@@ -43,6 +43,10 @@ public enum FairyRole {
 
     public int legacyIndex() {
         return legacyIndex;
+    }
+
+    public int storedIndex() {
+        return this == LIGHTER ? 14 : this == GLIDER ? 15 : legacyIndex;
     }
 
     public String id() {
@@ -83,6 +87,10 @@ public enum FairyRole {
             .filter(role -> role.legacyIndex == legacyIndex)
             .findFirst()
             .orElse(defaultRole());
+    }
+
+    public static FairyRole byStoredIndex(int storedIndex) {
+        return storedIndex == 14 ? LIGHTER : storedIndex == 15 ? GLIDER : byLegacyIndex(storedIndex);
     }
 
     public static FairyRole fromUserFacingName(String name) {

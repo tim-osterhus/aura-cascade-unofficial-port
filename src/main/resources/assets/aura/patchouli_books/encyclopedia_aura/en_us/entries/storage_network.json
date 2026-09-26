@@ -1,0 +1,107 @@
+{
+  "name": "Storage Network",
+  "category": "aura:storage_gear",
+  "icon": "aura:basic_storage_book",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Books and Shelves",
+      "text": "Storage Books trade how many item types they hold against stack depth. Use any Storage Book on a vanilla bookshelf to make the conversion-only Storage Bookshelf; it has no standalone recipe."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Power and Connection",
+      "text": "Everything with an item form stays in the Aura creative tab. Connect shelves to a Bookshelf Coordinator with clear lines of sight, then place a powered Aura network block beside it. Right-click empty-handed to open the browser. Draw rises with shelf count: 5 power for one shelf, 31 for five, 81 for ten."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Search and Retrieve",
+      "text": "Search localized item names, scroll the 9-by-3 results, select a stack, set an amount or choose Max, then press Retrieve. The browser groups matching items with identical data components."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Deposit and Withdraw",
+      "text": "Use the Coordinator while holding an item to deposit. Sneak-use it empty-handed to withdraw the first stack. Full counts can exceed 64; incomplete, unloaded, unreachable, or unpowered networks disable actions. Stored items remain in their books."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Book Limits I",
+      "text": "Basic 27x64; Dense 8x1,000; Very Dense 4x5,000; Super Dense 2x25,000; Extremely Dense 1x100,000. Light: 100x32; Very Light 150x16; Super Light 1,000x4; Extremely Light 10,000x1. Each pair is item types x items per type."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Book Limits II",
+      "text": "Mineral: 8 x 100,000; Mob and Farming: 32 x 100,000 each; Mod: 64 x 100. Values are item types x items each. Mineral accepts common mineral tags, Mob accepts listed drops and spawn eggs, Farming accepts crop and seed tags, and Mod accepts non-Minecraft items from one namespace."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Coordinator",
+      "recipe": "aura:bookshelf_coordinator"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Basic Book",
+      "recipe": "aura:basic_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Dense Book",
+      "recipe": "aura:dense_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Very Dense Book",
+      "recipe": "aura:very_dense_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Super Dense Book",
+      "recipe": "aura:super_dense_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Extremely Dense Book",
+      "recipe": "aura:extremely_dense_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Light Book",
+      "recipe": "aura:light_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Very Light Book",
+      "recipe": "aura:very_light_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Super Light Book",
+      "recipe": "aura:super_light_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Extremely Light Book",
+      "recipe": "aura:extremely_light_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Mineral Book",
+      "recipe": "aura:mineral_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Mob Book",
+      "recipe": "aura:mob_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Farming Book",
+      "recipe": "aura:farming_storage_book"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Mod Book",
+      "recipe": "aura:mod_storage_book"
+    }
+  ]
+}

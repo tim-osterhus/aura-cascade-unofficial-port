@@ -1,0 +1,6 @@
+{
+  "name": "Walkthrough",
+  "description": "Start with $(l:aura:getting_started)the first pages$(/l), learn to shape a $(l:aura:white_aura_crystal)White Aura Crystal$(/l), then trace a $(l:aura:first_aura_circuit)first circuit$(/l).",
+  "icon": "aura:aura_crystal_white",
+  "sortnum": 0
+}

@@ -27,8 +27,8 @@ public final class AuraAccessoryBridgeRegistry {
         return bridge.isEquipped(player, stack, slot);
     }
 
-    public static synchronized void equip(Player player, ItemStack stack, AuraAccessorySlot slot) {
-        bridge.equip(player, stack, slot);
+    public static synchronized boolean equip(Player player, ItemStack stack, AuraAccessorySlot slot) {
+        return bridge.equip(player, stack, slot);
     }
 
     public static synchronized void unequip(Player player, ItemStack stack, AuraAccessorySlot slot) {

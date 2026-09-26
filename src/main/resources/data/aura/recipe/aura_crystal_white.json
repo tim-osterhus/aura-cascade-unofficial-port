@@ -1,13 +1,21 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    "minecraft:amethyst_shard",
-    "minecraft:glowstone_dust",
-    "minecraft:quartz"
+  "key": {
+    "G": {
+      "item": "minecraft:gold_nugget"
+    },
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GAG",
+    "GGG"
   ],
   "result": {
-    "count": 1,
+    "count": 2,
     "id": "aura:aura_crystal_white"
   }
 }

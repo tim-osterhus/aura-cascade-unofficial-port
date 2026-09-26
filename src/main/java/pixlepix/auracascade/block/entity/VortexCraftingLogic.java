@@ -37,7 +37,9 @@ public final class VortexCraftingLogic {
     public static boolean ready(RecipeMatch match, Map<net.minecraft.core.BlockPos, PedestalInput> pedestalsByPos) {
         for (Map.Entry<net.minecraft.core.BlockPos, AuraVortexRecipe.Component> entry : match.assignments().entrySet()) {
             PedestalInput pedestal = pedestalsByPos.get(entry.getKey());
-            if (pedestal == null || !pedestal.aura().covers(entry.getValue().auraRequirement())) {
+            if (pedestal == null || pedestal.received() < entry.getValue().requiredPower()
+                || pedestal.requiredColor() != entry.getValue().requiredColor()
+                || pedestal.requiredPower() != entry.getValue().requiredPower()) {
                 return false;
             }
         }
@@ -85,10 +87,10 @@ public final class VortexCraftingLogic {
         return Math.min(15, (int) Math.ceil(progress * 15.0D / Math.max(1, maxProgress)));
     }
 
-    public record PedestalInput(net.minecraft.core.BlockPos pos, net.minecraft.world.item.ItemStack item, pixlepix.auracascade.aura.AuraStorage aura) {
+    public record PedestalInput(net.minecraft.core.BlockPos pos, net.minecraft.world.item.ItemStack item,
+                                int received, pixlepix.auracascade.parity.AuraColor requiredColor, int requiredPower) {
         public PedestalInput {
             item = item.copy();
-            aura = aura.copy();
         }
     }
 

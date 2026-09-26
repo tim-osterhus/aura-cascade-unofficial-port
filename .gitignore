@@ -27,3 +27,10 @@ millrace-health-monitor-*.log
 AuraCascade-592.jar
 aura_cascade_unofficial_modern_port_spec.md
 port-parity-gaps.md
+
+# Local publish secrets
+.env.curseforge
+
+# Python runtime caches
+__pycache__/
+*.py[cod]

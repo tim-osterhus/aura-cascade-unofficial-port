@@ -4,15 +4,20 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ReboundingEnigmaBlock extends Block {
     public static final MapCodec<ReboundingEnigmaBlock> CODEC = simpleCodec(ReboundingEnigmaBlock::new);
+    private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 12.8, 16);
 
     public ReboundingEnigmaBlock(BlockBehaviour.Properties properties) {
-        super(properties);
+        super(properties.noOcclusion().lightLevel(state -> 15));
     }
 
     @Override
@@ -21,16 +26,21 @@ public class ReboundingEnigmaBlock extends Block {
     }
 
     @Override
-    public void fallOn(Level level, BlockState state, BlockPos pos, Entity entity, double fallDistance) {
-        entity.fallDistance = 0.0F;
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     @Override
-    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        if (entity.onGround() && entity.getDeltaMovement().y < 1.5D) {
-            entity.setDeltaMovement(entity.getDeltaMovement().x, 1.5D, entity.getDeltaMovement().z);
-        }
-        entity.fallDistance = 0.0F;
-        super.stepOn(level, pos, state, entity);
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
+    }
+
+    @Override
+    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        entity.setDeltaMovement(launchVelocity(entity.getDeltaMovement()));
+    }
+
+    static Vec3 launchVelocity(Vec3 incoming) {
+        return new Vec3(incoming.x, 10.0D, incoming.z);
     }
 }

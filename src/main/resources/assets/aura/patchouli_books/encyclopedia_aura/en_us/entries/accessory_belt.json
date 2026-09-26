@@ -1,0 +1,22 @@
+{
+  "name": "Belt Recipe",
+  "category": "aura:storage_gear",
+  "icon": "aura:sash_of_the_angels_heels",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Recipe Index",
+      "text": "Recipe cards for this equipment role. Return to $(l:aura:accessory_loadout)Accessory Loadout$(/l)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Step Up",
+      "text": "While worn in the Belt slot, this sash lets you step up to two blocks when the way is clear. Press against a wall and the lift builds in short pulses; move clear and it settles at once."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Angel's Heels Sash",
+      "recipe": "aura:sash_of_the_angels_heels"
+    }
+  ]
+}

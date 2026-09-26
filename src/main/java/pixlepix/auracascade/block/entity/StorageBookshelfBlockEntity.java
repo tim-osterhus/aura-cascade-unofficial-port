@@ -1,7 +1,10 @@
 package pixlepix.auracascade.block.entity;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -9,8 +12,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import pixlepix.auracascade.block.AuraContent;
 import pixlepix.auracascade.item.books.StorageBookData;
 import pixlepix.auracascade.item.books.StorageBookItem;
@@ -42,6 +43,10 @@ public final class StorageBookshelfBlockEntity extends net.minecraft.world.level
 
     public int storedItemCount() {
         return hasBook() ? StorageBookData.storedItemCount(storedBook) : 0;
+    }
+
+    public List<StorageBookData.Entry> storedEntries() {
+        return hasBook() ? StorageBookData.detailedEntries(storedBook) : List.of();
     }
 
     public String bookLabel() {
@@ -79,6 +84,18 @@ public final class StorageBookshelfBlockEntity extends net.minecraft.world.level
         return extracted;
     }
 
+    public ItemStack extract(ItemStack target, int requestedCount) {
+        if (!(storedBook.getItem() instanceof StorageBookItem) || target.isEmpty() || requestedCount <= 0) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack extracted = StorageBookData.extract(storedBook, target, requestedCount);
+        if (!extracted.isEmpty()) {
+            markUpdated();
+        }
+        return extracted;
+    }
+
     public ItemStack removeBook() {
         if (storedBook.isEmpty()) {
             return ItemStack.EMPTY;
@@ -98,15 +115,19 @@ public final class StorageBookshelfBlockEntity extends net.minecraft.world.level
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        storedBook = input.read(STORED_BOOK_TAG, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        storedBook = tag.contains(STORED_BOOK_TAG, Tag.TAG_COMPOUND)
+            ? ItemStack.parseOptional(registries, tag.getCompound(STORED_BOOK_TAG))
+            : ItemStack.EMPTY;
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.store(STORED_BOOK_TAG, ItemStack.OPTIONAL_CODEC, storedBook);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        if (!storedBook.isEmpty()) {
+            tag.put(STORED_BOOK_TAG, storedBook.saveOptional(registries));
+        }
     }
 
     @Override

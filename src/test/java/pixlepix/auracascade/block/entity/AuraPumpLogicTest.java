@@ -1,12 +1,17 @@
 package pixlepix.auracascade.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.Test;
 import pixlepix.auracascade.aura.AuraEnvironment;
 import pixlepix.auracascade.aura.AuraNodeState;
 import pixlepix.auracascade.parity.AuraColor;
+import pixlepix.auracascade.support.TestMinecraftBootstrap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class AuraPumpLogicTest {
@@ -35,17 +40,29 @@ final class AuraPumpLogicTest {
         );
         assertEquals(20, alternating.power());
         assertEquals(30, alternating.speed());
+
+        assertEquals(
+            new AuraPumpLogic.PumpState(10, 30),
+            AuraPumpLogic.addFuel(
+                AuraPumpVariant.BURNING_ALT,
+                new AuraPumpLogic.PumpState(10, 30),
+                new AuraPumpLogic.FuelOffer(20, 10)
+            )
+        );
     }
 
     @Test
     void triggerFamiliesKeepDistinctFuelSemantics() {
-        assertTrue(AuraPumpLogic.burningFuel(1_600).power() > AuraPumpLogic.torchFuel().power());
-        assertTrue(AuraPumpLogic.glowstoneFuel().power() > AuraPumpLogic.torchFuel().power());
-        assertTrue(AuraPumpLogic.fallFuel(6.5F).power() > AuraPumpLogic.fallFuel(2.0F).power());
-        assertTrue(AuraPumpLogic.arrowFuel().power() > AuraPumpLogic.eggFuel().power());
-        assertTrue(AuraPumpLogic.eggFuel().power() > AuraPumpLogic.snowballFuel().power());
-        assertTrue(AuraPumpLogic.redstoneFuel(6).power() > AuraPumpLogic.redstoneFuel(2).power());
-        assertTrue(AuraPumpLogic.creativeFuel().speed() > AuraPumpLogic.arrowFuel().speed());
+        assertEquals(new AuraPumpLogic.FuelOffer(320, 300), AuraPumpLogic.burningFuel(1_600));
+        assertEquals(new AuraPumpLogic.FuelOffer(180, 750), AuraPumpLogic.glowstoneFuel());
+        assertEquals(new AuraPumpLogic.FuelOffer(30, 750), AuraPumpLogic.torchFuel());
+        assertEquals(new AuraPumpLogic.FuelOffer(13, 500), AuraPumpLogic.fallFuel(6.5F));
+        assertEquals(new AuraPumpLogic.FuelOffer(20, 1_000), AuraPumpLogic.arrowFuel());
+        assertEquals(new AuraPumpLogic.FuelOffer(90, 500), AuraPumpLogic.eggFuel());
+        assertEquals(new AuraPumpLogic.FuelOffer(10, 500), AuraPumpLogic.snowballFuel());
+        assertEquals(new AuraPumpLogic.FuelOffer(14, 1_500), AuraPumpLogic.redstoneFuel(1));
+        assertEquals(new AuraPumpLogic.FuelOffer(19, 1_500), AuraPumpLogic.redstoneFuel(2));
+        assertEquals(new AuraPumpLogic.FuelOffer(2, 10_000_000), AuraPumpLogic.creativeFuel());
     }
 
     @Test
@@ -67,5 +84,101 @@ final class AuraPumpLogicTest {
 
         assertTrue(requested.get(AuraColor.YELLOW) > requested.get(AuraColor.WHITE));
         assertEquals(0, requested.get(AuraColor.BLACK));
+    }
+
+    @Test
+    void targetConsumesOneSecondEvenWhenEveryColorRoundsToZero() {
+        AuraNodeState source = new AuraNodeState();
+        source.storage().set(AuraColor.WHITE, 1);
+        source.storage().set(AuraColor.YELLOW, 1);
+        AuraPumpLogic.PumpState fuel = new AuraPumpLogic.PumpState(1, 3);
+
+        var requested = AuraPumpLogic.planTransfer(
+            source,
+            BlockPos.ZERO,
+            new BlockPos(0, 2, 0),
+            AuraEnvironment.CLEAR_DAY,
+            fuel,
+            AuraPumpVariant.BURNING,
+            2L
+        );
+
+        assertTrue(requested.isEmpty());
+        assertEquals(new AuraPumpLogic.PumpState(0, 3), AuraPumpLogic.spendForTarget(fuel));
+        assertEquals(1, fuel.power());
+    }
+
+    @Test
+    void lastEligibleSecondCanStillMoveAura() {
+        AuraNodeState source = new AuraNodeState();
+        source.storage().set(AuraColor.WHITE, 20);
+        AuraPumpLogic.PumpState beforeSpend = new AuraPumpLogic.PumpState(1, 300);
+        AuraPumpLogic.PumpState afterSpend = AuraPumpLogic.spendForTarget(beforeSpend);
+
+        assertEquals(0, afterSpend.power());
+        assertEquals(20, AuraPumpLogic.planTransfer(
+            source, BlockPos.ZERO, new BlockPos(0, 1, 0), AuraEnvironment.CLEAR_DAY,
+            beforeSpend, AuraPumpVariant.BURNING, 2L
+        ).get(AuraColor.WHITE));
+        assertTrue(AuraPumpLogic.planTransfer(
+            source, BlockPos.ZERO, new BlockPos(0, 1, 0), AuraEnvironment.CLEAR_DAY,
+            afterSpend, AuraPumpVariant.BURNING, 2L
+        ).isEmpty());
+    }
+
+    @Test
+    void burningPumpUsesFurnaceFuelMapBeyondOldFixedSubset() {
+        TestMinecraftBootstrap.ensureBootstrapped();
+
+        assertEquals(1_600, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.COAL)));
+        assertEquals(100, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.STICK)));
+        assertEquals(20_000, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.LAVA_BUCKET)));
+        assertEquals(0, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.DIAMOND)));
+    }
+
+    @Test
+    void alternatorTruncatesBeforeComposition() {
+        AuraNodeState source = new AuraNodeState();
+        source.storage().set(AuraColor.WHITE, 10);
+        var requested = AuraPumpLogic.planTransfer(
+            source,
+            BlockPos.ZERO,
+            new BlockPos(0, 2, 0),
+            AuraEnvironment.CLEAR_DAY,
+            new AuraPumpLogic.PumpState(1, 3),
+            AuraPumpVariant.BURNING_ALT,
+            1_667L
+        );
+        assertTrue(requested.isEmpty());
+    }
+
+    @Test
+    void compositionTruncatesBeforeYellowAscentBoost() {
+        AuraNodeState source = new AuraNodeState();
+        source.storage().set(AuraColor.WHITE, 10);
+        source.storage().set(AuraColor.YELLOW, 10);
+        var requested = AuraPumpLogic.planTransfer(
+            source,
+            BlockPos.ZERO,
+            new BlockPos(0, 1, 0),
+            AuraEnvironment.CLEAR_DAY,
+            new AuraPumpLogic.PumpState(1, 3),
+            AuraPumpVariant.BURNING,
+            2L
+        );
+        assertEquals(1, requested.get(AuraColor.WHITE));
+        assertEquals(2, requested.get(AuraColor.YELLOW));
+    }
+
+    @Test
+    void pumpHudStateRoundTripsThroughPumpTags() {
+        CompoundTag tag = new CompoundTag();
+        AuraPumpLogic.PumpState state = new AuraPumpLogic.PumpState(179, 750);
+        AuraPumpBlockEntity.writePumpState(tag, state, true);
+
+        assertEquals(state, AuraPumpBlockEntity.readPumpState(tag));
+        assertTrue(AuraPumpBlockEntity.readPumpInhibited(tag));
+        assertEquals(new AuraPumpLogic.PumpState(0, 0), AuraPumpBlockEntity.readPumpState(new CompoundTag()));
+        assertFalse(AuraPumpBlockEntity.readPumpInhibited(new CompoundTag()));
     }
 }

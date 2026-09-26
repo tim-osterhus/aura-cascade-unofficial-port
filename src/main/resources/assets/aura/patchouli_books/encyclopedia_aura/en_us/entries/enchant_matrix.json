@@ -1,0 +1,37 @@
+{
+  "name": "Enchant Matrix",
+  "category": "aura:enchantments",
+  "icon": "aura:consumer_block_enchant",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Pairings I",
+      "text": "$(li)Yellow + Green breaks up to 25 x pair-strength connected growable blocks, except grass.$(li)Blue + Violet damages living entities in a 2-block cube around the attacked target."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pairings II",
+      "text": "$(li)Green + Blue heals the attacker by floor(pair strength / 2) on hit.$(li)Yellow + Blue ignites the target for 20 x pair ticks; Blue + Violet splash victims burn for 10 x pair ticks.$(li)Red + Violet multiplies incoming player damage by 0.9^pair."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pairings III",
+      "text": "$(li)Yellow + Violet rolls bonus loot from the killed entity's loot table under transient Looting.$(li)Yellow + Red may turn an eligible ore drop into two matching ingots."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pairings IV",
+      "text": "$(li)Red + Green divides mining speed by 3^pair.$(li)Red + Blue deals pair-strength recoil damage to the attacker.$(li)Green + Violet subtracts pair strength from player-sourced outgoing damage, floored at zero."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mining Pairings",
+      "text": "$(li)Red + Orange multiplies ore mining speed by 1.25^pair.$(li)Yellow + Orange multiplies stone speed by 1.25^pair.$(li)Blue + Orange does so for dirt, grass, gravel, and sand.$(li)Green + Orange does so for logs.$(li)Violet + Orange multiplies speed by 1.5^pair at hardness 3 or higher."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Boundaries",
+      "text": "Orange speed pairings require a tool that can harvest the block; Red + Green is the slow effect. Yellow + Red converts only supported ore/material pairs. Yellow + Violet rolls the killed entity's loot table; nearby dropped items are not duplicated."
+    }
+  ]
+}

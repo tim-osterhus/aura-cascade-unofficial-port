@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": "minecraft:bookshelf",
-    "I": "aura:arcane_ingot_blue",
-    "P": "aura:arcane_prism",
-    "R": "minecraft:redstone"
+    "B": {
+      "item": "minecraft:bookshelf"
+    },
+    "I": {
+      "item": "aura:arcane_ingot_blue"
+    },
+    "P": {
+      "item": "aura:arcane_prism"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
   },
   "pattern": [
     "BIB",

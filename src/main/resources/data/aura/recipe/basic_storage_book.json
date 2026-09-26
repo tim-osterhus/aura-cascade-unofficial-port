@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "minecraft:book",
-    "minecraft:chest",
-    "aura:arcane_ingot_white"
+    {
+      "item": "minecraft:book"
+    },
+    {
+      "item": "minecraft:chest"
+    },
+    {
+      "item": "aura:arcane_ingot_white"
+    }
   ],
   "result": {
     "id": "aura:basic_storage_book",

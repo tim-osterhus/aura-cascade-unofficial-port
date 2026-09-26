@@ -1,0 +1,88 @@
+allprojects {
+    plugins.withId('net.fabricmc.fabric-loom-remap') {
+        if (project.hasProperty('auditBridgeJar')) {
+            dependencies.add('modRuntimeOnly', files(project.property('auditBridgeJar')))
+        }
+
+        def observerSources = sourceSets.create('qaObserver') {
+            java.srcDir 'scripts/qa/observer/src/main/java'
+            resources.srcDir 'scripts/qa/observer/src/main/resources'
+            compileClasspath += sourceSets.main.compileClasspath
+        }
+        def observerJar = tasks.register('qaObserverJar', Jar) {
+            dependsOn tasks.named(observerSources.classesTaskName)
+            from observerSources.output
+            archiveBaseName = 'aura-qa-observer'
+            archiveClassifier = 'dev'
+            destinationDirectory = layout.buildDirectory.dir('qa-audit/observer')
+        }
+        def loomLoader = plugins.getPlugin('net.fabricmc.fabric-loom-remap').class.classLoader
+        def remapTaskType = Class.forName('net.fabricmc.loom.task.RemapJarTask', true, loomLoader)
+        tasks.register('qaObserverRemapJar', remapTaskType) {
+            dependsOn observerJar
+            inputFile.set(observerJar.flatMap { it.archiveFile })
+            classpath.from(observerSources.compileClasspath)
+            sourceNamespace.set('named')
+            targetNamespace.set('intermediary')
+            addNestedDependencies.set(false)
+            useMixinAP.set(false)
+            archiveBaseName = 'aura-qa-observer'
+            archiveClassifier = ''
+            destinationDirectory = layout.buildDirectory.dir('qa-audit/observer')
+        }
+
+        def multiplayerSources = sourceSets.create('qaMultiplayer') {
+            java.srcDir 'scripts/qa/multiplayer/src/main/java'
+            resources.srcDir 'scripts/qa/multiplayer/src/main/resources'
+            compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        }
+        def multiplayerJar = tasks.register('qaMultiplayerJar', Jar) {
+            dependsOn tasks.named(multiplayerSources.classesTaskName)
+            from multiplayerSources.output
+            archiveBaseName = 'aura-qa-multiplayer'
+            archiveVersion = '1.0.0'
+            archiveClassifier = 'dev'
+            destinationDirectory = layout.buildDirectory.dir('qa-audit/multiplayer-tool')
+        }
+        tasks.register('qaMultiplayerRemapJar', remapTaskType) {
+            dependsOn multiplayerJar
+            inputFile.set(multiplayerJar.flatMap { it.archiveFile })
+            classpath.from(multiplayerSources.compileClasspath)
+            sourceNamespace.set('named')
+            targetNamespace.set('intermediary')
+            addNestedDependencies.set(false)
+            useMixinAP.set(false)
+            archiveBaseName = 'aura-qa-multiplayer'
+            archiveVersion = '1.0.0'
+            archiveClassifier = ''
+            destinationDirectory = layout.buildDirectory.dir('qa-audit/multiplayer-tool')
+        }
+    }
+    tasks.withType(Test).configureEach {
+        maxHeapSize = '512m'
+        maxParallelForks = 1
+    }
+    tasks.withType(JavaExec).configureEach {
+        maxHeapSize = '1280m'
+        minHeapSize = '256m'
+    }
+    afterEvaluate {
+        if (tasks.findByName('runClient') != null) {
+            def client = tasks.named('runClient').get()
+            tasks.register('auditClientLaunch') {
+                dependsOn(client.taskDependencies.getDependencies(client))
+                doLast {
+                    def launch = [
+                        jvmArgs: client.allJvmArgs,
+                        classpath: client.classpath.asPath,
+                        mainClass: client.mainClass.get(),
+                        args: client.args
+                    ]
+                    def output = file('build/qa-audit/client-launch.json')
+                    output.parentFile.mkdirs()
+                    output.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(launch))
+                }
+            }
+        }
+    }
+}

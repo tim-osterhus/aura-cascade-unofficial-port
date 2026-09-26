@@ -16,16 +16,11 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import pixlepix.auracascade.block.AuraContent;
 import pixlepix.auracascade.data.recipe.AuraVortexRecipeCatalog;
+import pixlepix.auracascade.parity.AuraColor;
 
 public class VortexControllerBlockEntity extends net.minecraft.world.level.block.entity.BlockEntity implements AuraSignalSource {
-    private static final String PROGRESS_TAG = "progress";
-
-    private int progress;
-
     public VortexControllerBlockEntity(BlockPos pos, BlockState blockState) {
         super(AuraContent.VORTEX_CONTROLLER_BLOCK_ENTITY, pos, blockState);
     }
@@ -37,20 +32,15 @@ public class VortexControllerBlockEntity extends net.minecraft.world.level.block
     }
 
     private void serverTick(Level level, BlockPos pos) {
-        int previousProgress = progress;
-        CraftingState craftingState = craftingState(level, pos);
-
-        if (craftingState.ready() && craftingState.match().isPresent()) {
-            progress++;
-            if (progress >= craftingState.match().get().recipe().maxProgress()) {
-                completeCraft(level, pos, craftingState.pedestals(), craftingState.match().get());
-                progress = 0;
-            }
-        } else if (progress > 0) {
-            progress = Math.max(0, progress - 2);
+        CraftingState initial = craftingState(level, pos);
+        for (var entry : initial.pedestals().entrySet()) {
+            var component = initial.match().map(value -> value.assignments().get(entry.getKey())).orElse(null);
+            entry.getValue().setRequirement(component == null ? null : component.requiredColor(),
+                component == null ? 0 : component.requiredPower());
         }
-
-        if (progress != previousProgress) {
+        CraftingState craftingState = craftingState(level, pos);
+        if (craftingState.ready() && craftingState.match().isPresent()) {
+            completeCraft(level, pos, craftingState.pedestals(), craftingState.match().get());
             setChanged();
             level.sendBlockUpdated(pos, getBlockState(), getBlockState(), 3);
         }
@@ -58,8 +48,39 @@ public class VortexControllerBlockEntity extends net.minecraft.world.level.block
 
     @Override
     public int auraSignal() {
-        int maxProgress = AuraVortexRecipeCatalog.all().stream().mapToInt(recipe -> recipe.maxProgress()).max().orElse(100);
-        return VortexCraftingLogic.progressSignal(progress, maxProgress);
+        if (level == null) {
+            return 0;
+        }
+        InspectionSnapshot snapshot = inspectionSnapshot(level, getBlockPos());
+        return VortexCraftingLogic.progressSignal(snapshot.receivedPower(), snapshot.requiredPower());
+    }
+
+    public InspectionSnapshot inspectionSnapshot(Level level, BlockPos pos) {
+        CraftingState state = craftingState(level, pos);
+        if (state.match().isEmpty()) {
+            return new InspectionSnapshot("", "", 0, 0, List.of());
+        }
+        var match = state.match().get();
+        ArrayList<PedestalInspection> pedestals = new ArrayList<>();
+        int received = 0;
+        int required = 0;
+        for (Direction direction : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+            BlockPos pedestalPos = pos.relative(direction);
+            var component = match.assignments().get(pedestalPos);
+            var pedestal = state.pedestals().get(pedestalPos);
+            if (component == null || pedestal == null) {
+                continue;
+            }
+            var receipt = pedestal.inspectionSnapshot();
+            int credited = receipt.color() == component.requiredColor() && receipt.required() == component.requiredPower()
+                ? Math.min(receipt.received(), component.requiredPower()) : 0;
+            pedestals.add(new PedestalInspection(pedestalPos, component.item().getDescriptionId(), component.requiredColor(), credited,
+                component.requiredPower()));
+            received += credited;
+            required += component.requiredPower();
+        }
+        return new InspectionSnapshot(match.recipe().id(), match.recipe().result().getDescriptionId(),
+            received, required, List.copyOf(pedestals));
     }
 
     public Component statusMessage(Level level, BlockPos pos) {
@@ -78,11 +99,12 @@ public class VortexControllerBlockEntity extends net.minecraft.world.level.block
         String resultName = result.getHoverName().getString();
         if (craftingState.ready()) {
             return Component.literal(
-                "Vortex Controller: crafting " + resultName + " (" + Math.min(progress, craftingState.match().get().recipe().maxProgress()) + "/"
-                    + craftingState.match().get().recipe().maxProgress() + ")."
+                "Vortex Controller: completing " + resultName + "."
             );
         }
-        return Component.literal("Vortex Controller: " + resultName + " selected, waiting for aura.");
+        InspectionSnapshot snapshot = inspectionSnapshot(level, pos);
+        return Component.literal("Vortex Controller: making " + resultName + " (power received "
+            + snapshot.receivedPower() + "/" + snapshot.requiredPower() + ").");
     }
 
     private static Map<BlockPos, VortexPedestalBlockEntity> pedestals(Level level, BlockPos controllerPos) {
@@ -96,14 +118,6 @@ public class VortexControllerBlockEntity extends net.minecraft.world.level.block
         return pedestals;
     }
 
-    private static Map<BlockPos, VortexCraftingLogic.PedestalInput> inputsByPos(List<VortexCraftingLogic.PedestalInput> inputs) {
-        LinkedHashMap<BlockPos, VortexCraftingLogic.PedestalInput> byPos = new LinkedHashMap<>();
-        for (VortexCraftingLogic.PedestalInput input : inputs) {
-            byPos.put(input.pos(), input);
-        }
-        return byPos;
-    }
-
     private CraftingState craftingState(Level level, BlockPos pos) {
         Map<BlockPos, VortexPedestalBlockEntity> pedestalMap = pedestals(level, pos);
         List<VortexCraftingLogic.PedestalInput> inputs = new ArrayList<>();
@@ -114,13 +128,18 @@ public class VortexControllerBlockEntity extends net.minecraft.world.level.block
                 continue;
             }
             loadedPedestals++;
-            inputs.add(new VortexCraftingLogic.PedestalInput(pedestal.getBlockPos(), heldItem, pedestal.nodeState.storage()));
+            var receipt = pedestal.inspectionSnapshot();
+            inputs.add(new VortexCraftingLogic.PedestalInput(pedestal.getBlockPos(), heldItem,
+                receipt.received(), receipt.color(), receipt.required()));
         }
 
         Optional<VortexCraftingLogic.RecipeMatch> match = loadedPedestals == 4
             ? VortexCraftingLogic.findMatch(inputs, AuraVortexRecipeCatalog.all())
             : Optional.empty();
-        boolean ready = match.isPresent() && VortexCraftingLogic.ready(match.get(), inputsByPos(inputs));
+        boolean ready = match.isPresent() && match.get().assignments().entrySet().stream().allMatch(entry -> {
+            var pedestal = pedestalMap.get(entry.getKey());
+            return pedestal != null && pedestal.canCraft(entry.getValue());
+        });
         return new CraftingState(pedestalMap, inputs, loadedPedestals, match, ready);
     }
 
@@ -151,18 +170,6 @@ public class VortexControllerBlockEntity extends net.minecraft.world.level.block
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        progress = input.getIntOr(PROGRESS_TAG, 0);
-    }
-
-    @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.putInt(PROGRESS_TAG, progress);
-    }
-
-    @Override
     public net.minecraft.nbt.CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         return saveWithoutMetadata(registries);
     }
@@ -179,5 +186,15 @@ public class VortexControllerBlockEntity extends net.minecraft.world.level.block
         Optional<VortexCraftingLogic.RecipeMatch> match,
         boolean ready
     ) {
+    }
+
+    public record PedestalInspection(BlockPos pos, String itemDescriptionId, AuraColor color, int received, int required) {
+    }
+
+    public record InspectionSnapshot(String recipeId, String resultDescriptionId, int receivedPower,
+                                     int requiredPower, List<PedestalInspection> pedestals) {
+        public InspectionSnapshot {
+            pedestals = List.copyOf(pedestals);
+        }
     }
 }

@@ -6,9 +6,15 @@
     " s "
   ],
   "key": {
-    "r": "aura:arcane_gem_red",
-    "i": "aura:arcane_ingot_red",
-    "s": "minecraft:diamond_sword"
+    "r": {
+      "item": "aura:arcane_gem_red"
+    },
+    "i": {
+      "item": "aura:arcane_ingot_red"
+    },
+    "s": {
+      "item": "minecraft:diamond_sword"
+    }
   },
   "result": {
     "id": "aura:sword_of_the_barbarian",

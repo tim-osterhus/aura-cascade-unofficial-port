@@ -33,25 +33,29 @@ final class VortexCraftingLogicTest {
             120
         );
 
-        List<VortexCraftingLogic.PedestalInput> lowAuraInputs = List.of(
-            pedestal(new BlockPos(0, 0, 0), Items.QUARTZ, AuraColor.WHITE, 700),
-            pedestal(new BlockPos(1, 0, 0), Items.AMETHYST_SHARD, AuraColor.VIOLET, 800),
-            pedestal(new BlockPos(2, 0, 0), Items.REDSTONE, AuraColor.RED, 500),
-            pedestal(new BlockPos(3, 0, 0), Items.GLOWSTONE_DUST, AuraColor.YELLOW, 599)
+        List<VortexCraftingLogic.PedestalInput> lowPowerInputs = List.of(
+            pedestal(new BlockPos(0, 0, 0), Items.QUARTZ, AuraColor.WHITE, 700, 700),
+            pedestal(new BlockPos(1, 0, 0), Items.AMETHYST_SHARD, AuraColor.VIOLET, 800, 800),
+            pedestal(new BlockPos(2, 0, 0), Items.REDSTONE, AuraColor.RED, 500, 500),
+            pedestal(new BlockPos(3, 0, 0), Items.GLOWSTONE_DUST, AuraColor.YELLOW, 599, 600)
         );
 
-        var match = VortexCraftingLogic.findMatch(lowAuraInputs, List.of(recipe));
+        var match = VortexCraftingLogic.findMatch(lowPowerInputs, List.of(recipe));
         assertTrue(match.isPresent());
-        assertFalse(VortexCraftingLogic.ready(match.get(), byPos(lowAuraInputs)));
+        assertFalse(VortexCraftingLogic.ready(match.get(), byPos(lowPowerInputs)));
 
         List<VortexCraftingLogic.PedestalInput> chargedInputs = List.of(
-            pedestal(new BlockPos(0, 0, 0), Items.QUARTZ, AuraColor.WHITE, 700),
-            pedestal(new BlockPos(1, 0, 0), Items.AMETHYST_SHARD, AuraColor.VIOLET, 800),
-            pedestal(new BlockPos(2, 0, 0), Items.REDSTONE, AuraColor.RED, 500),
-            pedestal(new BlockPos(3, 0, 0), Items.GLOWSTONE_DUST, AuraColor.YELLOW, 600)
+            pedestal(new BlockPos(0, 0, 0), Items.QUARTZ, AuraColor.WHITE, 700, 700),
+            pedestal(new BlockPos(1, 0, 0), Items.AMETHYST_SHARD, AuraColor.VIOLET, 800, 800),
+            pedestal(new BlockPos(2, 0, 0), Items.REDSTONE, AuraColor.RED, 500, 500),
+            pedestal(new BlockPos(3, 0, 0), Items.GLOWSTONE_DUST, AuraColor.YELLOW, 600, 600)
         );
 
         assertTrue(VortexCraftingLogic.ready(match.get(), byPos(chargedInputs)));
+        assertFalse(VortexCraftingLogic.ready(match.get(), byPos(List.of(
+            pedestal(new BlockPos(0, 0, 0), Items.QUARTZ, AuraColor.RED, 700, 700),
+            chargedInputs.get(1), chargedInputs.get(2), chargedInputs.get(3)
+        ))));
     }
 
     @Test
@@ -61,8 +65,28 @@ final class VortexCraftingLogicTest {
         assertEquals(15, VortexCraftingLogic.progressSignal(100, 100));
     }
 
-    private static VortexCraftingLogic.PedestalInput pedestal(BlockPos pos, net.minecraft.world.item.Item item, AuraColor color, int amount) {
-        return new VortexCraftingLogic.PedestalInput(pos, new ItemStack(item), AuraStorage.of(color, amount));
+    @Test
+    void repeatedIngredientNeedsFourDistinctPedestals() {
+        TestMinecraftBootstrap.ensureBootstrapped();
+        var component = new AuraVortexRecipe.Component(Items.DIAMOND, 1, AuraStorage.of(AuraColor.RED, 100000));
+        var recipe = new AuraVortexRecipe("test:four_diamonds", List.of(component, component, component, component),
+            new ItemStack(Items.EMERALD), 100);
+        List<VortexCraftingLogic.PedestalInput> inputs = List.of(
+            pedestal(new BlockPos(0, 0, -1), Items.DIAMOND, AuraColor.RED, 100000, 100000),
+            pedestal(new BlockPos(1, 0, 0), Items.DIAMOND, AuraColor.RED, 100000, 100000),
+            pedestal(new BlockPos(0, 0, 1), Items.DIAMOND, AuraColor.RED, 100000, 100000),
+            pedestal(new BlockPos(-1, 0, 0), Items.DIAMOND, AuraColor.RED, 100000, 100000)
+        );
+        var match = VortexCraftingLogic.match(recipe, inputs);
+        assertTrue(match.isPresent());
+        assertEquals(4, match.get().assignments().size());
+        assertTrue(VortexCraftingLogic.ready(match.get(), byPos(inputs)));
+        assertFalse(VortexCraftingLogic.match(recipe, inputs.subList(0, 3)).isPresent());
+    }
+
+    private static VortexCraftingLogic.PedestalInput pedestal(BlockPos pos, net.minecraft.world.item.Item item,
+                                                              AuraColor color, int received, int required) {
+        return new VortexCraftingLogic.PedestalInput(pos, new ItemStack(item), received, color, required);
     }
 
     private static Map<BlockPos, VortexCraftingLogic.PedestalInput> byPos(List<VortexCraftingLogic.PedestalInput> pedestals) {

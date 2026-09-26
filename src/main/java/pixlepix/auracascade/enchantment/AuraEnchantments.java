@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -14,7 +15,7 @@ import pixlepix.auracascade.parity.AuraColor;
 public final class AuraEnchantments {
     public static final TagKey<Item> KALEIDOSCOPIC_ENCHANTABLE = TagKey.create(
         Registries.ITEM,
-        net.minecraft.resources.Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, "kaleidoscopic_enchantable")
+        ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, "kaleidoscopic_enchantable")
     );
 
     private static final EnumMap<AuraColor, ResourceKey<Enchantment>> KALEIDOSCOPIC = new EnumMap<>(AuraColor.class);
@@ -40,6 +41,6 @@ public final class AuraEnchantments {
     }
 
     private static ResourceKey<Enchantment> key(String path) {
-        return ResourceKey.create(Registries.ENCHANTMENT, net.minecraft.resources.Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path));
+        return ResourceKey.create(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path));
     }
 }

@@ -1,0 +1,72 @@
+{
+  "name": "Violet Swords",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_sword_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Twelve Tiers",
+      "text": "Twelve Violet sword patterns. Return to $(l:aura:angelsteel_swords)Angelsteel Swords$(/l) or see $(l:aura:arcane_progression)Arcane Progression$(/l) for ingot tiers."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 1 Sword",
+      "recipe": "aura:angelsteel_sword_1_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 2 Sword",
+      "recipe": "aura:angelsteel_sword_2_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 3 Sword",
+      "recipe": "aura:angelsteel_sword_3_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 4 Sword",
+      "recipe": "aura:angelsteel_sword_4_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 5 Sword",
+      "recipe": "aura:angelsteel_sword_5_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 6 Sword",
+      "recipe": "aura:angelsteel_sword_6_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 7 Sword",
+      "recipe": "aura:angelsteel_sword_7_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 8 Sword",
+      "recipe": "aura:angelsteel_sword_8_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 9 Sword",
+      "recipe": "aura:angelsteel_sword_9_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 10 Sword",
+      "recipe": "aura:angelsteel_sword_10_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 11 Sword",
+      "recipe": "aura:angelsteel_sword_11_violet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Violet Tier 12 Sword",
+      "recipe": "aura:angelsteel_sword_12_violet"
+    }
+  ]
+}

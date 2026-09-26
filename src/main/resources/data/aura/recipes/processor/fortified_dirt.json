@@ -1,7 +1,7 @@
 {
   "type": "aura:processor",
   "ingredients": [
-    { "item": "minecraft:obsidian", "count": 1 },
+    { "item": "minecraft:end_stone", "count": 1 },
     { "item": "minecraft:dirt", "count": 1 }
   ],
   "result": { "item": "aura:fortified_dirt", "count": 1 }

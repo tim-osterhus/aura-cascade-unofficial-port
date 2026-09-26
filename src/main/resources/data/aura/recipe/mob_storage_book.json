@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "aura:basic_storage_book",
-    "minecraft:bone",
-    "aura:arcane_gem_red"
+    {
+      "item": "aura:basic_storage_book"
+    },
+    {
+      "item": "minecraft:bone"
+    },
+    {
+      "item": "aura:arcane_gem_red"
+    }
   ],
   "result": {
     "id": "aura:mob_storage_book",

@@ -7,7 +7,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -67,13 +66,12 @@ public final class StorageBookItem extends Item {
     public void appendHoverText(
         ItemStack stack,
         TooltipContext context,
-        TooltipDisplay tooltipDisplay,
-        Consumer<Component> tooltipAdder,
+        java.util.List<Component> tooltip,
         TooltipFlag tooltipFlag
     ) {
-        tooltipAdder.accept(
+        tooltip.add(
             Component.literal(variant.maxStoredTypes() + " types, " + variant.maxItemsPerType() + " per type").withStyle(ChatFormatting.GRAY)
         );
-        tooltipAdder.accept(Component.literal(StorageBookData.summary(stack)).withStyle(ChatFormatting.DARK_GREEN));
+        tooltip.add(Component.literal(StorageBookData.summary(stack)).withStyle(ChatFormatting.DARK_GREEN));
     }
 }

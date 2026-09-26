@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "aura:light_storage_book",
-    "minecraft:feather",
-    "aura:arcane_gem_yellow"
+    {
+      "item": "aura:light_storage_book"
+    },
+    {
+      "item": "minecraft:feather"
+    },
+    {
+      "item": "aura:arcane_gem_yellow"
+    }
   ],
   "result": {
     "id": "aura:very_light_storage_book",

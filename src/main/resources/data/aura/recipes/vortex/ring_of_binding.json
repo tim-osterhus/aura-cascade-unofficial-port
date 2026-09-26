@@ -1,0 +1,10 @@
+{
+  "type": "aura:vortex",
+  "ingredients": [
+    { "item": "minecraft:diamond_block", "aura": { "color": "blue", "amount": 50000 } },
+    { "item": "minecraft:obsidian", "aura": { "color": "white", "amount": 50000 } },
+    { "item": "minecraft:gold_block", "aura": { "color": "yellow", "amount": 50000 } },
+    { "item": "minecraft:redstone_block", "aura": { "color": "red", "amount": 50000 } }
+  ],
+  "result": { "item": "aura:ring_of_binding", "count": 1 }
+}

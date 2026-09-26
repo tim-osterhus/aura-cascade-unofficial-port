@@ -53,19 +53,9 @@ public class AuraConsumerBlock extends BaseEntityBlock implements EntityBlock {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, net.minecraft.core.Direction direction) {
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         return blockEntity instanceof AuraSignalSource signalSource ? signalSource.auraSignal() : 0;
     }
 
-    @Override
-    public boolean isSignalSource(BlockState state) {
-        return true;
-    }
-
-    @Override
-    public int getSignal(BlockState state, BlockGetter level, BlockPos pos, net.minecraft.core.Direction direction) {
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        return blockEntity instanceof AuraSignalSource signalSource ? signalSource.auraSignal() : 0;
-    }
 }

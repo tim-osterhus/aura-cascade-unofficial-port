@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "id": "aura:encyclopedia_aura"
+    },
+    "title": {
+      "text": "Aura Cascade"
+    },
+    "description": {
+      "text": "Follow the flow of Aura."
+    },
+    "background": "minecraft:textures/block/amethyst_block.png",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "book_open": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

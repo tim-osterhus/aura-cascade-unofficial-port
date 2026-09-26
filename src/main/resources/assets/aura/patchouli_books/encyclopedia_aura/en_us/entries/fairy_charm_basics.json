@@ -1,0 +1,17 @@
+{
+  "name": "Charm Basics",
+  "category": "aura:fairies",
+  "icon": "aura:fairy_charm",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Charm Recipes",
+      "text": "Recipe index. For binding and release controls, return to $(l:aura:fairy_roles)Fairy Charms$(/l)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Plain Charm",
+      "recipe": "aura:fairy_charm"
+    }
+  ]
+}

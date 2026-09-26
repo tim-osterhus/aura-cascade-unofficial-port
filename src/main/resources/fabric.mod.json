@@ -2,10 +2,14 @@
   "schemaVersion": 1,
   "id": "aura",
   "version": "${version}",
-  "name": "Aura Cascade",
+  "name": "Aura Cascade Reimagined",
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/aura-cascade-reimagined"
+  },
   "description": "Unofficial modern Fabric port of Aura Cascade with parity-audited runtime content and release documentation.",
   "authors": [
-    "pixlepix"
+    "pixlepix",
+    "Tim Osterhus"
   ],
   "contributors": [
     "williewillus",
@@ -16,12 +20,20 @@
   "entrypoints": {
     "main": [
       "pixlepix.auracascade.AuraCascadeMod"
+    ],
+    "client": [
+      "pixlepix.auracascade.client.AuraCascadeClient"
     ]
   },
+  "mixins": [
+    "aura.mixins.json"
+  ],
   "depends": {
-    "fabricloader": ">=0.18.1",
-    "minecraft": "~1.21.11",
+    "fabricloader": ">=0.19.1",
+    "minecraft": "1.21.1",
     "java": ">=21",
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "patchouli": "*",
+    "team_reborn_energy": ">=4.1.0"
   }
 }

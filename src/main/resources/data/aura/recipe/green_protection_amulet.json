@@ -6,9 +6,15 @@
     " i "
   ],
   "key": {
-    "g": "aura:arcane_gem_green",
-    "p": "aura:arcane_prism",
-    "i": "minecraft:iron_ingot"
+    "g": {
+      "item": "aura:arcane_gem_green"
+    },
+    "p": {
+      "item": "aura:arcane_prism"
+    },
+    "i": {
+      "item": "minecraft:iron_ingot"
+    }
   },
   "result": {
     "id": "aura:green_protection_amulet",

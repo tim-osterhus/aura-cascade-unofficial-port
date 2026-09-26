@@ -1,0 +1,6 @@
+{
+  "name": "Aura Systems",
+  "description": "Read about $(l:aura:aura_basics)Aura flow$(/l), $(l:aura:pumps_control)pumps and control$(/l), and $(l:aura:consumers_vortex)consumers and infusion$(/l).",
+  "icon": "aura:aura_node",
+  "sortnum": 1
+}

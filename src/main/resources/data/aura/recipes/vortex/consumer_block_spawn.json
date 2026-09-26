@@ -1,38 +1,10 @@
 {
   "type": "aura:vortex",
   "ingredients": [
-    {
-      "item": "aura:consumer_block_loot",
-      "aura": {
-        "color": "yellow",
-        "amount": 2600
-      }
-    },
-    {
-      "item": "aura:mob_storage_book",
-      "aura": {
-        "color": "violet",
-        "amount": 1800
-      }
-    },
-    {
-      "item": "aura:arcane_prism",
-      "aura": {
-        "color": "violet",
-        "amount": 3000
-      }
-    },
-    {
-      "item": "aura:arcane_gem_violet",
-      "aura": {
-        "color": "violet",
-        "amount": 2000
-      }
-    }
+    { "item": "aura:arcane_gem_violet", "aura": { "color": "violet", "amount": 100000 } },
+    { "item": "aura:arcane_gem_violet", "aura": { "color": "violet", "amount": 100000 } },
+    { "item": "aura:arcane_gem_violet", "aura": { "color": "violet", "amount": 100000 } },
+    { "item": "aura:arcane_gem_violet", "aura": { "color": "violet", "amount": 100000 } }
   ],
-  "result": {
-    "item": "aura:consumer_block_spawn",
-    "count": 1
-  },
-  "max_progress": 240
+  "result": { "item": "aura:consumer_block_spawn", "count": 1 }
 }

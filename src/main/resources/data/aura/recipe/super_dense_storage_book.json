@@ -1,9 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    "aura:very_dense_storage_book",
-    "aura:arcane_gem_violet",
-    "minecraft:diamond_block"
+    {
+      "item": "aura:very_dense_storage_book"
+    },
+    {
+      "item": "aura:arcane_gem_violet"
+    },
+    {
+      "item": "minecraft:diamond_block"
+    }
   ],
   "result": {
     "id": "aura:super_dense_storage_book",

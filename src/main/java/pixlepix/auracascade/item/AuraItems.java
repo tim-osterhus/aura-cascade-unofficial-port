@@ -2,12 +2,10 @@ package pixlepix.auracascade.item;
 
 import java.util.EnumMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.UUID;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
@@ -15,54 +13,61 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.core.Registry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.npc.villager.AbstractVillager;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.projectile.Fireball;
+import net.minecraft.world.entity.projectile.WitherSkull;
+import net.minecraft.world.entity.monster.Blaze;
+import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 import pixlepix.auracascade.AuraCascadeMod;
+import pixlepix.auracascade.aura.WorldInteractionVisuals;
+import pixlepix.auracascade.block.entity.AuraNetworkBlockEntity;
+import pixlepix.auracascade.enchantment.KaleidoscopicOriginalEffects;
 import pixlepix.auracascade.compat.AuraAccessoryBridgeRegistry;
 import pixlepix.auracascade.compat.AuraAccessorySlot;
+import pixlepix.auracascade.compat.AuraAccessoryInventory;
 import pixlepix.auracascade.fairy.FairyRole;
 import pixlepix.auracascade.fairy.FairySystem;
 import pixlepix.auracascade.item.books.StorageBookItem;
 import pixlepix.auracascade.item.books.StorageBookVariant;
 import pixlepix.auracascade.parity.AuraColor;
+import pixlepix.auracascade.util.ToolPropertiesCompat;
 
 public final class AuraItems {
-    private static final int AURA_CRYSTAL_CHARGE = 300;
+    private static final int AURA_CRYSTAL_CHARGE = 1_000;
     private static boolean angelsteelTickHookRegistered;
     private static boolean utilityHooksRegistered;
-    private static final int PRISMATIC_WAND_BLOCK_LIMIT = 512;
-    private static final Map<UUID, Integer> ANGEL_SASH_COLLISION_CHARGE = new HashMap<>();
 
     private static final EnumMap<AuraColor, Item> AURA_CRYSTALS = new EnumMap<>(AuraColor.class);
     private static final EnumMap<AuraColor, Item> ARCANE_INGOTS = new EnumMap<>(AuraColor.class);
@@ -86,20 +91,20 @@ public final class AuraItems {
     public static final Item BLUE_PROTECTION_AMULET = register("blue_protection_amulet", new AuraAccessoryItem(AuraAccessorySlot.AMULET, itemProperties("blue_protection_amulet")));
     public static final Item VIOLET_PROTECTION_AMULET = register("violet_protection_amulet", new AuraAccessoryItem(AuraAccessorySlot.AMULET, itemProperties("violet_protection_amulet")));
     public static final Item MIRROR_OF_THE_ANGEL = register("mirror_of_the_angel", new Item(itemProperties("mirror_of_the_angel").stacksTo(1)));
-    public static final Item PORTABLE_RED_HOLE = register("portable_red_hole", new Item(itemProperties("portable_red_hole").stacksTo(1)));
+    public static final Item PORTABLE_RED_HOLE = register("portable_red_hole", new PortableRedHoleItem(itemProperties("portable_red_hole").stacksTo(1)));
     public static final Item PORTABLE_BLACK_HOLE = register("portable_black_hole", new Item(itemProperties("portable_black_hole").stacksTo(1)));
     public static final Item PRISMATIC_WAND = register("prismatic_wand", new PrismaticWandItem(itemProperties("prismatic_wand")));
     public static final Item TRANSMUTING_SWORD = register(
         "transmuting_sword",
-        new TransmutingSwordItem(new Item.Properties().stacksTo(1).sword(AuraUtilityToolMaterials.ARCANE_SWORD, 3.0F, -2.4F).setId(itemKey("transmuting_sword")))
+        new TransmutingSwordItem(ToolPropertiesCompat.sword(new Item.Properties().stacksTo(1), AuraUtilityToolMaterials.ARCANE_SWORD, 3, -2.4F))
     );
     public static final Item SWORD_OF_THE_THIEF = register(
         "sword_of_the_thief",
-        new Item(new Item.Properties().stacksTo(1).sword(AuraUtilityToolMaterials.ARCANE_SWORD, 2.0F, -2.4F).setId(itemKey("sword_of_the_thief")))
+        new Item(ToolPropertiesCompat.sword(new Item.Properties().stacksTo(1), AuraUtilityToolMaterials.ARCANE_SWORD, 2, -2.4F))
     );
     public static final Item SWORD_OF_THE_BARBARIAN = register(
         "sword_of_the_barbarian",
-        new SwordOfBarbarianItem(new Item.Properties().stacksTo(1).sword(AuraUtilityToolMaterials.ARCANE_SWORD, 3.0F, -2.4F).setId(itemKey("sword_of_the_barbarian")))
+        new SwordOfBarbarianItem(ToolPropertiesCompat.sword(new Item.Properties().stacksTo(1), AuraUtilityToolMaterials.ARCANE_SWORD, 3, -2.4F))
     );
 
     static {
@@ -123,12 +128,12 @@ public final class AuraItems {
                     kind == AngelsteelToolKind.SWORD
                         ? new AngelsteelSwordItem(
                             degreeIndex,
-                            kind.createProperties(AngelsteelToolHelper.material(degreeIndex)).setId(itemKey(path))
+                            kind.createProperties(AngelsteelToolHelper.material(degreeIndex))
                         )
                         : new AngelsteelToolItem(
                             kind,
                             degreeIndex,
-                            kind.createProperties(AngelsteelToolHelper.material(degreeIndex)).setId(itemKey(path))
+                            kind.createProperties(AngelsteelToolHelper.material(degreeIndex))
                         )
                 );
             }
@@ -144,19 +149,19 @@ public final class AuraItems {
     }
 
     public static void bootstrap() {
+        AngelsteelCurseEffects.bootstrap();
         if (!angelsteelTickHookRegistered) {
             ServerTickEvents.END_WORLD_TICK.register(AuraItems::tickAngelsteelIngots);
             angelsteelTickHookRegistered = true;
         }
         if (!utilityHooksRegistered) {
-            ServerTickEvents.END_WORLD_TICK.register(AuraItems::tickWorldUtilityItems);
             ServerTickEvents.END_SERVER_TICK.register(AuraItems::tickPlayerAccessories);
             ServerLivingEntityEvents.ALLOW_DAMAGE.register(AuraItems::allowAccessoryDamage);
-            ServerLivingEntityEvents.AFTER_DAMAGE.register(AuraItems::afterAccessoryDamage);
             ServerLivingEntityEvents.AFTER_DEATH.register(AuraItems::afterAccessoryDeath);
             UseItemCallback.EVENT.register(AuraItems::handleUseItem);
             UseBlockCallback.EVENT.register(AuraItems::handleUseBlock);
             AttackEntityCallback.EVENT.register(AuraItems::handleAttackEntity);
+            KaleidoscopicOriginalEffects.bootstrap();
             utilityHooksRegistered = true;
         }
         AuraCascadeMod.LOGGER.info("Registered aura progression materials, accessory compatibility hooks, and utility gear runtime.");
@@ -290,16 +295,12 @@ public final class AuraItems {
         return Registry.register(BuiltInRegistries.ITEM, id(path), item);
     }
 
-    private static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path);
-    }
-
-    private static ResourceKey<Item> itemKey(String path) {
-        return ResourceKey.create(Registries.ITEM, id(path));
+    private static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path);
     }
 
     private static Item.Properties itemProperties(String path) {
-        return new Item.Properties().setId(itemKey(path));
+        return new Item.Properties();
     }
 
     private static void tickAngelsteelIngots(net.minecraft.server.level.ServerLevel level) {
@@ -363,59 +364,27 @@ public final class AuraItems {
                 new ItemStack(angelsteelIngot(degree.getAsInt() + 1))
             );
             upgraded.setDeltaMovement(0.0D, 0.05D, 0.0D);
-            level.addFreshEntity(upgraded);
+            if (level.addFreshEntity(upgraded)) {
+                emitAngelsteelGroundCraft(level, upgraded.position());
+            }
         }
     }
 
-    private static void tickWorldUtilityItems(ServerLevel level) {
-        if (level.getGameTime() % 20L != 0L) {
-            return;
-        }
-
-        @SuppressWarnings("unchecked")
-        List<ItemEntity> itemEntities = (List<ItemEntity>) level.getEntities(
-            net.minecraft.world.level.entity.EntityTypeTest.forClass(ItemEntity.class),
-            entity -> entity.getItem().is(PORTABLE_RED_HOLE) || entity.getItem().is(PORTABLE_BLACK_HOLE)
-        );
-
-        for (ItemEntity itemEntity : itemEntities) {
-            itemEntity.setUnlimitedLifetime();
-            if (itemEntity.getItem().is(PORTABLE_RED_HOLE) && level.getGameTime() % 100L == 0L) {
-                level.explode(itemEntity, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), 8.0F, Level.ExplosionInteraction.BLOCK);
-            }
+    private static void emitAngelsteelGroundCraft(ServerLevel level, Vec3 center) {
+        DustParticleOptions particle = new DustParticleOptions(new Vector3f(1.0F, 0.72F, 0.28F), 1.1F);
+        for (WorldInteractionVisuals.BurstSample sample : WorldInteractionVisuals.groundCraftBurst(center)) {
+            Vec3 point = sample.position();
+            Vec3 velocity = sample.velocity();
+            level.sendParticles(particle, point.x, point.y, point.z,
+                0, velocity.x, velocity.y, velocity.z, 1.0D);
         }
     }
 
     private static void tickPlayerAccessories(MinecraftServer server) {
         for (var player : server.getPlayerList().getPlayers()) {
-            if (isAccessoryEquipped(player, RED_PROTECTION_AMULET) && player.isOnFire()) {
-                player.clearFire();
-                player.heal(0.5F);
-            }
-            if (isAccessoryEquipped(player, BLUE_PROTECTION_AMULET)) {
-                player.setAirSupply(player.getMaxAirSupply());
-            }
-            if (isAccessoryEquipped(player, VIOLET_PROTECTION_AMULET)) {
-                player.removeEffect(MobEffects.WITHER);
-            }
-            if (isAccessoryEquipped(player, GREEN_PROTECTION_AMULET)) {
-                player.fallDistance = 0.0F;
-            }
-            if (isAccessoryEquipped(player, SASH_OF_THE_ANGELS_HEELS)) {
-                player.addEffect(new MobEffectInstance(MobEffects.JUMP_BOOST, 10, 1, true, false, false));
-                int charge = player.horizontalCollision ? ANGEL_SASH_COLLISION_CHARGE.getOrDefault(player.getUUID(), 0) + 1 : 0;
-                if (player.horizontalCollision && player.onGround() && charge >= 10) {
-                    Vec3 motion = player.getDeltaMovement();
-                    player.setDeltaMovement(motion.x, Math.max(motion.y, 0.65D), motion.z);
-                    player.fallDistance = 0.0F;
-                    charge = 0;
-                }
-                ANGEL_SASH_COLLISION_CHARGE.put(player.getUUID(), charge);
-            } else {
-                ANGEL_SASH_COLLISION_CHARGE.remove(player.getUUID());
-            }
+            updateAngelHeelsStepHeight(player, isAccessoryEquipped(player, SASH_OF_THE_ANGELS_HEELS));
 
-            if (player.level().getGameTime() % 20L == 0L && inventoryContains(player.getInventory(), PORTABLE_BLACK_HOLE)) {
+            if (player.level().getGameTime() % 100L == 0L && inventoryContains(player.getInventory(), PORTABLE_BLACK_HOLE)) {
                 consumeInventoryItem(player.getInventory(), Blocks.COBBLESTONE.asItem(), Integer.MAX_VALUE);
             }
 
@@ -433,19 +402,14 @@ public final class AuraItems {
         ProtectionAmuletProfile.DamageFamily family = classifyDamage(source);
         ProtectionAmuletProfile profile = equippedProtectionProfile(player, family);
         if (profile != null && profile.blocksDamage()) {
-            if (profile.healFraction() > 0.0F) {
+            boolean redAmuletInFire = profile == ProtectionAmuletProfile.RED && source.is(DamageTypes.IN_FIRE);
+            if (profile.healFraction() > 0.0F && !redAmuletInFire) {
                 player.heal(amount * profile.healFraction());
-            }
-            if (profile == ProtectionAmuletProfile.RED) {
-                player.clearFire();
-            }
-            if (profile == ProtectionAmuletProfile.VIOLET) {
-                player.removeEffect(MobEffects.WITHER);
             }
             return false;
         }
 
-        if (family == ProtectionAmuletProfile.DamageFamily.EXPLOSION && isAccessoryEquipped(player, RING_OF_SHATTERED_STONE)) {
+        if (shouldBlockShatteredStoneExplosionDamage(family, isAccessoryEquipped(player, RING_OF_SHATTERED_STONE))) {
             player.heal(amount * 0.25F);
             return false;
         }
@@ -453,145 +417,141 @@ public final class AuraItems {
         return true;
     }
 
-    private static void afterAccessoryDamage(
-        net.minecraft.world.entity.LivingEntity entity,
+    public static float modifyPreMitigationDamage(
+        net.minecraft.world.entity.LivingEntity victim,
         DamageSource source,
-        float baseDamageTaken,
-        float damageTaken,
-        boolean blocked
+        float original
     ) {
-        if (!(entity instanceof Player player)) {
-            return;
+        if (victim.level().isClientSide()) {
+            return original;
         }
 
-        if (classifyDamage(source) == ProtectionAmuletProfile.DamageFamily.PROJECTILE && isAccessoryEquipped(player, YELLOW_PROTECTION_AMULET)) {
-            player.heal(Math.max(0.0F, damageTaken * ProtectionAmuletProfile.YELLOW.healFraction()));
+        float amount = original;
+        if (victim instanceof Player player
+            && classifyDamage(source) == ProtectionAmuletProfile.DamageFamily.PROJECTILE
+            && isAccessoryEquipped(player, YELLOW_PROTECTION_AMULET)) {
+            amount *= ProtectionAmuletProfile.YELLOW.incomingDamageMultiplier();
         }
+        if (source.getEntity() instanceof Player attacker
+            && attacker.getMainHandItem().is(SWORD_OF_THE_BARBARIAN)) {
+            amount = SwordOfBarbarianItem.modifyIncomingDamage(attacker, attacker.getMainHandItem(), amount);
+        }
+        return amount;
+    }
+
+    private static void updateAngelHeelsStepHeight(Player player, boolean equipped) {
+        AngelHeelsRuntime.update(player.getAttribute(Attributes.STEP_HEIGHT), equipped, player.horizontalCollision);
     }
 
     private static void afterAccessoryDeath(net.minecraft.world.entity.LivingEntity entity, DamageSource damageSource) {
-        if (!(entity instanceof AbstractVillager villager) || !(entity.level() instanceof ServerLevel level)) {
+        if (!(entity instanceof Villager villager) || !(entity.level() instanceof ServerLevel level)) {
             return;
         }
         if (!(damageSource.getEntity() instanceof Player player) || !player.getMainHandItem().is(SWORD_OF_THE_THIEF)) {
             return;
         }
-        if (level.getRandom().nextFloat() >= 0.25F) {
+        if (level.getRandom().nextInt(4) != 0) {
             return;
         }
 
-        ArrayList<ItemStack> possibleDrops = new ArrayList<>();
-        for (MerchantOffer offer : villager.getOffers()) {
-            if (!offer.isOutOfStock()) {
-                possibleDrops.add(offer.getResult().copy());
-            }
-        }
-        if (possibleDrops.isEmpty()) {
-            for (MerchantOffer offer : villager.getOffers()) {
-                possibleDrops.add(offer.getResult().copy());
-            }
-        }
-        if (possibleDrops.isEmpty()) {
+        if (villager.getOffers().isEmpty()) {
             return;
         }
 
-        ItemStack droppedTrade = possibleDrops.get(level.getRandom().nextInt(possibleDrops.size()));
+        ItemStack droppedTrade = villager.getOffers().get(0).getResult().copy();
         level.addFreshEntity(new ItemEntity(level, entity.getX(), entity.getY(), entity.getZ(), droppedTrade));
     }
 
-    private static InteractionResult handleUseItem(Player player, Level world, InteractionHand hand) {
+    private static InteractionResultHolder<ItemStack> handleUseItem(Player player, Level world, InteractionHand hand) {
+        if (player.isSpectator()) {
+            return InteractionResultHolder.pass(player.getItemInHand(hand));
+        }
         ItemStack stack = player.getItemInHand(hand);
 
-        if (!world.isClientSide() && stack.hasNonDefault(net.minecraft.core.component.DataComponents.FOOD) && isAccessoryEquipped(player, AMULET_OF_THE_FORBIDDEN_FRUIT)) {
-            ForbiddenFruitEffects.apply(player, stack);
-        }
-
         if (stack.is(FAIRY_CHARM)) {
-            return handleFairyCharmUse(player, world, stack);
+            return useItemResult(handleFairyCharmUse(player, world, stack), stack, world);
         }
         if (stack.is(RING_OF_BINDING)) {
-            return handleRingOfBindingUse(player, world, hand, stack);
+            return useItemResult(handleRingOfBindingUse(player, world, hand, stack), stack, world);
         }
         if (stack.is(AMULET_OF_THE_ANGELS_WING)) {
-            return handleAngelWingUse(player, world, stack);
+            return useItemResult(handleAngelWingUse(player, world, stack), stack, world);
         }
         if (stack.is(MIRROR_OF_THE_ANGEL)) {
-            return handleMirrorUse(player, world);
-        }
-        if (stack.is(PRISMATIC_WAND)) {
-            return handlePrismaticWandUse(player, world, stack);
+            return useItemResult(handleMirrorUse(player, world), stack, world);
         }
         if (stack.getItem() instanceof AuraAccessoryItem accessoryItem) {
-            return handlePassiveAccessoryUse(player, world, stack, accessoryItem.slot());
+            return useItemResult(handlePassiveAccessoryUse(player, world, stack, accessoryItem.slot()), stack, world);
         }
 
-        return InteractionResult.PASS;
+        return InteractionResultHolder.pass(stack);
+    }
+
+    public static void onFoodFinished(ServerPlayer player, ItemStack usedFood, net.minecraft.world.item.UseAnim useAnimation) {
+        if (ForbiddenFruitEffects.acceptsCompletedUse(
+            useAnimation,
+            player.isAlive(),
+            player.isSpectator(),
+            isAccessoryEquipped(player, AMULET_OF_THE_FORBIDDEN_FRUIT)
+        )) {
+            ForbiddenFruitEffects.apply(player, usedFood);
+        }
+    }
+
+    private static InteractionResultHolder<ItemStack> useItemResult(InteractionResult result, ItemStack stack, Level level) {
+        if (result == InteractionResult.PASS) {
+            return InteractionResultHolder.pass(stack);
+        }
+        if (result == InteractionResult.FAIL) {
+            return InteractionResultHolder.fail(stack);
+        }
+        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
 
     private static InteractionResult handleFairyCharmUse(Player player, Level world, ItemStack stack) {
-        if (!player.isShiftKeyDown()) {
-            return InteractionResult.PASS;
-        }
         if (world.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        FairyRole nextRole = FairyCharmItem.cycleRole(stack);
-        showStatus(player, Component.translatable("message.aura.fairy_charm_attuned", nextRole.displayComponent()));
+        ItemStack ring = AuraAccessoryBridgeRegistry.equipped(player, AuraAccessorySlot.RING).stream()
+            .filter(equipped -> equipped.is(RING_OF_BINDING)).findFirst().orElse(ItemStack.EMPTY);
+        if (ring.isEmpty()) {
+            showStatus(player, Component.translatable("message.aura.fairy_charm.no_ring"));
+            return InteractionResult.FAIL;
+        }
+        FairyRole role = FairyCharmItem.role(stack);
+        if (!RingOfBindingItem.bindCharm(ring, role)) {
+            showStatus(player, Component.translatable("message.aura.ring_of_binding_full"));
+            return InteractionResult.FAIL;
+        }
+        stack.shrink(1);
+        AuraAccessoryInventory.touch(player);
+        showStatus(player, Component.translatable("message.aura.ring_of_binding_bound",
+            role.displayComponent(), RingOfBindingItem.boundFairyCount(ring), RingOfBindingItem.MAX_BOUND_FAIRIES));
         return InteractionResult.SUCCESS;
     }
 
     private static InteractionResult handleUseBlock(Player player, Level world, InteractionHand hand, net.minecraft.world.phys.BlockHitResult hitResult) {
-        ItemStack stack = player.getItemInHand(hand);
-        if (!stack.is(PRISMATIC_WAND)) {
+        if (player.isSpectator()) {
             return InteractionResult.PASS;
         }
-        if (player.isShiftKeyDown()) {
-            return handlePrismaticWandUse(player, world, stack);
-        }
-        if (world.isClientSide()) {
+        ItemStack stack = player.getItemInHand(hand);
+        Optional<AuraColor> crystalColor = auraCrystalColor(stack);
+        if (crystalColor.isPresent()) {
+            BlockEntity blockEntity = world.getBlockEntity(hitResult.getBlockPos());
+            if (!(blockEntity instanceof AuraNetworkBlockEntity network)) {
+                return InteractionResult.PASS;
+            }
+            if (world.isClientSide()) {
+                return InteractionResult.SUCCESS;
+            }
+
+            network.feedCrystal(crystalColor.get(), auraCrystalCharge(stack));
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
             return InteractionResult.SUCCESS;
         }
-
-        switch (PrismaticWandState.mode(stack)) {
-            case SELECTION -> {
-                PrismaticWandState.setSelectionPoint(stack, hitResult.getBlockPos());
-                showStatus(player, Component.translatable("message.aura.prismatic_wand_position_set"));
-            }
-            case COPY -> {
-                PrismaticWandState.Selection selection = PrismaticWandState.selection(stack);
-                if (selection == null) {
-                    showStatus(player, Component.translatable("message.aura.prismatic_wand_invalid_selection"));
-                    return InteractionResult.SUCCESS;
-                }
-                List<PrismaticWandState.ClipboardBlock> blocks = copySelection(world, selection);
-                PrismaticWandState.storeClipboard(stack, blocks);
-                showStatus(
-                    player,
-                    blocks.isEmpty()
-                        ? Component.translatable("message.aura.prismatic_wand_nothing_copied")
-                        : Component.translatable("message.aura.prismatic_wand_copied", blocks.size())
-                );
-            }
-            case PASTE -> {
-                List<PrismaticWandState.ClipboardBlock> blocks = PrismaticWandState.clipboard(stack);
-                if (blocks.isEmpty()) {
-                    showStatus(player, Component.translatable("message.aura.prismatic_wand_nothing_copied"));
-                    return InteractionResult.SUCCESS;
-                }
-                if (!player.getAbilities().instabuild) {
-                    Map<String, Integer> requiredItems = requiredClipboardItems(blocks);
-                    if (!hasInventoryItems(player.getInventory(), requiredItems)) {
-                        showStatus(player, Component.translatable("message.aura.prismatic_wand_not_enough_materials"));
-                        return InteractionResult.SUCCESS;
-                    }
-                    consumeInventoryItems(player.getInventory(), requiredItems);
-                }
-                pasteClipboard(world, hitResult.getBlockPos(), blocks);
-                showStatus(player, Component.translatable("message.aura.prismatic_wand_pasted"));
-            }
-        }
-
-        return InteractionResult.SUCCESS;
+        return InteractionResult.PASS;
     }
 
     private static InteractionResult handleAttackEntity(
@@ -601,13 +561,17 @@ public final class AuraItems {
         Entity entity,
         net.minecraft.world.phys.EntityHitResult hitResult
     ) {
-        if (!player.getItemInHand(hand).is(MIRROR_OF_THE_ANGEL) || !(entity instanceof AbstractHurtingProjectile projectile)) {
+        if (player.isSpectator()) {
+            return InteractionResult.PASS;
+        }
+        if (!player.getItemInHand(hand).is(MIRROR_OF_THE_ANGEL)
+            || (!(entity instanceof Fireball) && !(entity instanceof WitherSkull))) {
             return InteractionResult.PASS;
         }
         if (world.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        deflectProjectile(player, projectile);
+        deflectProjectile((AbstractHurtingProjectile) entity);
         return InteractionResult.SUCCESS;
     }
 
@@ -654,8 +618,9 @@ public final class AuraItems {
         }
 
         if (!AuraAccessoryBridgeRegistry.isEquipped(player, stack, AuraAccessorySlot.RING)) {
-            AuraAccessoryBridgeRegistry.equip(player, stack, AuraAccessorySlot.RING);
-            showStatus(player, Component.translatable("message.aura.ring_of_binding_equipped"));
+            boolean equipped = AuraAccessoryBridgeRegistry.equip(player, stack, AuraAccessorySlot.RING);
+            showStatus(player, Component.translatable(equipped
+                ? "message.aura.ring_of_binding_equipped" : "message.aura.accessory.full"));
             return InteractionResult.SUCCESS;
         }
 
@@ -664,38 +629,30 @@ public final class AuraItems {
     }
 
     private static InteractionResult handleAngelWingUse(Player player, Level world, ItemStack stack) {
-        if (world.isClientSide()) {
-            return InteractionResult.SUCCESS;
-        }
+        return handlePassiveAccessoryUse(player, world, stack, AuraAccessorySlot.AMULET);
+    }
 
-        boolean equipped = AuraAccessoryBridgeRegistry.isEquipped(player, stack, AuraAccessorySlot.AMULET);
-        if (player.isShiftKeyDown() && equipped) {
-            AuraAccessoryBridgeRegistry.unequip(player, stack, AuraAccessorySlot.AMULET);
-            showStatus(player, "Amulet of the Angel's Wing unequipped");
-            return InteractionResult.SUCCESS;
-        }
-        if (!equipped) {
-            AuraAccessoryBridgeRegistry.equip(player, stack, AuraAccessorySlot.AMULET);
-            showStatus(player, "Amulet of the Angel's Wing equipped");
-            return InteractionResult.SUCCESS;
+    public static void activateAngelWing(ServerPlayer player) {
+        if (!player.isAlive() || player.isSpectator() || !isAccessoryEquipped(player, AMULET_OF_THE_ANGELS_WING)) {
+            return;
         }
 
         BlockPos standingSpot = findStandingSpot(player, player.getXRot() > 45.0F ? -1 : 1);
         if (standingSpot == null) {
             showStatus(player, "No clear space found");
-            return InteractionResult.SUCCESS;
+            return;
         }
 
         player.teleportTo(standingSpot.getX() + 0.5D, standingSpot.getY(), standingSpot.getZ() + 0.5D);
         player.fallDistance = 0.0F;
         showStatus(player, player.getXRot() > 45.0F ? "Descended" : "Ascended");
-        return InteractionResult.SUCCESS;
     }
 
     private static InteractionResult handleMirrorUse(Player player, Level world) {
         List<AbstractHurtingProjectile> projectiles = world.getEntitiesOfClass(
             AbstractHurtingProjectile.class,
-            player.getBoundingBox().inflate(5.0D)
+            player.getBoundingBox().inflate(6.0D),
+            projectile -> projectile instanceof Fireball || projectile instanceof WitherSkull
         );
         if (projectiles.isEmpty()) {
             return InteractionResult.PASS;
@@ -704,25 +661,11 @@ public final class AuraItems {
             return InteractionResult.SUCCESS;
         }
 
-        AbstractHurtingProjectile projectile = projectiles.stream()
-            .min(java.util.Comparator.comparingDouble(player::distanceToSqr))
-            .orElse(null);
-        if (projectile == null) {
-            return InteractionResult.PASS;
+        for (AbstractHurtingProjectile projectile : projectiles) {
+            if (projectile.distanceToSqr(player) <= 25.0D) {
+                deflectProjectile(projectile);
+            }
         }
-        deflectProjectile(player, projectile);
-        return InteractionResult.SUCCESS;
-    }
-
-    private static InteractionResult handlePrismaticWandUse(Player player, Level world, ItemStack stack) {
-        if (!player.isShiftKeyDown()) {
-            return InteractionResult.PASS;
-        }
-        if (world.isClientSide()) {
-            return InteractionResult.SUCCESS;
-        }
-        PrismaticWandState.Mode mode = PrismaticWandState.cycleMode(stack);
-        showStatus(player, Component.translatable("message.aura.prismatic_wand_switched", mode.displayComponent()));
         return InteractionResult.SUCCESS;
     }
 
@@ -738,31 +681,34 @@ public final class AuraItems {
             return InteractionResult.SUCCESS;
         }
         if (!equipped) {
-            AuraAccessoryBridgeRegistry.equip(player, stack, slot);
-            showStatus(player, "Accessory equipped");
+            boolean placed = AuraAccessoryBridgeRegistry.equip(player, stack, slot);
+            showStatus(player, Component.translatable(placed
+                ? "message.aura.accessory.equipped" : "message.aura.accessory.full"));
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
     }
 
-    private static void deflectProjectile(Player player, AbstractHurtingProjectile projectile) {
-        LivingTarget target = nearestGhastTarget(player, projectile);
-        Vec3 targetVector = target != null
-            ? target.position().subtract(projectile.position()).normalize().scale(1.8D)
-            : player.getLookAngle().normalize().scale(1.8D);
-        projectile.setOwner(player);
-        projectile.setDeltaMovement(targetVector);
+    private static void deflectProjectile(AbstractHurtingProjectile projectile) {
+        if (projectile.level().isClientSide() || projectile instanceof WitherSkull) {
+            return;
+        }
+
+        Fireball target = projectile.level().getEntitiesOfClass(
+            Fireball.class,
+            projectile.getBoundingBox().inflate(100.0D),
+            candidate -> candidate.getOwner() instanceof Blaze || candidate.getOwner() instanceof Ghast
+        ).stream().findFirst().orElse(null);
+        if (target == null) {
+            return;
+        }
+
+        projectile.setDeltaMovement(mirrorRedirectVelocity(projectile.position(), target.position()));
+        projectile.accelerationPower = 0.3D;
     }
 
-    private static LivingTarget nearestGhastTarget(Player player, AbstractHurtingProjectile projectile) {
-        List<net.minecraft.world.entity.monster.Ghast> ghasts = player.level().getEntitiesOfClass(
-            net.minecraft.world.entity.monster.Ghast.class,
-            projectile.getBoundingBox().inflate(24.0D)
-        );
-        net.minecraft.world.entity.monster.Ghast ghast = ghasts.stream()
-            .min(java.util.Comparator.comparingDouble(projectile::distanceToSqr))
-            .orElse(null);
-        return ghast == null ? null : new LivingTarget(ghast.position());
+    static Vec3 mirrorRedirectVelocity(Vec3 projectilePosition, Vec3 targetPosition) {
+        return targetPosition.subtract(projectilePosition).scale(1.0D / 15.0D);
     }
 
     private static ProtectionAmuletProfile equippedProtectionProfile(Player player, ProtectionAmuletProfile.DamageFamily family) {
@@ -788,7 +734,7 @@ public final class AuraItems {
     }
 
     private static ProtectionAmuletProfile.DamageFamily classifyDamage(DamageSource source) {
-        if (source.is(DamageTypeTags.IS_FIRE)) {
+        if (source.is(DamageTypes.IN_FIRE) || source.is(DamageTypes.LAVA) || source.is(DamageTypes.ON_FIRE)) {
             return ProtectionAmuletProfile.DamageFamily.FIRE;
         }
         if (source.is(DamageTypeTags.IS_EXPLOSION)) {
@@ -847,6 +793,32 @@ public final class AuraItems {
         return requested - remaining;
     }
 
+    static boolean shouldBlockShatteredStoneExplosionDamage(ProtectionAmuletProfile.DamageFamily family, boolean ringEquipped) {
+        return RingOfShatteredStoneRuntime.blocksExplosionDamage(family, ringEquipped);
+    }
+
+    public static List<BlockPos> filterShatteredStoneExplosionBlocks(ServerLevel level, Vec3 center, List<BlockPos> affectedBlocks) {
+        return ShatteredStoneExplosionSeam.filterBlocks(liveShatteredStoneExplosionAccess(level), center, affectedBlocks);
+    }
+
+    private static ShatteredStoneExplosionAccess liveShatteredStoneExplosionAccess(ServerLevel level) {
+        return new ShatteredStoneExplosionAccess() {
+            @Override
+            public BlockState getBlockState(BlockPos pos) {
+                return level.getBlockState(pos);
+            }
+
+            @Override
+            public List<Vec3> protectedWearerPositions(AABB searchBounds) {
+                return level.getEntitiesOfClass(
+                    Player.class,
+                    searchBounds,
+                    player -> isAccessoryEquipped(player, RING_OF_SHATTERED_STONE)
+                ).stream().map(Player::position).toList();
+            }
+        };
+    }
+
     private static BlockPos findStandingSpot(Player player, int direction) {
         BlockPos origin = player.blockPosition();
         int maxDistance = 32;
@@ -863,94 +835,6 @@ public final class AuraItems {
         return null;
     }
 
-    private static List<PrismaticWandState.ClipboardBlock> copySelection(Level world, PrismaticWandState.Selection selection) {
-        BlockPos min = selection.min();
-        BlockPos max = selection.max();
-        ArrayList<PrismaticWandState.ClipboardBlock> blocks = new ArrayList<>();
-        for (int x = min.getX(); x <= max.getX() && blocks.size() < PRISMATIC_WAND_BLOCK_LIMIT; x++) {
-            for (int y = min.getY(); y <= max.getY() && blocks.size() < PRISMATIC_WAND_BLOCK_LIMIT; y++) {
-                for (int z = min.getZ(); z <= max.getZ() && blocks.size() < PRISMATIC_WAND_BLOCK_LIMIT; z++) {
-                    BlockPos currentPos = new BlockPos(x, y, z);
-                    BlockState state = world.getBlockState(currentPos);
-                    if (!PrismaticWandItem.supportsClipboardCopy(state)) {
-                        continue;
-                    }
-                    Item item = state.getBlock().asItem();
-                    blocks.add(new PrismaticWandState.ClipboardBlock(
-                        x - min.getX(),
-                        y - min.getY(),
-                        z - min.getZ(),
-                        Block.getId(state),
-                        BuiltInRegistries.ITEM.getKey(item).toString()
-                    ));
-                }
-            }
-        }
-        return blocks;
-    }
-
-    private static Map<String, Integer> requiredClipboardItems(List<PrismaticWandState.ClipboardBlock> blocks) {
-        HashMap<String, Integer> required = new HashMap<>();
-        for (PrismaticWandState.ClipboardBlock block : blocks) {
-            required.merge(block.itemId(), 1, Integer::sum);
-        }
-        return required;
-    }
-
-    private static boolean hasInventoryItems(Inventory inventory, Map<String, Integer> required) {
-        HashMap<String, Integer> available = new HashMap<>();
-        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (stack.isEmpty()) {
-                continue;
-            }
-            available.merge(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), stack.getCount(), Integer::sum);
-        }
-
-        for (Map.Entry<String, Integer> entry : required.entrySet()) {
-            if (available.getOrDefault(entry.getKey(), 0) < entry.getValue()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static void consumeInventoryItems(Inventory inventory, Map<String, Integer> required) {
-        HashMap<String, Integer> remaining = new HashMap<>(required);
-        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (stack.isEmpty()) {
-                continue;
-            }
-            String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
-            int stillNeeded = remaining.getOrDefault(itemId, 0);
-            if (stillNeeded <= 0) {
-                continue;
-            }
-            int consumed = Math.min(stillNeeded, stack.getCount());
-            stack.shrink(consumed);
-            if (stack.isEmpty()) {
-                inventory.setItem(slot, ItemStack.EMPTY);
-            }
-            if (stillNeeded == consumed) {
-                remaining.remove(itemId);
-            } else {
-                remaining.put(itemId, stillNeeded - consumed);
-            }
-            if (remaining.isEmpty()) {
-                return;
-            }
-        }
-    }
-
-    private static void pasteClipboard(Level world, BlockPos anchor, List<PrismaticWandState.ClipboardBlock> blocks) {
-        for (PrismaticWandState.ClipboardBlock block : blocks) {
-            BlockState state = Block.stateById(block.stateId());
-            BlockPos placePos = anchor.offset(block.dx(), block.dy(), block.dz());
-            world.setBlockAndUpdate(placePos, state);
-        }
-    }
-
     private static void showStatus(Player player, String text) {
         showStatus(player, Component.literal(text));
     }
@@ -959,6 +843,40 @@ public final class AuraItems {
         player.displayClientMessage(message, true);
     }
 
-    private record LivingTarget(Vec3 position) {
+}
+
+final class ShatteredStoneExplosionFilter {
+    private ShatteredStoneExplosionFilter() {
+    }
+
+    static List<BlockPos> filterBlocks(
+        List<Vec3> protectedWearerPositions,
+        List<BlockPos> affectedBlocks,
+        java.util.function.Function<BlockPos, BlockState> stateLookup
+    ) {
+        return RingOfShatteredStoneRuntime.filterProtectedExplosionBlocks(protectedWearerPositions, affectedBlocks, stateLookup);
+    }
+}
+
+interface ShatteredStoneExplosionAccess {
+    BlockState getBlockState(BlockPos pos);
+
+    List<Vec3> protectedWearerPositions(AABB searchBounds);
+}
+
+final class ShatteredStoneExplosionSeam {
+    private ShatteredStoneExplosionSeam() {
+    }
+
+    static List<BlockPos> filterBlocks(
+        ShatteredStoneExplosionAccess access,
+        Vec3 center,
+        List<BlockPos> affectedBlocks
+    ) {
+        return ShatteredStoneExplosionFilter.filterBlocks(
+            access.protectedWearerPositions(RingOfShatteredStoneItem.explosionSearchBounds(center)),
+            affectedBlocks,
+            access::getBlockState
+        );
     }
 }

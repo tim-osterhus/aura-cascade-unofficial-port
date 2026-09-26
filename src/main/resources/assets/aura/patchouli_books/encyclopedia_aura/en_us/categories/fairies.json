@@ -1,0 +1,6 @@
+{
+  "name": "Fairies",
+  "description": "Bind a charm and meet the roles described in $(l:aura:fairy_roles)Fairy Charms$(/l).",
+  "icon": "aura:fairy_charm",
+  "sortnum": 3
+}

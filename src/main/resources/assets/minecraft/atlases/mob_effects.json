@@ -1,0 +1,10 @@
+{
+  "sources": [
+    { "type": "single", "resource": "aura:item/angel_sword_red", "sprite": "aura:angelsteel_curse_red" },
+    { "type": "single", "resource": "aura:item/angel_sword_orange", "sprite": "aura:angelsteel_curse_orange" },
+    { "type": "single", "resource": "aura:item/angel_sword_yellow", "sprite": "aura:angelsteel_curse_yellow" },
+    { "type": "single", "resource": "aura:item/angel_sword_green", "sprite": "aura:angelsteel_curse_green" },
+    { "type": "single", "resource": "aura:item/angel_sword_blue", "sprite": "aura:angelsteel_curse_blue" },
+    { "type": "single", "resource": "aura:item/angel_sword_violet", "sprite": "aura:angelsteel_curse_violet" }
+  ]
+}

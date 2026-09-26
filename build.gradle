@@ -12,6 +12,7 @@ base {
 
 repositories {
     mavenCentral()
+    maven { url = "https://maven.blamejared.com" }
 }
 
 dependencies {
@@ -19,6 +20,8 @@ dependencies {
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    modImplementation "vazkii.patchouli:Patchouli:${project.patchouli_version}"
+    include modApi("teamreborn:energy:${project.energy_api_version}")
 
     testImplementation platform("org.junit:junit-bom:5.12.1")
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -53,6 +56,8 @@ tasks.named("sourcesJar", Jar).configure {
 
 test {
     useJUnitPlatform()
+    maxHeapSize = "512m"
+    maxParallelForks = 1
 }
 
 publishing {

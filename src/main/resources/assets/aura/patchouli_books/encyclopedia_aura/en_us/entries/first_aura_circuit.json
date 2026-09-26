@@ -1,0 +1,23 @@
+{
+  "name": "First Aura Circuit",
+  "category": "aura:walkthrough",
+  "icon": "aura:aura_node_pump",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Store and Lift",
+      "text": "Place an Aura Node and Burning Pump at equal height, linked. A White Crystal adds 1,000 White Aura when used on either; dropping it within range also works. Drop coal near the pump; unpowered, it sends Aura upward."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Follow the Fall",
+      "text": "Route Aura from a higher network block down to a lower one. Supported colors generate stored power at the receiving block as they fall. Network links follow clear cardinal lines to the first network block, up to 15 blocks away."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Power a Consumer",
+      "text": "Place a consumer beside a network block that stores falling power; it draws from that pool to work. Drop a smeltable item near a Smelter. Colored Aura storage and stored power are separate pools. See $(l:aura:pumps_control)Pumps and Control$(/l) and $(l:aura:consumers_vortex)Consumers and Vortex$(/l)."
+    }
+  ]
+}

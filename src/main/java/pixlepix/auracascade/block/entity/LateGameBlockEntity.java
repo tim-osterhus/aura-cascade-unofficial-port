@@ -1,44 +1,69 @@
 package pixlepix.auracascade.block.entity;
 
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.QuartPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.Vec3;
 import pixlepix.auracascade.block.AuraContent;
-import pixlepix.auracascade.block.FortifiedBlock;
 import pixlepix.auracascade.block.LateGameVariant;
+import pixlepix.auracascade.util.NbtCompat;
 
 public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource {
     private static final String STORED_POWER_TAG = "stored_power";
     private static final String PROGRESS_TAG = "progress";
     private static final String MINER_CHARGE_TAG = "miner_charge";
     private static final String PULSE_LATCH_TAG = "pulse_latch";
+    private static final String LAST_CHARGED_TAG = "last_charged";
+    private static final String LAST_EXPLOSION_TAG = "last_explosion";
+    private static final String MINER_ENTITY_TAG = "miner_entity";
+    private static final String LAST_POWER_TAG = "last_power";
+    private static final String LAST_RESULT_TAG = "last_result";
+    private static final String RITUAL_QUEUE_TAG = "ritual_queue";
+    private static final String RITUAL_BIOME_TAG = "ritual_source_biome";
 
     private int storedPower;
     private int progress;
     private int minerCharge;
     private boolean minerPulseLatched;
+    private long lastChargedTick;
+    private long lastExplosionTick;
+    private UUID minerEntityId;
+    private int lastPower;
+    private WorkResult lastResult = WorkResult.NONE;
+    private final ArrayDeque<BlockPos> ritualQueue = new ArrayDeque<>();
+    private ResourceKey<Biome> ritualSourceBiome;
 
     public LateGameBlockEntity(BlockPos pos, BlockState blockState) {
         super(AuraContent.LATE_GAME_BLOCK_ENTITY, pos, blockState);
@@ -56,22 +81,63 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
         return Math.min(15, Math.max(minerCharge, storedPower) / base + (minerCharge > 0 ? 1 : 0));
     }
 
-    @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        storedPower = input.getIntOr(STORED_POWER_TAG, 0);
-        progress = input.getIntOr(PROGRESS_TAG, 0);
-        minerCharge = input.getIntOr(MINER_CHARGE_TAG, 0);
-        minerPulseLatched = input.getBooleanOr(PULSE_LATCH_TAG, false);
+    public InspectionSnapshot inspectionSnapshot() {
+        return new InspectionSnapshot(progress, variant().maxProgress(), storedPower, minerCharge,
+            lastPower, lastResult, ritualQueue.size());
+    }
+
+    public boolean hasValidWork() {
+        return true;
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.putInt(STORED_POWER_TAG, storedPower);
-        output.putInt(PROGRESS_TAG, progress);
-        output.putInt(MINER_CHARGE_TAG, minerCharge);
-        output.putBoolean(PULSE_LATCH_TAG, minerPulseLatched);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        storedPower = NbtCompat.getIntOr(tag, STORED_POWER_TAG, 0);
+        progress = NbtCompat.getIntOr(tag, PROGRESS_TAG, 0);
+        minerCharge = NbtCompat.getIntOr(tag, MINER_CHARGE_TAG, 0);
+        minerPulseLatched = NbtCompat.getBooleanOr(tag, PULSE_LATCH_TAG, false);
+        lastChargedTick = tag.getLong(LAST_CHARGED_TAG);
+        lastExplosionTick = tag.getLong(LAST_EXPLOSION_TAG);
+        String minerId = NbtCompat.getStringOr(tag, MINER_ENTITY_TAG, "");
+        try {
+            minerEntityId = minerId.isEmpty() ? null : UUID.fromString(minerId);
+        } catch (IllegalArgumentException ignored) {
+            minerEntityId = null;
+        }
+        lastPower = NbtCompat.getIntOr(tag, LAST_POWER_TAG, 0);
+        try {
+            lastResult = WorkResult.valueOf(NbtCompat.getStringOr(tag, LAST_RESULT_TAG, "NONE"));
+        } catch (IllegalArgumentException ignored) {
+            lastResult = WorkResult.NONE;
+        }
+        ritualQueue.clear();
+        for (long packed : tag.getLongArray(RITUAL_QUEUE_TAG)) {
+            ritualQueue.add(BlockPos.of(packed));
+        }
+        String biomeId = NbtCompat.getStringOr(tag, RITUAL_BIOME_TAG, "");
+        ritualSourceBiome = biomeId.isEmpty() ? null
+            : ResourceKey.create(Registries.BIOME, ResourceLocation.parse(biomeId));
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putInt(STORED_POWER_TAG, storedPower);
+        tag.putInt(PROGRESS_TAG, progress);
+        tag.putInt(MINER_CHARGE_TAG, minerCharge);
+        tag.putBoolean(PULSE_LATCH_TAG, minerPulseLatched);
+        tag.putLong(LAST_CHARGED_TAG, lastChargedTick);
+        tag.putLong(LAST_EXPLOSION_TAG, lastExplosionTick);
+        if (minerEntityId != null) {
+            tag.putString(MINER_ENTITY_TAG, minerEntityId.toString());
+        }
+        tag.putInt(LAST_POWER_TAG, lastPower);
+        tag.putString(LAST_RESULT_TAG, lastResult.name());
+        tag.putLongArray(RITUAL_QUEUE_TAG, ritualQueue.stream().mapToLong(BlockPos::asLong).toArray());
+        if (ritualSourceBiome != null) {
+            tag.putString(RITUAL_BIOME_TAG, ritualSourceBiome.location().toString());
+        }
     }
 
     @Override
@@ -85,14 +151,27 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
     }
 
     private void serverTick(Level level, BlockPos pos) {
+        pixlepix.auracascade.item.ConsumerItemKeepAlive.tick(level, pos);
         int previousPower = storedPower;
+        int previousLastPower = lastPower;
         int previousProgress = progress;
         int previousCharge = minerCharge;
+        boolean previousPulse = minerPulseLatched;
+        WorkResult previousResult = lastResult;
+        boolean ritualAdvanced = false;
 
         if (level.getGameTime() % 20L == 18L) {
             storedPower = AuraConsumerLogic.bleedStoredPower(storedPower);
         }
-        storedPower += collectAdjacentPower(level, pos);
+        lastPower = collectAdjacentPower(level, pos);
+        storedPower += lastPower;
+
+        if (!ritualQueue.isEmpty()) {
+            ritualAdvanced = tickRitual((ServerLevel) level, pos);
+            if (ritualQueue.isEmpty() && lastResult == WorkResult.RITUAL_COMPLETE) {
+                return;
+            }
+        }
 
         if (variant() == LateGameVariant.MINER) {
             tickMiner((ServerLevel) level, pos);
@@ -114,41 +193,104 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
             }
         }
 
-        if (storedPower != previousPower || progress != previousProgress || minerCharge != previousCharge) {
+        if (storedPower != previousPower || lastPower != previousLastPower
+            || progress != previousProgress || minerCharge != previousCharge
+            || minerPulseLatched != previousPulse || lastResult != previousResult || ritualAdvanced) {
             setChanged();
-            level.sendBlockUpdated(pos, getBlockState(), getBlockState(), 3);
+            if (!ritualAdvanced || level.getGameTime() % 10L == 0L || lastResult != previousResult) {
+                level.sendBlockUpdated(pos, getBlockState(), getBlockState(), 3);
+            }
         }
     }
 
     private void tickMiner(ServerLevel level, BlockPos pos) {
+        minerPulseLatched |= level.hasNeighborSignal(pos);
+        MinerExplosionEntity entity = minerEntity(level, pos);
+        if (minerEntityId != null && entity == null) {
+            if (level.getGameTime() <= lastChargedTick + 100L) {
+                lastResult = WorkResult.BLOCKED;
+                return;
+            }
+            minerEntityId = null;
+            minerCharge = 0;
+            lastResult = WorkResult.MINER_EXPIRED;
+        }
+        if (entity == null && minerCharge > 0) {
+            entity = spawnMinerEntity(level, pos, true);
+        }
         if (storedPower >= variant().powerPerProgress()) {
             int cost = variant().powerPerProgress();
             storedPower -= cost;
             progress++;
             if (progress > variant().maxProgress()) {
-                minerCharge++;
+                if (minerPulseLatched) {
+                    if (entity != null) {
+                        int charge = entity.charge();
+                        entity.disarm();
+                        releaseMinerYield(level, pos, charge);
+                    }
+                    lastResult = WorkResult.MINER_RELEASED;
+                } else {
+                    if (entity == null) {
+                        entity = spawnMinerEntity(level, pos, false);
+                    } else {
+                        entity.addCharge();
+                    }
+                    if (entity != null) {
+                        minerCharge = entity.charge();
+                        lastChargedTick = level.getGameTime();
+                        lastResult = WorkResult.MINER_CHARGING;
+                    } else {
+                        lastResult = WorkResult.BLOCKED;
+                    }
+                }
+                minerPulseLatched = false;
                 progress = 0;
             }
         }
+    }
 
-        if (minerCharge > 0 && level.getGameTime() % 10L == 0L) {
-            level.sendParticles(ParticleTypes.PORTAL, pos.getX() + 0.5D, pos.getY() - 0.25D, pos.getZ() + 0.5D, 6, 0.25D, 0.15D, 0.25D, 0.0D);
-            level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5D, pos.getY() + 0.1D, pos.getZ() + 0.5D, 4, 0.2D, 0.05D, 0.2D, 0.0D);
+    private MinerExplosionEntity minerEntity(ServerLevel level, BlockPos pos) {
+        if (minerEntityId == null) {
+            return null;
         }
+        return level.getEntity(minerEntityId) instanceof MinerExplosionEntity entity
+            && !entity.isRemoved() && pos.equals(entity.sourcePos()) ? entity : null;
+    }
 
-        if (minerCharge > 0 && level.getGameTime() % 20L == 0L && !stressContainment(level, pos)) {
-            level.explode(null, pos.getX() + 0.5D, pos.getY() - 0.5D, pos.getZ() + 0.5D, Math.min(18.0F, 4.0F + minerCharge / 2.0F), Level.ExplosionInteraction.BLOCK);
-            level.destroyBlock(pos, false);
-            minerCharge = 0;
-            progress = 0;
+    private MinerExplosionEntity spawnMinerEntity(ServerLevel level, BlockPos pos, boolean restoring) {
+        MinerExplosionEntity entity = new MinerExplosionEntity(MinerExplosionEntities.type(), level);
+        entity.setPos(pos.getX() + 0.5D, pos.getY() - 1.5D, pos.getZ() + 0.5D);
+        if (restoring) {
+            entity.restore(pos, minerCharge, lastChargedTick, lastExplosionTick);
+        } else {
+            entity.start(pos);
+        }
+        if (!level.addFreshEntity(entity)) {
+            lastResult = WorkResult.BLOCKED;
+            return null;
+        }
+        minerEntityId = entity.getUUID();
+        minerCharge = entity.charge();
+        lastChargedTick = level.getGameTime();
+        return entity;
+    }
+
+    void onMinerExplosionRemoved(MinerExplosionEntity entity, WorkResult result) {
+        if (!entity.getUUID().equals(minerEntityId)) {
             return;
         }
-
-        boolean powered = level.hasNeighborSignal(pos);
-        if (powered && !minerPulseLatched && minerCharge > 0) {
-            releaseMinerYield(level, pos);
+        minerEntityId = null;
+        minerCharge = 0;
+        lastResult = result;
+        setChanged();
+        if (level != null) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
-        minerPulseLatched = powered;
+    }
+
+    boolean ownsMinerExplosion(MinerExplosionEntity entity) {
+        return entity.getUUID().equals(minerEntityId);
     }
 
     private boolean performWork(ServerLevel level, BlockPos pos) {
@@ -161,122 +303,158 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
     }
 
     private boolean spawnLoot(ServerLevel level, BlockPos pos) {
+        LootParams params = new LootParams.Builder(level)
+            .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
+            .create(LootContextParamSets.CHEST);
+        List<ItemStack> generated = level.getServer().reloadableRegistries()
+            .getLootTable(BuiltInLootTables.SIMPLE_DUNGEON).getRandomItems(params, level.getRandom());
+        ItemStack chosen = LateGameWorldLogic.chooseGeneratedLoot(generated, level.getRandom());
+        if (chosen.isEmpty()) {
+            lastResult = WorkResult.BLOCKED;
+            return false;
+        }
         ItemEntity itemEntity = new ItemEntity(
             level,
             pos.getX() + 0.5D,
-            pos.getY() + 1.2D,
+            pos.getY() + 1.5D,
             pos.getZ() + 0.5D,
-            LateGameWorldLogic.chooseLoot(level.getRandom())
+            chosen
         );
-        itemEntity.setUnlimitedLifetime();
-        return level.addFreshEntity(itemEntity);
+        itemEntity.setDeltaMovement(Vec3.ZERO);
+        boolean spawned = level.addFreshEntity(itemEntity);
+        lastResult = spawned ? WorkResult.LOOTED : WorkResult.BLOCKED;
+        return spawned;
     }
 
     private boolean spawnMob(ServerLevel level, BlockPos pos) {
-        if (level.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(8.0D), Mob::isAlive).size() >= 6) {
+        var naturalSpawns = level.getChunkSource().getGenerator().getMobsAt(
+            level.getBiome(pos), level.structureManager(), MobCategory.MONSTER, pos
+        );
+        var type = LateGameWorldLogic.chooseSpawnType(naturalSpawns, level.getRandom());
+        if (type == null || !(type.create(level) instanceof Mob mob)) {
+            lastResult = WorkResult.BLOCKED;
             return false;
         }
-        BlockPos spawnPos = pos.above();
-        if (!level.getBlockState(spawnPos).isAir() || !level.getBlockState(spawnPos.above()).isAir()) {
-            return false;
-        }
-
-        var type = LateGameWorldLogic.chooseSpawnType(level.dimension(), level.getRandom());
-        Mob mob = type.create(level, EntitySpawnReason.MOB_SUMMONED);
-        if (mob == null) {
-            return false;
-        }
-        mob.teleportTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D);
-        return level.addFreshEntity(mob);
+        mob.teleportTo(pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D);
+        boolean spawned = level.addFreshEntity(mob);
+        lastResult = spawned ? WorkResult.SPAWNED : WorkResult.BLOCKED;
+        return spawned;
     }
 
     private boolean performRitual(ServerLevel level, BlockPos pos) {
-        boolean changed = false;
-        RandomSource random = level.getRandom();
-        for (int attempt = 0; attempt < 24; attempt++) {
-            BlockPos targetPos = pos.offset(random.nextInt(9) - 4, random.nextInt(5) - 2, random.nextInt(9) - 4);
-            BlockState targetState = level.getBlockState(targetPos);
-            var mappedBlock = LateGameWorldLogic.ritualMapping(variant(), targetState.getBlock(), random);
-            if (mappedBlock == null) {
-                continue;
-            }
-            level.setBlock(targetPos, mappedBlock.defaultBlockState(), 3);
-            changed = true;
+        if (!ritualQueue.isEmpty()) {
+            return true;
         }
-
-        LateGameWorldLogic.RitualDanger danger = LateGameWorldLogic.ritualDanger(variant());
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, new AABB(pos).inflate(4.5D), LivingEntity::isAlive)) {
-            if (danger.damage() > 0.0F) {
-                entity.hurt(level.damageSources().magic(), danger.damage());
-            }
-            if (danger.fireSeconds() > 0) {
-                entity.igniteForSeconds(danger.fireSeconds());
-            }
-            if (variant() == LateGameVariant.RITUAL_END) {
-                entity.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 40, 0), entity);
-                entity.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 80, 0), entity);
-            }
-        }
-
-        if (danger.blazeBurst() && level.getRandom().nextInt(5) == 0) {
-            Mob blaze = net.minecraft.world.entity.EntityType.BLAZE.create(level, EntitySpawnReason.EVENT);
-            if (blaze != null) {
-                blaze.teleportTo(pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D);
-                level.addFreshEntity(blaze);
-            }
-        } else if (variant() == LateGameVariant.RITUAL_END && level.getRandom().nextInt(5) == 0) {
-            Mob endermite = net.minecraft.world.entity.EntityType.ENDERMITE.create(level, EntitySpawnReason.EVENT);
-            if (endermite != null) {
-                endermite.teleportTo(pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D);
-                level.addFreshEntity(endermite);
-            }
-        }
-
-        return changed;
-    }
-
-    private boolean stressContainment(ServerLevel level, BlockPos pos) {
-        ArrayList<BlockPos> containedBlocks = new ArrayList<>();
-        BlockPos center = pos.below();
-        for (BlockPos candidate : BlockPos.betweenClosed(center.offset(-2, -2, -2), center.offset(2, 2, 2))) {
-            BlockState state = level.getBlockState(candidate);
-            if (state.getBlock() instanceof pixlepix.auracascade.block.FortifiedBlock) {
-                containedBlocks.add(candidate.immutable());
-            }
-        }
-
-        if (LateGameWorldLogic.minerContainmentFails(containedBlocks.size())) {
+        ResourceKey<Biome> target = targetBiome();
+        var source = cellBiome(level, pos).unwrapKey();
+        if (source.isEmpty()) {
+            lastResult = WorkResult.BLOCKED;
             return false;
         }
-
-        containedBlocks.sort(Comparator.comparingDouble(candidate -> candidate.distSqr(center)));
-        for (BlockPos containedBlock : containedBlocks) {
-            if (FortifiedBlock.stress(level.getBlockState(containedBlock), level, containedBlock, level.getRandom())) {
-                break;
-            }
+        if (source.get().equals(target)) {
+            lastResult = WorkResult.NONE;
+            return true;
         }
+        ritualSourceBiome = source.get();
+        ritualQueue.add(LateGameWorldLogic.ritualCellOrigin(pos));
+        lastResult = WorkResult.RITUAL_RUNNING;
         return true;
     }
 
-    private void releaseMinerYield(ServerLevel level, BlockPos pos) {
-        int oreCount = LateGameWorldLogic.minerOreYield(minerCharge);
+    private boolean tickRitual(ServerLevel level, BlockPos origin) {
+        if (ritualSourceBiome == null) {
+            ritualQueue.clear();
+            lastResult = WorkResult.BLOCKED;
+            return true;
+        }
+        Holder<Biome> target = level.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(targetBiome());
+        Set<LevelChunk> changedChunks = new HashSet<>();
+        int processed = 0;
+        while (processed < 2 && !ritualQueue.isEmpty()) {
+            BlockPos cell = ritualQueue.removeFirst();
+            processed++;
+            if (!LateGameWorldLogic.ritualCellIntersectsRadius(cell, origin)
+                || !cellBiome(level, cell).is(ritualSourceBiome)) {
+                continue;
+            }
+            LevelChunk chunk = level.getChunkAt(cell);
+            setCellBiome(chunk, cell, target);
+            changedChunks.add(chunk);
+            for (int x = cell.getX(); x < cell.getX() + 4; x++) {
+                for (int z = cell.getZ(); z < cell.getZ() + 4; z++) {
+                    if (!LateGameWorldLogic.withinRitualRadius(x - origin.getX(), z - origin.getZ())) {
+                        continue;
+                    }
+                    for (int y = level.getMinBuildHeight(); y < level.getMaxBuildHeight(); y++) {
+                        BlockPos blockPos = new BlockPos(x, y, z);
+                        BlockState state = level.getBlockState(blockPos);
+                        var mapped = LateGameWorldLogic.ritualMapping(variant(), state.getBlock(), level.getRandom());
+                        if (mapped != null) {
+                            level.setBlock(blockPos, mapped.defaultBlockState(), 2);
+                        }
+                    }
+                }
+            }
+            for (Direction direction : Direction.Plane.HORIZONTAL) {
+                BlockPos next = cell.relative(direction, 4);
+                if (LateGameWorldLogic.ritualCellIntersectsRadius(next, origin)
+                    && cellBiome(level, next).is(ritualSourceBiome) && !ritualQueue.contains(next)) {
+                    ritualQueue.addLast(next.immutable());
+                }
+            }
+        }
+        if (!changedChunks.isEmpty()) {
+            List<ChunkAccess> changed = changedChunks.stream().map(chunk -> (ChunkAccess) chunk).toList();
+            level.getChunkSource().chunkMap.resendBiomesForChunks(changed);
+        }
+        if (ritualQueue.isEmpty()) {
+            ritualSourceBiome = null;
+            lastResult = WorkResult.RITUAL_COMPLETE;
+            level.destroyBlock(origin, false);
+        }
+        return processed > 0;
+    }
+
+    private static Holder<Biome> cellBiome(ServerLevel level, BlockPos pos) {
+        return level.getChunkAt(pos).getNoiseBiome(
+            QuartPos.fromBlock(pos.getX()), QuartPos.fromBlock(pos.getY()), QuartPos.fromBlock(pos.getZ())
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void setCellBiome(LevelChunk chunk, BlockPos cell, Holder<Biome> target) {
+        int x = (cell.getX() & 15) >> 2;
+        int z = (cell.getZ() & 15) >> 2;
+        for (int index = 0; index < chunk.getSections().length; index++) {
+            LevelChunkSection section = chunk.getSections()[index];
+            if (!(section.getBiomes() instanceof PalettedContainer<?> biomes)) {
+                throw new IllegalStateException("Cannot mutate chunk biome palette for ritual");
+            }
+            PalettedContainer<Holder<Biome>> palette = (PalettedContainer<Holder<Biome>>) biomes;
+            for (int y = 0; y < 4; y++) {
+                palette.set(x, y, z, target);
+            }
+        }
+        chunk.setUnsaved(true);
+    }
+
+    private ResourceKey<Biome> targetBiome() {
+        return variant() == LateGameVariant.RITUAL_NETHER ? Biomes.NETHER_WASTES : Biomes.THE_END;
+    }
+
+    private void releaseMinerYield(ServerLevel level, BlockPos pos, int charge) {
+        int oreCount = LateGameWorldLogic.minerOreYield(charge);
+        List<net.minecraft.world.item.Item> taggedOres = LateGameWorldLogic.taggedOres();
         for (int index = 0; index < oreCount; index++) {
             ItemEntity itemEntity = new ItemEntity(
                 level,
                 pos.getX() + 0.5D,
-                pos.getY() + 1.2D,
+                pos.getY() + 1.5D,
                 pos.getZ() + 0.5D,
-                LateGameWorldLogic.chooseOre(level.getRandom())
-            );
-            itemEntity.setDeltaMovement(
-                (level.getRandom().nextDouble() - 0.5D) * 0.1D,
-                0.05D + level.getRandom().nextDouble() * 0.1D,
-                (level.getRandom().nextDouble() - 0.5D) * 0.1D
+                LateGameWorldLogic.chooseOre(level.getRandom(), taggedOres)
             );
             level.addFreshEntity(itemEntity);
         }
-        minerCharge = 0;
-        progress = 0;
     }
 
     private int collectAdjacentPower(Level level, BlockPos pos) {
@@ -292,5 +470,29 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
 
     private LateGameVariant variant() {
         return AuraContent.lateGameVariant(getBlockState().getBlock());
+    }
+
+    public record InspectionSnapshot(
+        int progress,
+        int maxProgress,
+        int storedPower,
+        int minerCharge,
+        int lastPower,
+        WorkResult lastResult,
+        int ritualCellsRemaining
+    ) {
+    }
+
+    public enum WorkResult {
+        NONE,
+        BLOCKED,
+        LOOTED,
+        SPAWNED,
+        MINER_CHARGING,
+        MINER_RELEASED,
+        MINER_EXPIRED,
+        MINER_EXPLODED,
+        RITUAL_RUNNING,
+        RITUAL_COMPLETE
     }
 }

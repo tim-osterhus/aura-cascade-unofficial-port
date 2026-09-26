@@ -1,0 +1,67 @@
+{
+  "name": "Node Variants",
+  "category": "aura:aura_systems",
+  "icon": "aura:aura_node",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Build a Node Line",
+      "text": "The ordinary Aura Node links along clear cardinal lines and stores colored Aura. Feed it a dropped crystal; see $(l:aura:aura_colors)Aura Colors$(/l) for each color's traits."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Aura Node",
+      "recipe": "aura:aura_node"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Capacitor",
+      "text": "A Capacitor checks its selected threshold every 19 ticks. A five-tick outgoing burst ends at the next five-tick phase, then incoming Aura is blocked for 110 ticks. Threshold checks can arm during that cooldown."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Set a Threshold",
+      "text": "Sneak-right-click empty-handed to cycle 1,000, 10,000, 100,000, then 100 Aura, returning to 1,000. The action bar shows the selection; the HUD maximum and comparator scale follow it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Aura Capacitor",
+      "recipe": "aura:aura_node_capacitor"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Conserving Node",
+      "text": "A Conserving Node sends only to linked network blocks at the same height, keeping a branch from spilling downward or climbing into another tier."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Conserving Node",
+      "recipe": "aura:aura_node_conserve"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Manipulators",
+      "text": "Black and Orange Manipulators accept only their own color. Every 20 ticks they clear all stored Aura; powered, they refill only their color to 100,000, while unpowered they stay empty. Power does not block their Aura transfer; links and stored consumer power remain."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Black Manipulator",
+      "recipe": "aura:aura_node_black"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Orange Manipulator",
+      "recipe": "aura:aura_node_orange"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Redstone Gate",
+      "text": "Powering a regular Node stops it from sending Aura but not from receiving. Use this one-way gate to hold or redirect flow without destroying charge."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Comparator Readouts",
+      "text": "Place a comparator against a Node or Consumer. Nodes scale stored Aura against capacity; a Capacitor uses its selected threshold. Consumers signal stored work power against base step cost, not completed progress."
+    }
+  ]
+}

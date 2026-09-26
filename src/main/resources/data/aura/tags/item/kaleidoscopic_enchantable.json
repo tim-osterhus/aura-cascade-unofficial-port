@@ -1,6 +1,6 @@
 {
   "values": [
     "#minecraft:enchantable/mining",
-    "#minecraft:enchantable/melee_weapon"
+    "#minecraft:enchantable/weapon"
   ]
 }

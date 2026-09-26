@@ -1,0 +1,10 @@
+{
+  "name": "item.aura.encyclopedia_aura",
+  "subtitle": "A field guide to Aura",
+  "landing_text": "One crystal opens a world of flowing Aura. $(br2)$(l:aura:walkthrough)Walkthrough$(/l)$(br)$(l:aura:aura_systems)Aura Systems$(/l)$(br)$(l:aura:storage_gear)Storage and Gear$(/l)$(br)$(l:aura:fairies)Fairies$(/l)$(br)$(l:aura:enchantments)Enchantments$(/l)$(br)$(l:aura:late_game)Late Systems$(/l)$(br)$(l:aura:getting_started)Getting Started$(/l)$(br)$(l:aura:white_aura_crystal)White Aura Crystal$(/l)$(br)$(l:aura:first_aura_circuit)First Circuit$(/l)",
+  "model": "aura:encyclopedia_aura",
+  "dont_generate_book": true,
+  "custom_book_item": "aura:encyclopedia_aura",
+  "use_resource_pack": true,
+  "show_progress": false
+}

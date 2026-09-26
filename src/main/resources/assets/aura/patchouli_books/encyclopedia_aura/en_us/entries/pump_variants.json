@@ -1,0 +1,102 @@
+{
+  "name": "Pump Variants",
+  "category": "aura:aura_systems",
+  "icon": "aura:aura_node_pump",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Choose an Offering",
+      "text": "Choose a pump by its offering: furnace fuel, nearby light, falls, struck projectiles, or powered redstone wire. Alternating forms vary the transfer rate over time. See $(l:aura:first_aura_circuit)the first circuit$(/l) for a working route."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Burning",
+      "text": "Dropped furnace fuel supplies stored run time; containers are consumed too. The pump draws colored Aura from its level and moves it to the first reachable network block above."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Burning Pump",
+      "recipe": "aura:aura_node_pump"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Alternating Burning",
+      "recipe": "aura:aura_node_pump_alt"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Illumination",
+      "text": "Glowstone and torches beside the pump are consumed to fuel an upward transfer."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Illumination Pump",
+      "recipe": "aura:aura_node_pump_light"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Alternating Illumination",
+      "recipe": "aura:aura_node_pump_light_alt"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Momentum",
+      "text": "A nearby entity's fall feeds the pump; longer falls grant a longer run at the same nominal speed."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Momentum Pump",
+      "recipe": "aura:aura_node_pump_fall"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Alternating Momentum",
+      "recipe": "aura:aura_node_pump_fall_alt"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Projectiles",
+      "text": "Arrows, eggs, and snowballs that strike the pump each provide a different amount of fuel and speed."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Projectile Pump",
+      "recipe": "aura:aura_node_pump_projectile"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Alternating Projectile",
+      "recipe": "aura:aura_node_pump_projectile_alt"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Redstone",
+      "text": "The pump consumes powered redstone wire it can follow; a gap ends each wire path."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Redstone Pump",
+      "recipe": "aura:aura_node_pump_redstone"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Alternating Redstone",
+      "recipe": "aura:aura_node_pump_redstone_alt"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Light and Fall Offers",
+      "text": "At one-block rise, Glowstone gives 180 eligible seconds at 750 Aura per second; Torch, 30 at 750. Falls add 2 seconds per block at 500. Furnace fuel grants its burn time divided by five at 300."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Projectile and Wire",
+      "text": "An Arrow gives 20 seconds at 1,000 Aura per second; an Egg, 90 at 500; a Snowball, 10 at 500. Powered wire starts at 10 seconds and 1,500; each following wire adds 40% duration, up to 15."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Alternating Rhythm",
+      "text": "Alternating offers triple accepted nominal speed, then a sine-like wave varies transfer from none to full. One rise-and-fall cycle lasts 20,000 world ticks: 16 minutes 40 seconds at 20 ticks per second."
+    }
+  ]
+}

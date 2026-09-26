@@ -6,9 +6,15 @@
     " i "
   ],
   "key": {
-    "f": "minecraft:feather",
-    "p": "aura:arcane_prism",
-    "i": "minecraft:piston"
+    "f": {
+      "item": "minecraft:feather"
+    },
+    "p": {
+      "item": "aura:arcane_prism"
+    },
+    "i": {
+      "item": "minecraft:piston"
+    }
   },
   "result": {
     "id": "aura:amulet_of_the_angels_wing",

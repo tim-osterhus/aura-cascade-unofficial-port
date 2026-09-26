@@ -1,0 +1,6 @@
+{
+  "name": "Enchantments",
+  "description": "Study the $(l:aura:kaleidoscopic_enchantments)Kaleidoscopic Enchanter$(/l) and its $(l:aura:enchant_matrix)color pairings$(/l).",
+  "icon": "aura:consumer_block_enchant",
+  "sortnum": 4
+}

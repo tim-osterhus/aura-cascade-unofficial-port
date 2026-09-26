@@ -1,0 +1,72 @@
+{
+  "name": "Angelsteel Shovels",
+  "category": "aura:storage_gear",
+  "icon": "aura:angelsteel_shovel_1",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Twelve Tiers",
+      "text": "Twelve registered recipes for this tool family. Return to $(l:aura:angelsteel_tools)Angelsteel Tools$(/l) or read $(l:aura:arcane_progression)Arcane Progression$(/l) for ingot tiers."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 1 Shovel",
+      "recipe": "aura:angelsteel_shovel_1"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 2 Shovel",
+      "recipe": "aura:angelsteel_shovel_2"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 3 Shovel",
+      "recipe": "aura:angelsteel_shovel_3"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 4 Shovel",
+      "recipe": "aura:angelsteel_shovel_4"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 5 Shovel",
+      "recipe": "aura:angelsteel_shovel_5"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 6 Shovel",
+      "recipe": "aura:angelsteel_shovel_6"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 7 Shovel",
+      "recipe": "aura:angelsteel_shovel_7"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 8 Shovel",
+      "recipe": "aura:angelsteel_shovel_8"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 9 Shovel",
+      "recipe": "aura:angelsteel_shovel_9"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 10 Shovel",
+      "recipe": "aura:angelsteel_shovel_10"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 11 Shovel",
+      "recipe": "aura:angelsteel_shovel_11"
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "Tier 12 Shovel",
+      "recipe": "aura:angelsteel_shovel_12"
+    }
+  ]
+}

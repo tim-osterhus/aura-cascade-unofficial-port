@@ -6,10 +6,18 @@
     " s "
   ],
   "key": {
-    "g": "aura:arcane_gem_red",
-    "p": "aura:arcane_prism",
-    "t": "minecraft:tnt",
-    "s": "minecraft:sandstone"
+    "g": {
+      "item": "aura:arcane_gem_red"
+    },
+    "p": {
+      "item": "aura:arcane_prism"
+    },
+    "t": {
+      "item": "minecraft:tnt"
+    },
+    "s": {
+      "item": "minecraft:sandstone"
+    }
   },
   "result": {
     "id": "aura:ring_of_shattered_stone",

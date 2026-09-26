@@ -7,9 +7,7 @@ import java.util.Map;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -114,7 +112,7 @@ public final class AuraContent {
 
     public static final VortexPedestalBlock VORTEX_PEDESTAL = registerBlock(
         "aura_node_crafting_pedestal",
-        new VortexPedestalBlock(commonProperties("aura_node_crafting_pedestal", MapColor.COLOR_LIGHT_GRAY, SoundType.STONE))
+        new VortexPedestalBlock(commonProperties("aura_node_crafting_pedestal", MapColor.COLOR_LIGHT_GRAY, SoundType.STONE).noOcclusion())
     );
 
     public static final AuraMonitorBlock MONITOR = registerBlock(
@@ -226,7 +224,7 @@ public final class AuraContent {
     }
 
     private static void acceptRegisteredBlockItem(Consumer<ItemLike> consumer, Block block) {
-        Item item = BuiltInRegistries.ITEM.getValue(BuiltInRegistries.BLOCK.getKey(block));
+        Item item = BuiltInRegistries.ITEM.get(BuiltInRegistries.BLOCK.getKey(block));
         if (item == null || item == Items.AIR) {
             throw new IllegalStateException("Missing registered Aura block item for " + BuiltInRegistries.BLOCK.getKey(block));
         }
@@ -236,7 +234,7 @@ public final class AuraContent {
     private static AuraNodeBlock registerNode(AuraNodeVariant variant) {
         AuraNodeBlock block = registerBlock(
             variant.registryPath(),
-            new AuraNodeBlock(commonProperties(variant.registryPath(), MapColor.COLOR_PURPLE, SoundType.AMETHYST))
+            new AuraNodeBlock(commonProperties(variant.registryPath(), MapColor.COLOR_PURPLE, SoundType.AMETHYST).noOcclusion())
         );
         NODE_VARIANTS.put(block, variant);
         return block;
@@ -245,7 +243,7 @@ public final class AuraContent {
     private static AuraPumpBlock registerPump(AuraPumpVariant variant) {
         AuraPumpBlock block = registerBlock(
             variant.registryPath(),
-            new AuraPumpBlock(commonProperties(variant.registryPath(), MapColor.COLOR_ORANGE, SoundType.COPPER))
+            new AuraPumpBlock(commonProperties(variant.registryPath(), MapColor.COLOR_ORANGE, SoundType.COPPER).noOcclusion())
         );
         PUMP_VARIANTS.put(block, variant);
         return block;
@@ -271,7 +269,6 @@ public final class AuraContent {
             variant.registryPath(),
             new FortifiedBlock(
                 BlockBehaviour.Properties.of()
-                    .setId(ResourceKey.create(Registries.BLOCK, id(variant.registryPath())))
                     .mapColor(MapColor.STONE)
                     .strength(variant.destroyTime(), variant.explosionResistance())
                     .sound(variant.translucent() ? SoundType.GLASS : SoundType.STONE)
@@ -284,7 +281,6 @@ public final class AuraContent {
 
     private static BlockBehaviour.Properties commonProperties(String path, MapColor color, SoundType soundType) {
         return BlockBehaviour.Properties.of()
-            .setId(ResourceKey.create(Registries.BLOCK, id(path)))
             .mapColor(color)
             .strength(3.0F, 6.0F)
             .sound(soundType)
@@ -304,8 +300,6 @@ public final class AuraContent {
                 new BlockItem(
                     block,
                     new Item.Properties()
-                        .setId(ResourceKey.create(Registries.ITEM, id(path)))
-                        .useBlockDescriptionPrefix()
                 )
             );
         }
@@ -405,7 +399,7 @@ public final class AuraContent {
         );
     }
 
-    private static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path);
+    private static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path);
     }
 }

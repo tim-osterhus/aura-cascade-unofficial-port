@@ -1,0 +1,37 @@
+{
+  "name": "Consumer Workflows",
+  "category": "aura:aura_systems",
+  "icon": "aura:consumer_block_furnace",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Field Consumers",
+      "text": "These machines draw stored power from adjacent blocks. Nearby dropped items stay fresh within three blocks, refreshed every 500 ticks regardless of work or power. For costs and infusions, see $(l:aura:consumers_vortex)Consumers and Vortex$(/l)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cascading Smelter",
+      "text": "Drop one furnace-smeltable item within three blocks. Nearby Consumer drops stay fresh every 500 ticks, whether work or power is running. On completion, the Smelter consumes one and spawns its furnace result at that item's position."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cascading Grower",
+      "text": "No dropped input is needed. Place a random-ticking target exactly two blocks above the Grower. Each completion runs 50 random ticks there; growth remains stochastic."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cascading Fisher",
+      "text": "Fill a 4-by-4 water footprint one block below it, at offsets x,z = -1 through 2. Source and flowing water count. It rolls the gameplay fishing table with a plain rod and zero luck; no player or XP is involved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cascading Brewer",
+      "text": "Drop a regular water potion nearby. Powered completions progress through water, Awkward, a randomly selected base potion, then a long or strong form where supported. Each eligible nearby stack advances one bottle per completion."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cascading Colorer",
+      "text": "Keep sheep in the consumer's radius-two work area. Each completion selects one eligible sheep, restores its fleece, and chooses one of the 16 dye colors."
+    }
+  ]
+}

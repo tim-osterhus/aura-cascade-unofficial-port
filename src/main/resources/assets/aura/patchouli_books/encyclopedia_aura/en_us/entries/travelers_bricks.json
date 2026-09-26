@@ -1,0 +1,18 @@
+{
+  "name": "Traveler's Bricks",
+  "category": "aura:late_game",
+  "icon": "aura:travelers_bricks",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "A Moving Boost",
+      "text": "Traveler's Bricks are 0.8 blocks high and emit full light. On contact, motion faster than 0.25 blocks per tick adds a five-block-per-tick push along its 3D direction to your motion."
+    },
+    {
+      "type": "patchouli:crafting",
+      "title": "32 Bricks",
+      "recipe": "aura:travelers_bricks",
+      "text": "Return to $(l:aura:late_systems)Late Systems$(/l)."
+    }
+  ]
+}
