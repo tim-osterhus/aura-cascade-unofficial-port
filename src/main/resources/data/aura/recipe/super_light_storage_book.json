@@ -1,15 +1,9 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "aura:very_light_storage_book"
-    },
-    {
-      "item": "minecraft:phantom_membrane"
-    },
-    {
-      "item": "aura:arcane_gem_green"
-    }
+    "aura:very_light_storage_book",
+    "minecraft:phantom_membrane",
+    "aura:arcane_gem_green"
   ],
   "result": {
     "id": "aura:super_light_storage_book",

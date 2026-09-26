@@ -4,19 +4,33 @@
   "key": {
     "X": {
       "fabric:type": "fabric:components",
-      "base": { "item": "minecraft:potion" },
-      "components": { "minecraft:potion_contents": { "potion": "minecraft:poison" } }
+      "base": "minecraft:potion",
+      "components": {
+        "minecraft:potion_contents": {
+          "potion": "minecraft:poison"
+        }
+      }
     },
     "C": {
       "fabric:type": "fabric:custom_data",
-      "base": { "item": "aura:fairy_charm" },
-      "nbt": { "fairyRole": "fairy" }
+      "base": "aura:fairy_charm",
+      "nbt": {
+        "fairyRole": "fairy"
+      }
     }
   },
-  "pattern": [" X ", "XCX", " X "],
+  "pattern": [
+    " X ",
+    "XCX",
+    " X "
+  ],
   "result": {
     "id": "aura:fairy_charm",
     "count": 1,
-    "components": { "minecraft:custom_data": { "fairyRole": "debuffer" } }
+    "components": {
+      "minecraft:custom_data": {
+        "fairyRole": "debuffer"
+      }
+    }
   }
 }

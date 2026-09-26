@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -101,7 +101,7 @@ public final class AuraVortexRecipeCatalog {
     }
 
     private static Item itemById(String id, String resourcePath) {
-        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
+        Item item = BuiltInRegistries.ITEM.getValue(Identifier.parse(id));
         if (item == null || item == Items.AIR) {
             throw new IllegalStateException("Unknown item " + id + " in " + resourcePath);
         }

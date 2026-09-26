@@ -17,7 +17,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 import pixlepix.auracascade.support.TestMinecraftBootstrap;
 
@@ -327,7 +327,7 @@ final class EncyclopediaAuraContentTest {
             itemId = itemId.substring(0, componentSuffix);
         }
 
-        ResourceLocation id = ResourceLocation.parse(itemId);
+        Identifier id = Identifier.parse(itemId);
         boolean registered = "aura".equals(id.getNamespace())
             ? auraItemPaths.contains(id.getPath())
             : BuiltInRegistries.ITEM.containsKey(id);

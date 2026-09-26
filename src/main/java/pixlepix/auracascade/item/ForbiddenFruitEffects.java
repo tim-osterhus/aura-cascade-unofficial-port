@@ -7,7 +7,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 
 public final class ForbiddenFruitEffects {
     private static final List<LegacyPotion> LEGACY_POTIONS = List.of(
@@ -39,8 +39,9 @@ public final class ForbiddenFruitEffects {
     private ForbiddenFruitEffects() {
     }
 
-    static boolean acceptsCompletedUse(UseAnim useAnimation, boolean alive, boolean spectator, boolean equipped) {
-        return alive && !spectator && equipped && (useAnimation == UseAnim.EAT || useAnimation == UseAnim.DRINK);
+    static boolean acceptsCompletedUse(ItemUseAnimation useAnimation, boolean alive, boolean spectator, boolean equipped) {
+        return alive && !spectator && equipped
+            && (useAnimation == ItemUseAnimation.EAT || useAnimation == ItemUseAnimation.DRINK);
     }
 
     public static EffectDescriptor descriptorFor(ItemStack foodStack) {
@@ -76,12 +77,12 @@ public final class ForbiddenFruitEffects {
     private static net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effectFor(String effectId) {
         return switch (effectId) {
             case "regeneration" -> MobEffects.REGENERATION;
-            case "speed" -> MobEffects.MOVEMENT_SPEED;
-            case "haste" -> MobEffects.DIG_SPEED;
-            case "strength" -> MobEffects.DAMAGE_BOOST;
-            case "instant_health" -> MobEffects.HEAL;
-            case "jump_boost" -> MobEffects.JUMP;
-            case "resistance" -> MobEffects.DAMAGE_RESISTANCE;
+            case "speed" -> MobEffects.SPEED;
+            case "haste" -> MobEffects.HASTE;
+            case "strength" -> MobEffects.STRENGTH;
+            case "instant_health" -> MobEffects.INSTANT_HEALTH;
+            case "jump_boost" -> MobEffects.JUMP_BOOST;
+            case "resistance" -> MobEffects.RESISTANCE;
             case "fire_resistance" -> MobEffects.FIRE_RESISTANCE;
             case "water_breathing" -> MobEffects.WATER_BREATHING;
             case "invisibility" -> MobEffects.INVISIBILITY;
@@ -89,7 +90,7 @@ public final class ForbiddenFruitEffects {
             case "health_boost" -> MobEffects.HEALTH_BOOST;
             case "absorption" -> MobEffects.ABSORPTION;
             case "saturation" -> MobEffects.SATURATION;
-            default -> MobEffects.CONFUSION;
+            default -> MobEffects.NAUSEA;
         };
     }
 

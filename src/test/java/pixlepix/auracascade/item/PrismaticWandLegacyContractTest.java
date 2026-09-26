@@ -47,7 +47,7 @@ final class PrismaticWandLegacyContractTest {
         assertEquals(new BlockPos(-8, -17, -26), copied.playerOffset());
         var data = wand.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         assertFalse(data.contains("clipboard"));
-        assertEquals("preserved", data.getString("unrelated"));
+        assertEquals("preserved", data.getString("unrelated").orElseThrow());
         assertFalse(data.contains("state_id"));
 
         PrismaticWandState.setSelectionPoint(wand, new BlockPos(8, 9, 10));

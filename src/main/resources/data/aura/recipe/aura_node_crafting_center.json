@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": {
-      "item": "minecraft:gold_ingot"
-    },
-    "R": {
-      "item": "aura:arcane_ingot_red"
-    },
-    "D": {
-      "item": "minecraft:diamond"
-    }
+    "G": "minecraft:gold_ingot",
+    "R": "aura:arcane_ingot_red",
+    "D": "minecraft:diamond"
   },
   "pattern": [
     "GGG",

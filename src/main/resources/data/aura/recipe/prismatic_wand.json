@@ -6,15 +6,9 @@
     "b  "
   ],
   "key": {
-    "p": {
-      "item": "aura:arcane_prism"
-    },
-    "s": {
-      "item": "minecraft:stick"
-    },
-    "b": {
-      "item": "minecraft:blaze_rod"
-    }
+    "p": "aura:arcane_prism",
+    "s": "minecraft:stick",
+    "b": "minecraft:blaze_rod"
   },
   "result": {
     "id": "aura:prismatic_wand",

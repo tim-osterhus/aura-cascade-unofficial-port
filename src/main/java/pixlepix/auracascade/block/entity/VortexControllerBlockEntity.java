@@ -79,7 +79,7 @@ public class VortexControllerBlockEntity extends net.minecraft.world.level.block
             received += credited;
             required += component.requiredPower();
         }
-        return new InspectionSnapshot(match.recipe().id(), match.recipe().result().getDescriptionId(),
+        return new InspectionSnapshot(match.recipe().id(), match.recipe().result().getItem().getDescriptionId(),
             received, required, List.copyOf(pedestals));
     }
 

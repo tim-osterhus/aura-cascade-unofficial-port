@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
-    "L": {
-      "item": "minecraft:magma_cream"
-    },
-    "N": {
-      "item": "aura:aura_node"
-    }
+    "I": "minecraft:iron_ingot",
+    "L": "minecraft:magma_cream",
+    "N": "aura:aura_node"
   },
   "pattern": [
     "ILI",

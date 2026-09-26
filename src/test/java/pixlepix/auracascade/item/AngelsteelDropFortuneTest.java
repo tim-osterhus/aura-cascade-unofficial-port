@@ -146,7 +146,9 @@ public final class AngelsteelDropFortuneTest {
                 tag.putString("unrelated", "preserved");
             });
             // Explicit rules keep this stack-level test independent of unloaded datapack tags.
-            stack.set(DataComponents.TOOL, new Tool(List.of(Tool.Rule.minesAndDrops(List.of(Blocks.STONE, Blocks.WHEAT), 5.0F)), 1.0F, 1));
+            stack.set(DataComponents.TOOL, new Tool(List.of(Tool.Rule.minesAndDrops(
+                HolderSet.direct(Blocks.STONE.builtInRegistryHolder(), Blocks.WHEAT.builtInRegistryHolder()), 5.0F)),
+                1.0F, 1, true));
             return stack;
         }
 

@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "aura:aura_crystal_white"
-    },
-    "C": {
-      "item": "minecraft:copper_ingot"
-    },
-    "F": {
-      "item": "minecraft:furnace"
-    }
+    "B": "aura:aura_crystal_white",
+    "C": "minecraft:copper_ingot",
+    "F": "minecraft:furnace"
   },
   "pattern": [
     "CBC",

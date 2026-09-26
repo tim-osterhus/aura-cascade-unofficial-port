@@ -10,14 +10,15 @@ import pixlepix.auracascade.fairy.FairySystem;
 @Mixin(LivingEntity.class)
 public abstract class FairyFallDistanceMixin {
     @ModifyVariable(
-        method = "causeFallDamage(FFLnet/minecraft/world/damagesource/DamageSource;)Z",
+        method = "causeFallDamage(DFLnet/minecraft/world/damagesource/DamageSource;)Z",
         at = @At("HEAD"),
         argsOnly = true,
         ordinal = 0
     )
-    private float aura$applyGliderFairies(float distance) {
+    private double aura$applyGliderFairies(double distance) {
         if ((Object) this instanceof ServerPlayer player) {
-            return FairySystem.applyGliderFairies(player, distance);
+            float adjusted = FairySystem.applyGliderFairies(player, (float) distance);
+            return adjusted == (float) distance ? distance : adjusted;
         }
         return distance;
     }

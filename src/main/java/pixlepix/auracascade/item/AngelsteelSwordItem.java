@@ -32,7 +32,7 @@ public final class AngelsteelSwordItem extends AngelsteelToolItem {
     }
 
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (!target.level().isClientSide()) {
             AuraColor color = auraForHit(swordAura(stack));
             int degree = Math.max(0, Math.min(10, degreeIndex));
@@ -42,7 +42,6 @@ public final class AngelsteelSwordItem extends AngelsteelToolItem {
                 degree
             ));
         }
-        return true;
     }
 
     @Override

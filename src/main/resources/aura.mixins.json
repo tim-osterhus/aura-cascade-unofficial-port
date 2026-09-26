@@ -3,6 +3,7 @@
   "package": "pixlepix.auracascade.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ArrowDamageAccessor",
     "ServerExplosionMixin",
     "CreeperAccessor",
     "KaleidoscopicDamageMixin",

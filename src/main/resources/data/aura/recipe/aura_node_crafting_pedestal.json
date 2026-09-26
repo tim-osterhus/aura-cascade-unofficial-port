@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:lapis_lazuli"
-    },
-    "N": {
-      "item": "aura:aura_node"
-    }
+    "B": "minecraft:lapis_lazuli",
+    "N": "aura:aura_node"
   },
   "pattern": [
     "BBB",

@@ -12,7 +12,10 @@ base {
 
 repositories {
     mavenCentral()
-    maven { url = "https://maven.blamejared.com" }
+    maven {
+        url = "https://cursemaven.com/"
+        content { includeGroup "curse.maven" }
+    }
 }
 
 dependencies {
@@ -20,7 +23,7 @@ dependencies {
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    modImplementation "vazkii.patchouli:Patchouli:${project.patchouli_version}"
+    modImplementation "curse.maven:patchouli-fabric-edition-1664943:${project.patchouli_file}"
     include modApi("teamreborn:energy:${project.energy_api_version}")
 
     testImplementation platform("org.junit:junit-bom:5.12.1")
@@ -58,6 +61,10 @@ test {
     useJUnitPlatform()
     maxHeapSize = "512m"
     maxParallelForks = 1
+    systemProperty "fabric.development", "true"
+    doFirst {
+        systemProperty "fabric.addMods", configurations.testRuntimeClasspath.asPath
+    }
 }
 
 publishing {

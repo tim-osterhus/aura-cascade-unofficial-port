@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:barrel"
-    },
-    "C": {
-      "item": "aura:aura_crystal_blue"
-    },
-    "R": {
-      "item": "minecraft:fishing_rod"
-    }
+    "B": "minecraft:barrel",
+    "C": "aura:aura_crystal_blue",
+    "R": "minecraft:fishing_rod"
   },
   "pattern": [
     "CRC",

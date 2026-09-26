@@ -30,7 +30,14 @@ public final class RecipeIngredientReader {
             return ids;
         }
         if (element.isJsonPrimitive()) {
-            throw new AssertionError("Legacy raw-string ingredient payload is not accepted by the 1.21.1 crafting codec: " + element);
+            if (!element.getAsJsonPrimitive().isString()) {
+                throw new AssertionError("Ingredient item and tag IDs must be strings: " + element);
+            }
+            String id = element.getAsString();
+            if (id.isBlank() || id.equals("#")) {
+                throw new AssertionError("Ingredient item and tag IDs cannot be empty: " + element);
+            }
+            return List.of(id);
         }
         if (!element.isJsonObject()) {
             throw new AssertionError("Unsupported ingredient payload: " + element);
@@ -64,13 +71,6 @@ public final class RecipeIngredientReader {
             }
             return baseIds;
         }
-        if (ingredient.has("item")) {
-            return List.of(ingredient.get("item").getAsString());
-        }
-        if (ingredient.has("tag")) {
-            return List.of("#" + ingredient.get("tag").getAsString());
-        }
-
         throw new AssertionError("Unsupported ingredient payload: " + ingredient);
     }
 

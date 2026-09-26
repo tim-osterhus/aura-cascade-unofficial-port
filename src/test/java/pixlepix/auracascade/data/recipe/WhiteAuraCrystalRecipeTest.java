@@ -9,12 +9,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,7 +42,9 @@ final class WhiteAuraCrystalRecipeTest {
         assertEquals("minecraft:crafting_shaped", json.get("type").getAsString());
         assertEquals("misc", json.get("category").getAsString());
 
-        var decodeResult = ShapedRecipePattern.MAP_CODEC.codec().parse(JsonOps.INSTANCE, json);
+        var registryAccess = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
+        var ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
+        var decodeResult = ShapedRecipePattern.MAP_CODEC.codec().parse(ops, json);
         assertTrue(decodeResult.result().isPresent(), () -> "Could not decode the white crystal pattern: " + decodeResult.error());
         ShapedRecipePattern pattern = decodeResult.result().orElseThrow();
         assertEquals(3, pattern.width());
@@ -54,18 +59,23 @@ final class WhiteAuraCrystalRecipeTest {
         int outputCount = result.get("count").getAsInt();
         assertEquals(2, outputCount);
 
-        // This bootstrap does not register Aura items; live crafting must verify the real output and consumption.
-        ShapedRecipe recipe = new ShapedRecipe(
-            "",
-            CraftingBookCategory.MISC,
-            pattern,
-            new ItemStack(Items.AMETHYST_SHARD, outputCount),
-            true
-        );
+        // Substitute only the unregistered Aura output so Minecraft's complete recipe codec can decode the resource.
+        JsonObject codecJson = json.deepCopy();
+        codecJson.getAsJsonObject("result").addProperty("id", "minecraft:amethyst_shard");
+        var recipeDecodeResult = Recipe.CODEC.parse(ops, codecJson);
+        assertTrue(recipeDecodeResult.result().isPresent(),
+            () -> "Could not decode the white crystal recipe: " + recipeDecodeResult.error());
+        assertTrue(recipeDecodeResult.result().orElseThrow() instanceof ShapedRecipe);
+        ShapedRecipe recipe = (ShapedRecipe) recipeDecodeResult.result().orElseThrow();
+        assertEquals(3, recipe.getWidth());
+        assertEquals(3, recipe.getHeight());
+
         CraftingInput validInput = input(3, 3, whiteCrystalGrid(new ItemStack(Items.AMETHYST_SHARD)));
         assertTrue(recipe.matches(validInput, null));
         assertEquals(9, validInput.items().stream().mapToInt(ItemStack::getCount).sum());
-        assertEquals(outputCount, recipe.assemble(validInput, RegistryAccess.EMPTY).getCount());
+        ItemStack assembled = recipe.assemble(validInput, registryAccess);
+        assertEquals(Items.AMETHYST_SHARD, assembled.getItem());
+        assertEquals(outputCount, assembled.getCount());
 
         assertFalse(recipe.matches(input(3, 3, whiteCrystalGrid(new ItemStack(Items.IRON_INGOT))), null));
 
@@ -88,12 +98,15 @@ final class WhiteAuraCrystalRecipeTest {
                 new ItemStack(Items.AMETHYST_SHARD)
             )
         );
-        assertFalse(recipe.canCraftInDimensions(2, 2));
+        assertTrue(recipe.getWidth() > inventoryGrid.width() || recipe.getHeight() > inventoryGrid.height());
         assertFalse(recipe.matches(inventoryGrid, null));
     }
 
     private static long matchingIngredients(ShapedRecipePattern pattern, ItemStack stack) {
-        return pattern.ingredients().stream().filter(ingredient -> ingredient.test(stack)).count();
+        return pattern.ingredients().stream()
+            .flatMap(Optional::stream)
+            .filter(ingredient -> ingredient.test(stack))
+            .count();
     }
 
     private static List<ItemStack> whiteCrystalGrid(ItemStack center) {

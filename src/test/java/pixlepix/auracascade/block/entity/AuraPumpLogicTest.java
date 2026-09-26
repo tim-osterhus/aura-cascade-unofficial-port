@@ -1,9 +1,13 @@
 package pixlepix.auracascade.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.FuelValues;
 import org.junit.jupiter.api.Test;
 import pixlepix.auracascade.aura.AuraEnvironment;
 import pixlepix.auracascade.aura.AuraNodeState;
@@ -129,11 +133,13 @@ final class AuraPumpLogicTest {
     @Test
     void burningPumpUsesFurnaceFuelMapBeyondOldFixedSubset() {
         TestMinecraftBootstrap.ensureBootstrapped();
+        FuelValues fuelValues = FuelValues.vanillaBurnTimes(
+            RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY), FeatureFlags.DEFAULT_FLAGS);
 
-        assertEquals(1_600, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.COAL)));
-        assertEquals(100, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.STICK)));
-        assertEquals(20_000, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.LAVA_BUCKET)));
-        assertEquals(0, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.DIAMOND)));
+        assertEquals(1_600, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.COAL), fuelValues));
+        assertEquals(100, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.STICK), fuelValues));
+        assertEquals(20_000, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.LAVA_BUCKET), fuelValues));
+        assertEquals(0, AuraPumpBlockEntity.burningFuelValue(new ItemStack(Items.DIAMOND), fuelValues));
     }
 
     @Test

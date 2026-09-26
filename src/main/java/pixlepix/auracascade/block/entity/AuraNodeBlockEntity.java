@@ -2,10 +2,11 @@ package pixlepix.auracascade.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import pixlepix.auracascade.block.AuraContent;
 import pixlepix.auracascade.item.AuraItems;
@@ -150,18 +151,18 @@ public class AuraNodeBlockEntity extends AuraNetworkBlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        capacitorThresholdIndex = NbtCompat.getIntOr(tag, CAPACITOR_THRESHOLD_INDEX_TAG, 1);
-        capacitorCooldown = NbtCompat.getIntOr(tag, CAPACITOR_COOLDOWN_TAG, 0);
-        capacitorBurstTicks = NbtCompat.getIntOr(tag, CAPACITOR_BURST_TICKS_TAG, 0);
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        capacitorThresholdIndex = NbtCompat.getIntOr(input, CAPACITOR_THRESHOLD_INDEX_TAG, 1);
+        capacitorCooldown = NbtCompat.getIntOr(input, CAPACITOR_COOLDOWN_TAG, 0);
+        capacitorBurstTicks = NbtCompat.getIntOr(input, CAPACITOR_BURST_TICKS_TAG, 0);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putInt(CAPACITOR_THRESHOLD_INDEX_TAG, capacitorThresholdIndex);
-        tag.putInt(CAPACITOR_COOLDOWN_TAG, capacitorCooldown);
-        tag.putInt(CAPACITOR_BURST_TICKS_TAG, capacitorBurstTicks);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt(CAPACITOR_THRESHOLD_INDEX_TAG, capacitorThresholdIndex);
+        output.putInt(CAPACITOR_COOLDOWN_TAG, capacitorCooldown);
+        output.putInt(CAPACITOR_BURST_TICKS_TAG, capacitorBurstTicks);
     }
 }

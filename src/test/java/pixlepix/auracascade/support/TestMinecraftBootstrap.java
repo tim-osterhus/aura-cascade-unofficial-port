@@ -125,15 +125,8 @@ public final class TestMinecraftBootstrap {
 
             Object itemRegistry = registryField(loader, "ITEM");
             Method keySetMethod = itemRegistry.getClass().getMethod("keySet");
-            Class<?> resourceLocationClass = Class.forName("net.minecraft.resources.ResourceLocation", true, loader);
-            Method getValueMethod;
-            try {
-                getValueMethod = itemRegistry.getClass().getMethod("get", resourceLocationClass);
-            } catch (NoSuchMethodException exception) {
-                getValueMethod = itemRegistry.getClass().getMethod("getValue", resourceLocationClass);
-            }
-            Method getDescriptionIdMethod = Class.forName("net.minecraft.world.item.Item", true, loader).getMethod("getDescriptionId");
-
+            Class<?> resourceLocationClass = Class.forName("net.minecraft.resources.Identifier", true, loader);
+            Method getValueMethod = itemRegistry.getClass().getMethod("getValue", resourceLocationClass);
             Map<String, String> descriptionIds = new java.util.TreeMap<>();
             Iterable<?> identifiers = (Iterable<?>) invoke(keySetMethod, itemRegistry);
             for (Object identifier : identifiers) {
@@ -146,6 +139,7 @@ public final class TestMinecraftBootstrap {
                 Method getPathMethod = identifier.getClass().getMethod("getPath");
                 String path = (String) invoke(getPathMethod, identifier);
                 Object item = invoke(getValueMethod, itemRegistry, identifier);
+                Method getDescriptionIdMethod = item.getClass().getMethod("getDescriptionId");
                 descriptionIds.put(path, (String) invoke(getDescriptionIdMethod, item));
             }
 

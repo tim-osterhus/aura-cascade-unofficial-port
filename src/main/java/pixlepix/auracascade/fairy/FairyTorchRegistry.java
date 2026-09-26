@@ -2,12 +2,12 @@ package pixlepix.auracascade.fairy;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import pixlepix.auracascade.block.FairyTorchBlock;
 
 public final class FairyTorchRegistry {
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("aura", "fairy_torch");
+    private static final Identifier ID = Identifier.fromNamespaceAndPath("aura", "fairy_torch");
     private static Block block;
 
     private FairyTorchRegistry() {

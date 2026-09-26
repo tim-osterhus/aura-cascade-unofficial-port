@@ -8,7 +8,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -28,10 +28,10 @@ public final class BookshelfCoordinatorNetworking {
     public static final int RESULT_INVALID_AMOUNT = 8;
 
     public static final CustomPacketPayload.Type<SnapshotPayload> SNAPSHOT_TYPE = new CustomPacketPayload.Type<>(
-        ResourceLocation.fromNamespaceAndPath("aura", "bookshelf_browser_snapshot")
+        Identifier.fromNamespaceAndPath("aura", "bookshelf_browser_snapshot")
     );
     private static final CustomPacketPayload.Type<ExtractRequest> EXTRACT_TYPE = new CustomPacketPayload.Type<>(
-        ResourceLocation.fromNamespaceAndPath("aura", "bookshelf_browser_extract")
+        Identifier.fromNamespaceAndPath("aura", "bookshelf_browser_extract")
     );
 
     private static final StreamCodec<RegistryFriendlyByteBuf, ExtractRequest> EXTRACT_CODEC = StreamCodec.composite(
@@ -150,7 +150,8 @@ public final class BookshelfCoordinatorNetworking {
     private static int inventoryCapacity(Inventory inventory, ItemStack target) {
         int capacity = 0;
         int stackLimit = target.getMaxStackSize();
-        for (ItemStack slot : inventory.items) {
+        for (int index = 0; index < Inventory.INVENTORY_SIZE; index++) {
+            ItemStack slot = inventory.getItem(index);
             if (slot.isEmpty()) {
                 capacity += stackLimit;
             } else if (ItemStack.isSameItemSameComponents(slot, target)) {

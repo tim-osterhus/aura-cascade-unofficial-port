@@ -15,6 +15,7 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.phys.AABB;
@@ -23,13 +24,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import pixlepix.auracascade.aura.AuraEnvironment;
 import pixlepix.auracascade.aura.AuraInspectionState;
 import pixlepix.auracascade.aura.AuraKernel;
 import pixlepix.auracascade.aura.AuraPalette;
 import pixlepix.auracascade.aura.AuraTransferVisuals;
 import pixlepix.auracascade.aura.WorldInteractionVisuals;
-import org.joml.Vector3f;
 import pixlepix.auracascade.aura.AuraNodeState;
 import pixlepix.auracascade.aura.AuraStorage;
 import pixlepix.auracascade.aura.AuraTickContext;
@@ -148,9 +150,7 @@ public abstract class AuraNetworkBlockEntity extends BlockEntity implements Aura
         }
         for (AuraTransferVisuals.Sample sample : AuraTransferVisuals.samples(source, target, moved)) {
             int rgb = AuraPalette.rgb(sample.color());
-            DustParticleOptions particle = new DustParticleOptions(new Vector3f(
-                ((rgb >> 16) & 255) / 255.0F, ((rgb >> 8) & 255) / 255.0F, (rgb & 255) / 255.0F
-            ), 0.8F);
+            DustParticleOptions particle = new DustParticleOptions(rgb, 0.8F);
             serverLevel.sendParticles(particle, sample.position().x, sample.position().y, sample.position().z,
                 0, sample.direction().x, sample.direction().y, sample.direction().z, 0.12D);
         }
@@ -161,7 +161,8 @@ public abstract class AuraNetworkBlockEntity extends BlockEntity implements Aura
             return;
         }
         if (level instanceof ServerLevel serverLevel) {
-            DustParticleOptions particle = new DustParticleOptions(new Vector3f(0.35F, 0.9F, 1.0F), 1.1F);
+            DustParticleOptions particle = new DustParticleOptions(
+                ARGB.colorFromFloat(1.0F, 0.35F, 0.9F, 1.0F) & 0xFFFFFF, 1.1F);
             for (var point : WorldInteractionVisuals.placementSamples(pos, scanStraightLinks(level, pos), placementPreviewTick)) {
                 serverLevel.sendParticles(particle, point.x, point.y, point.z, 1, 0.0D, 0.0D, 0.0D, 0.0D);
             }
@@ -415,16 +416,16 @@ public abstract class AuraNetworkBlockEntity extends BlockEntity implements Aura
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
         placementPreviewTick = WorldInteractionVisuals.PLACEMENT_TICKS;
-        nodeState = AuraNodeState.fromTag(NbtCompat.getCompoundOrEmpty(tag, NODE_STATE_TAG));
+        nodeState = AuraNodeState.fromTag(NbtCompat.getCompoundOrEmpty(input, NODE_STATE_TAG));
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put(NODE_STATE_TAG, nodeState.toTag());
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        NbtCompat.store(output, NODE_STATE_TAG, CompoundTag.CODEC, nodeState.toTag());
     }
 
     @Override

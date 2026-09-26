@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -31,18 +31,18 @@ public final class AuraQuestProgress {
             return;
         }
 
-        var manager = player.server.getAdvancements();
+        var manager = player.level().getServer().getAdvancements();
         var progress = player.getAdvancements();
-        var root = manager.get(ResourceLocation.fromNamespaceAndPath("aura", "quest/root"));
+        var root = manager.get(Identifier.fromNamespaceAndPath("aura", "quest/root"));
         if (root != null) {
             progress.award(root, CRITERION);
         }
         for (Definition quest : DEFINITIONS) {
-            var advancement = manager.get(ResourceLocation.fromNamespaceAndPath("aura", "quest/" + quest.id()));
+            var advancement = manager.get(Identifier.fromNamespaceAndPath("aura", "quest/" + quest.id()));
             if (advancement == null || progress.getOrStartProgress(advancement).isDone() || !hasGoal(player, quest)) {
                 continue;
             }
-            var rewardItem = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(quest.reward())).orElseThrow();
+            var rewardItem = BuiltInRegistries.ITEM.getOptional(Identifier.parse(quest.reward())).orElseThrow();
             ItemStack reward = new ItemStack(rewardItem, quest.rewardCount());
             if (rewardItem instanceof FairyCharmItem) {
                 FairyCharmItem.withRole(reward, FairyRole.defaultRole());
@@ -50,20 +50,20 @@ public final class AuraQuestProgress {
             if (!progress.award(advancement, CRITERION)) {
                 continue;
             }
-            ItemEntity drop = new ItemEntity(player.serverLevel(), player.getX(), player.getY(), player.getZ(), reward);
+            ItemEntity drop = new ItemEntity(player.level(), player.getX(), player.getY(), player.getZ(), reward);
             drop.setPickUpDelay(0);
-            if (!player.serverLevel().addFreshEntity(drop)) {
+            if (!player.level().addFreshEntity(drop)) {
                 progress.revoke(advancement, CRITERION);
                 continue;
             }
             player.displayClientMessage(Component.translatable("message.aura.quest.complete", quest.title()), false);
         }
         // Send completion before Patchouli opens so its quest pages reflect this check.
-        progress.flushDirty(player);
+        progress.flushDirty(player, false);
     }
 
     private static boolean hasGoal(ServerPlayer player, Definition quest) {
-        for (ItemStack stack : player.getInventory().items) {
+        for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
             if (stack.isEmpty() || !BuiltInRegistries.ITEM.getKey(stack.getItem()).toString().equals(quest.goal())) {
                 continue;
             }

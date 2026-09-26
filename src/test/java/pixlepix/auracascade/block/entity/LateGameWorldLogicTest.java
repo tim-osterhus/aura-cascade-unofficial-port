@@ -2,7 +2,7 @@ package pixlepix.auracascade.block.entity;
 
 import net.minecraft.util.RandomSource;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -58,12 +58,12 @@ final class LateGameWorldLogicTest {
 
     @Test
     void spawnerUsesTheSuppliedNaturalSpawnListAndRitualHasBoundedRadius() {
-        var naturalSpawns = WeightedRandomList.create(
-            new MobSpawnSettings.SpawnerData(EntityType.HUSK, 10, 1, 1)
-        );
+        WeightedList<MobSpawnSettings.SpawnerData> naturalSpawns = WeightedList.<MobSpawnSettings.SpawnerData>builder()
+            .add(new MobSpawnSettings.SpawnerData(EntityType.HUSK, 1, 1))
+            .build();
         assertEquals(EntityType.HUSK, LateGameWorldLogic.chooseSpawnType(naturalSpawns, RandomSource.create(0L)));
         assertNull(LateGameWorldLogic.chooseSpawnType(
-            WeightedRandomList.<MobSpawnSettings.SpawnerData>create(), RandomSource.create(0L)
+            WeightedList.<MobSpawnSettings.SpawnerData>of(), RandomSource.create(0L)
         ));
         assertTrue(LateGameWorldLogic.withinRitualRadius(150, 0));
         assertFalse(LateGameWorldLogic.withinRitualRadius(151, 0));

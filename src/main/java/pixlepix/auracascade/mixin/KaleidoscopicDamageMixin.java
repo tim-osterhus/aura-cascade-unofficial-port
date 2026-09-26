@@ -11,13 +11,13 @@ import pixlepix.auracascade.item.AuraItems;
 
 @Mixin(LivingEntity.class)
 abstract class KaleidoscopicDamageMixin {
-    @ModifyArgs(method = "hurt", at = @At(value = "INVOKE", target =
-        "Lnet/minecraft/world/entity/LivingEntity;actuallyHurt(Lnet/minecraft/world/damagesource/DamageSource;F)V"))
+    @ModifyArgs(method = "hurtServer", at = @At(value = "INVOKE", target =
+        "Lnet/minecraft/world/entity/LivingEntity;actuallyHurt(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)V"))
     private void aura$modifyKaleidoscopicDamage(Args args) {
         LivingEntity victim = (LivingEntity) (Object) this;
-        DamageSource source = args.get(0);
-        float amount = args.get(1);
+        DamageSource source = args.get(1);
+        float amount = args.get(2);
         float enchantedDamage = KaleidoscopicOriginalEffects.modifyDamage(victim, source, amount);
-        args.set(1, AuraItems.modifyPreMitigationDamage(victim, source, enchantedDamage));
+        args.set(2, AuraItems.modifyPreMitigationDamage(victim, source, enchantedDamage));
     }
 }

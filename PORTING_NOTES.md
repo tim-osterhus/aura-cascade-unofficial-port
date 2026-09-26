@@ -1,5 +1,13 @@
 # Porting Notes
 
+## 1.21.11 Forward Port
+
+Branch `fabric/1.21.11` derives from canonical source checkpoint `44cc057`.
+Implementation and acceptance are in progress; no target release is approved yet.
+See [the target audit](docs/audits/2026-09-25-port-12111.md) for dependency proof,
+memory measurements and target-only changes. All results below belong to the
+historical 1.21.1 baseline unless explicitly labeled otherwise.
+
 ## 0.2.1 Visual Hotfix
 
 Aura Cascade Reimagined retains the `aura` mod and registry IDs. Final artifact

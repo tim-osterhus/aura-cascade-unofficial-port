@@ -77,7 +77,8 @@ final class FinalClientParityAuditTest {
             () -> assertTrue(portingNotes.contains("VisualAssetParityAuditTest")),
             () -> assertTrue(portingNotes.contains("no longer reports Aura `Parsing error loading recipe` entries")),
             () -> assertEquals(-1, portingNotes.indexOf("run-76955964dbb9474f848a0dfb36ae5bd5/live_client_validation/")),
-            () -> assertEquals(-1, portingNotes.indexOf("1.21.11"))
+            () -> assertTrue(portingNotes.contains("## 1.21.11 Forward Port")),
+            () -> assertTrue(portingNotes.contains("Implementation and acceptance are in progress; no target release is approved yet."))
         );
     }
 

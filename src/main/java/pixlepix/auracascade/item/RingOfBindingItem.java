@@ -2,6 +2,7 @@ package pixlepix.auracascade.item;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -10,6 +11,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TooltipDisplay;
 import pixlepix.auracascade.compat.AuraAccessorySlot;
 import pixlepix.auracascade.fairy.FairyRole;
 import pixlepix.auracascade.util.NbtCompat;
@@ -34,9 +36,9 @@ public final class RingOfBindingItem extends AuraAccessoryItem {
         boolean storedRoles = tag.contains(BOUND_FAIRIES_TAG);
         boolean legacyRoles = !storedRoles && tag.contains(LEGACY_FAIRY_LIST_TAG);
         int[] encodedRoles = storedRoles
-            ? tag.getIntArray(BOUND_FAIRIES_TAG)
+            ? NbtCompat.getIntArrayOr(tag, BOUND_FAIRIES_TAG, new int[0])
             : legacyRoles
-                ? tag.getIntArray(LEGACY_FAIRY_LIST_TAG)
+                ? NbtCompat.getIntArrayOr(tag, LEGACY_FAIRY_LIST_TAG, new int[0])
                 : migrateLegacyCount(NbtCompat.getIntOr(tag, BOUND_FAIRY_COUNT_TAG, 0));
         int boundedCount = Math.min(encodedRoles.length, MAX_BOUND_FAIRIES);
         ArrayList<FairyRole> roles = new ArrayList<>(boundedCount);
@@ -92,14 +94,15 @@ public final class RingOfBindingItem extends AuraAccessoryItem {
     public void appendHoverText(
         ItemStack stack,
         TooltipContext tooltipContext,
-        List<Component> tooltip,
+        TooltipDisplay tooltipDisplay,
+        Consumer<Component> tooltip,
         TooltipFlag tooltipFlag
     ) {
         List<FairyRole> roles = boundFairies(stack);
-        tooltip.add(Component.translatable("tooltip.aura.ring_of_binding.count", roles.size(), MAX_BOUND_FAIRIES)
+        tooltip.accept(Component.translatable("tooltip.aura.ring_of_binding.count", roles.size(), MAX_BOUND_FAIRIES)
             .withStyle(ChatFormatting.GRAY));
         for (FairyRole role : roles) {
-            tooltip.add(Component.literal("- ").append(role.displayComponent()).withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.accept(Component.literal("- ").append(role.displayComponent()).withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 

@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -39,8 +41,8 @@ final class EncyclopediaAuraRecipeTest {
 
         JsonObject key = json.getAsJsonObject("key");
         assertEquals(2, key.size());
-        assertEquals("aura:aura_crystal_white", key.getAsJsonObject("C").get("item").getAsString());
-        assertEquals("minecraft:book", key.getAsJsonObject("B").get("item").getAsString());
+        assertEquals("aura:aura_crystal_white", key.get("C").getAsString());
+        assertEquals("minecraft:book", key.get("B").getAsString());
         assertEquals(1, json.getAsJsonArray("pattern").size());
         assertEquals("CB", json.getAsJsonArray("pattern").get(0).getAsString());
         assertFalse(json.toString().contains("arcane_prism"));
@@ -53,15 +55,17 @@ final class EncyclopediaAuraRecipeTest {
         // The test bootstrap has vanilla registries only. Keep the Aura item id assertion above,
         // then use amethyst shard as a surrogate to exercise Minecraft's real shaped matcher.
         JsonObject codecJson = json.deepCopy();
-        codecJson.getAsJsonObject("key").getAsJsonObject("C").addProperty("item", "minecraft:amethyst_shard");
-        var decodeResult = ShapedRecipePattern.MAP_CODEC.codec().parse(JsonOps.INSTANCE, codecJson);
+        codecJson.getAsJsonObject("key").addProperty("C", "minecraft:amethyst_shard");
+        var registryAccess = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
+        var ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
+        var decodeResult = ShapedRecipePattern.MAP_CODEC.codec().parse(ops, codecJson);
         assertTrue(decodeResult.result().isPresent(), () -> "Could not decode the encyclopedia pattern: " + decodeResult.error());
         ShapedRecipePattern pattern = decodeResult.result().orElseThrow();
         assertEquals(2, pattern.width());
         assertEquals(1, pattern.height());
         assertEquals(2, pattern.ingredients().size());
-        assertTrue(pattern.ingredients().get(0).test(new ItemStack(Items.AMETHYST_SHARD)));
-        assertTrue(pattern.ingredients().get(1).test(new ItemStack(Items.BOOK)));
+        assertTrue(pattern.ingredients().get(0).orElseThrow().test(new ItemStack(Items.AMETHYST_SHARD)));
+        assertTrue(pattern.ingredients().get(1).orElseThrow().test(new ItemStack(Items.BOOK)));
 
         ShapedRecipe recipe = new ShapedRecipe(
             "",
@@ -70,13 +74,13 @@ final class EncyclopediaAuraRecipeTest {
             new ItemStack(Items.WRITTEN_BOOK, outputCount),
             true
         );
-        assertTrue(recipe.canCraftInDimensions(2, 2));
-
         CraftingInput shiftedInput = input(
             2,
             2,
             List.of(ItemStack.EMPTY, ItemStack.EMPTY, new ItemStack(Items.AMETHYST_SHARD), new ItemStack(Items.BOOK))
         );
+        assertTrue(recipe.getWidth() <= shiftedInput.width());
+        assertTrue(recipe.getHeight() <= shiftedInput.height());
         assertTrue(recipe.matches(shiftedInput, null));
         assertEquals(2, shiftedInput.items().stream().mapToInt(ItemStack::getCount).sum());
         assertEquals(outputCount, recipe.assemble(shiftedInput, RegistryAccess.EMPTY).getCount());

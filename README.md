@@ -1,6 +1,6 @@
 # Aura Cascade Reimagined
 
-Aura Cascade is an unofficial modern Fabric port of the shipped `AuraCascade-592.jar` artifact, targeting Minecraft `1.21.1` and Java `21`. This repository treats the shipped jar as the primary parity reference and keeps the release-facing parity audit, substitutions, shipped runtime bounds, and validation evidence in `PORTING_NOTES.md`.
+Aura Cascade is an unofficial modern Fabric port of the shipped `AuraCascade-592.jar` artifact. This branch targets Minecraft `1.21.11` and Java `21`; `main` remains the canonical `1.21.1` implementation. This repository treats the shipped jar as the primary parity reference and keeps the release-facing parity audit, substitutions, shipped runtime bounds, and validation evidence in `PORTING_NOTES.md`.
 
 ## Attribution And Provenance
 
@@ -14,6 +14,11 @@ Aura Cascade is an unofficial modern Fabric port of the shipped `AuraCascade-592
 - The current parity baseline is grounded in the shipped jar's `mcmod.info`, `assets/aura/lang/en_US.lang`, `pixlepix/auracascade/data/EnumAura.class`, `pixlepix/auracascade/registry/BlockRegistry.class`, `pixlepix/auracascade/data/recipe/ProcessorRecipeRegistry.class`, `pixlepix/auracascade/data/recipe/PylonRecipeRegistry.class`, and `pixlepix/auracascade/lexicon/LexiconData.class`.
 
 ## Release Status
+
+The `fabric/1.21.11` branch is an in-progress forward port of the reviewed
+`0.2.1+1.21.1` checkpoint `44cc057`. Target validation and publication have not
+passed yet. See [the target audit](docs/audits/2026-09-25-port-12111.md).
+The results below are historical 1.21.1 evidence, not target-version passes.
 
 Version `0.2.1+1.21.1` is the visual-feedback hotfix for
 [Aura Cascade Reimagined](https://www.curseforge.com/minecraft/mc-mods/aura-cascade-reimagined).
@@ -95,7 +100,8 @@ the exact artifact, release result and beta coverage limits.
 3. Run `./gradlew --console=plain build`.
 4. Collect the mod jar from `build/libs/aura-cascade-<version>.jar`.
 
-The encyclopedia requires Patchouli `1.21.1-93-FABRIC` alongside Fabric API on both
+The encyclopedia on this branch requires [Patchouli: Fabric Edition](https://www.curseforge.com/minecraft/mc-mods/patchouli-fabric-edition/files/8713841)
+`1.21.11-94.4-FABRIC` alongside Fabric API on both
 client and server. Gradle resolves the development dependency; standalone
 installations must include it separately.
 
@@ -105,9 +111,8 @@ Gradle defaults to one worker, a 1,536 MiB heap, no persistent daemon and a
 trees for builds, development clients and packaged smoke tests. Their sampled
 memory guards are not operating-system memory limits.
 
-The Fluxing Node integration bundles Team Reborn Energy `4.1.0` (MIT) for
-modern Fabric energy receivers. Its [upstream version guidance](https://github.com/TechReborn/Energy/blob/master/README.md)
-selects the 4.1.x line for Minecraft 1.21. The bundled API does not itself add
+The Fluxing Node integration bundles Team Reborn Energy `4.2.0` (MIT) for
+modern Fabric energy receivers. The bundled API does not itself add
 powered machines; transfer interoperability still needs acceptance fixtures.
 
 ## Dedicated Server Smoke

@@ -18,13 +18,15 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -42,6 +44,9 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -140,19 +145,19 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        storedPower = NbtCompat.getIntOr(tag, STORED_POWER_TAG, NbtCompat.getIntOr(tag, "storedPower", 0));
-        progress = NbtCompat.getIntOr(tag, PROGRESS_TAG, 0);
-        lastReceivedPower = NbtCompat.getIntOr(tag, LAST_RECEIVED_POWER_TAG, NbtCompat.getIntOr(tag, "lastPower", 0));
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        storedPower = NbtCompat.getIntOr(input, STORED_POWER_TAG, NbtCompat.getIntOr(input, "storedPower", 0));
+        progress = NbtCompat.getIntOr(input, PROGRESS_TAG, 0);
+        lastReceivedPower = NbtCompat.getIntOr(input, LAST_RECEIVED_POWER_TAG, NbtCompat.getIntOr(input, "lastPower", 0));
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putInt(STORED_POWER_TAG, storedPower);
-        tag.putInt(PROGRESS_TAG, progress);
-        tag.putInt(LAST_RECEIVED_POWER_TAG, lastReceivedPower);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt(STORED_POWER_TAG, storedPower);
+        output.putInt(PROGRESS_TAG, progress);
+        output.putInt(LAST_RECEIVED_POWER_TAG, lastReceivedPower);
     }
 
     @Override
@@ -447,9 +452,7 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
             double y = potionEntity.getY();
             double z = potionEntity.getZ();
             Vec3 velocity = potionEntity.getDeltaMovement();
-            CompoundTag entityData = new CompoundTag();
-            potionEntity.addAdditionalSaveData(entityData);
-            int pickupDelay = entityData.getShort("PickupDelay");
+            int pickupDelay = pickupDelay(level.registryAccess(), potionEntity);
             ItemStack input = potionEntity.getItem();
             input.shrink(1);
             if (input.isEmpty()) {
@@ -505,7 +508,8 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
             case ENCHANTER -> new Vector3f(0.75F, 0.45F, 1.0F);
             default -> new Vector3f(0.4F, 0.9F, 1.0F);
         };
-        DustParticleOptions particle = new DustParticleOptions(color, 1.0F);
+        DustParticleOptions particle = new DustParticleOptions(
+            ARGB.colorFromFloat(1.0F, color.x, color.y, color.z) & 0xFFFFFF, 1.0F);
         for (Vec3 point : WorldInteractionVisuals.craftSamples(craftAnimationCenter, craftAnimationTick)) {
             serverLevel.sendParticles(particle, point.x, point.y, point.z, 1, 0.0D, 0.0D, 0.0D, 0.0D);
         }
@@ -630,13 +634,21 @@ public class AuraConsumerBlockEntity extends BlockEntity implements AuraSignalSo
     }
 
     static ItemEntity replacementDrop(Level level, ItemEntity source, ItemStack stack) {
-        CompoundTag sourceData = new CompoundTag();
-        source.addAdditionalSaveData(sourceData);
+        return replacementDrop(level, source, stack, level.registryAccess());
+    }
+
+    static ItemEntity replacementDrop(Level level, ItemEntity source, ItemStack stack, HolderLookup.Provider registries) {
         Vec3 motion = source.getDeltaMovement();
         ItemEntity output = new ItemEntity(level, source.getX(), source.getY(), source.getZ(),
             stack.copy(), motion.x, motion.y, motion.z);
-        output.setPickUpDelay(sourceData.getShort("PickupDelay"));
+        output.setPickUpDelay(pickupDelay(registries, source));
         return output;
+    }
+
+    private static int pickupDelay(HolderLookup.Provider registries, ItemEntity itemEntity) {
+        TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registries);
+        itemEntity.saveWithoutId(output);
+        return output.buildResult().getShortOr("PickupDelay", (short) 0);
     }
 
     private AuraConsumerVariant variant() {

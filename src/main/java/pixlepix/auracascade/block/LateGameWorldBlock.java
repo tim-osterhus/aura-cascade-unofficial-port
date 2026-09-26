@@ -49,7 +49,7 @@ public class LateGameWorldBlock extends BaseEntityBlock implements EntityBlock {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, net.minecraft.core.Direction direction) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         return blockEntity instanceof AuraSignalSource signalSource ? signalSource.auraSignal() : 0;
     }

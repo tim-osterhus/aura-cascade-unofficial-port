@@ -4,12 +4,11 @@ import java.util.Arrays;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.CropBlock;
@@ -23,20 +22,20 @@ public final class AngelsteelToolHelper {
     public static final String NBT_AURA_NAME = "aura";
     public static final TagKey<net.minecraft.world.item.Item> REPAIR_ITEMS = TagKey.create(
         net.minecraft.core.registries.Registries.ITEM,
-        ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, "angelsteel_ingots")
+        Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, "angelsteel_ingots")
     );
 
-    private static final Tier[] MATERIALS = new Tier[MAX_DEGREE];
+    private static final ToolMaterial[] MATERIALS = new ToolMaterial[MAX_DEGREE];
 
     static {
         for (int degreeIndex = 0; degreeIndex < MAX_DEGREE; degreeIndex++) {
-            MATERIALS[degreeIndex] = new AngelsteelTier(
+            MATERIALS[degreeIndex] = new ToolMaterial(
                 BlockTags.INCORRECT_FOR_NETHERITE_TOOL,
                 10,
                 (float) Math.floor(5.0D * Math.pow(1.15D, degreeIndex)),
                 (float) Math.floor(3.0D * Math.pow(1.15D, degreeIndex)),
                 10,
-                Ingredient.of(REPAIR_ITEMS)
+                REPAIR_ITEMS
             );
         }
     }
@@ -44,7 +43,7 @@ public final class AngelsteelToolHelper {
     private AngelsteelToolHelper() {
     }
 
-    public static Tier material(int degreeIndex) {
+    public static ToolMaterial material(int degreeIndex) {
         return MATERIALS[clampDegree(degreeIndex)];
     }
 
@@ -140,42 +139,4 @@ public final class AngelsteelToolHelper {
         return Arrays.stream(getBuffs(stack)).sum();
     }
 
-    private record AngelsteelTier(
-        TagKey<net.minecraft.world.level.block.Block> incorrectBlocksForDrops,
-        int uses,
-        float speed,
-        float attackDamageBonus,
-        int enchantmentValue,
-        Ingredient repairIngredient
-    ) implements Tier {
-        @Override
-        public TagKey<net.minecraft.world.level.block.Block> getIncorrectBlocksForDrops() {
-            return incorrectBlocksForDrops;
-        }
-
-        @Override
-        public int getUses() {
-            return uses;
-        }
-
-        @Override
-        public float getSpeed() {
-            return speed;
-        }
-
-        @Override
-        public float getAttackDamageBonus() {
-            return attackDamageBonus;
-        }
-
-        @Override
-        public int getEnchantmentValue() {
-            return enchantmentValue;
-        }
-
-        @Override
-        public Ingredient getRepairIngredient() {
-            return repairIngredient;
-        }
-    }
 }

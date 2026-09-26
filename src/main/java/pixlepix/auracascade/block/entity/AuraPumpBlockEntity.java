@@ -2,16 +2,17 @@ package pixlepix.auracascade.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedStoneWireBlock;
-import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import pixlepix.auracascade.aura.AuraKernel;
 import pixlepix.auracascade.block.AuraContent;
@@ -127,7 +128,7 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
                 continue;
             }
             var stack = itemEntity.getItem();
-            int burnTime = burningFuelValue(stack);
+            int burnTime = burningFuelValue(stack, level.fuelValues());
             if (burnTime <= 0) {
                 continue;
             }
@@ -227,10 +228,10 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        pumpState = readPumpState(tag);
-        pumpInhibited = readPumpInhibited(tag);
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        pumpState = readPumpState(input);
+        pumpInhibited = readPumpInhibited(input);
     }
 
     static AuraPumpLogic.PumpState readPumpState(CompoundTag tag) {
@@ -240,14 +241,25 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
         );
     }
 
+    static AuraPumpLogic.PumpState readPumpState(ValueInput input) {
+        return new AuraPumpLogic.PumpState(
+            NbtCompat.getIntOr(input, PUMP_POWER_TAG, 0),
+            NbtCompat.getIntOr(input, PUMP_SPEED_TAG, 0)
+        );
+    }
+
     static boolean readPumpInhibited(CompoundTag tag) {
         return NbtCompat.getBooleanOr(tag, PUMP_INHIBITED_TAG, false);
     }
 
+    static boolean readPumpInhibited(ValueInput input) {
+        return NbtCompat.getBooleanOr(input, PUMP_INHIBITED_TAG, false);
+    }
+
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        writePumpState(tag, pumpState, pumpInhibited);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        writePumpState(output, pumpState, pumpInhibited);
     }
 
     static void writePumpState(CompoundTag tag, AuraPumpLogic.PumpState state, boolean inhibited) {
@@ -256,7 +268,13 @@ public class AuraPumpBlockEntity extends AuraNetworkBlockEntity {
         tag.putBoolean(PUMP_INHIBITED_TAG, inhibited);
     }
 
-    static int burningFuelValue(ItemStack stack) {
-        return AbstractFurnaceBlockEntity.getFuel().getOrDefault(stack.getItem(), 0);
+    static void writePumpState(ValueOutput output, AuraPumpLogic.PumpState state, boolean inhibited) {
+        output.putInt(PUMP_POWER_TAG, state.power());
+        output.putInt(PUMP_SPEED_TAG, state.speed());
+        output.putBoolean(PUMP_INHIBITED_TAG, inhibited);
+    }
+
+    static int burningFuelValue(ItemStack stack, FuelValues fuelValues) {
+        return fuelValues.burnDuration(stack);
     }
 }

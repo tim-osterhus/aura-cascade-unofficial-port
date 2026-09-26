@@ -73,7 +73,7 @@ final class RingOfBindingItemTest {
         var migratedTag = ring.get(DataComponents.CUSTOM_DATA).copyTag();
         assertFalse(migratedTag.contains("fairyList"));
         assertFalse(migratedTag.contains("boundFairyCount"));
-        assertArrayEquals(new int[] { 1, 16, 3 }, migratedTag.getIntArray("boundFairies"));
+        assertArrayEquals(new int[] { 1, 16, 3 }, migratedTag.getIntArray("boundFairies").orElseThrow());
     }
 
     @Test

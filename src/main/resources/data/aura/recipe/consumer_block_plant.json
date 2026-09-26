@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "aura:aura_crystal_green"
-    },
-    "D": {
-      "item": "minecraft:dirt"
-    },
-    "P": {
-      "item": "minecraft:composter"
-    }
+    "C": "aura:aura_crystal_green",
+    "D": "minecraft:dirt",
+    "P": "minecraft:composter"
   },
   "pattern": [
     "C C",

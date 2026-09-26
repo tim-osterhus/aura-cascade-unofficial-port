@@ -1,8 +1,10 @@
 package pixlepix.auracascade.block.entity;
 
 import org.junit.jupiter.api.Test;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -10,6 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
 import pixlepix.auracascade.support.TestMinecraftBootstrap;
 
@@ -77,15 +81,15 @@ final class AuraConsumerLogicTest {
     void optionalCommonOreDustTagsPairByMaterialWithoutInventingOutputs() {
         TagKey<Item> copperOre = TagKey.create(
             Registries.ITEM,
-            ResourceLocation.fromNamespaceAndPath("c", "ores/copper")
+            Identifier.fromNamespaceAndPath("c", "ores/copper")
         );
         TagKey<Item> modOre = TagKey.create(
             Registries.ITEM,
-            ResourceLocation.fromNamespaceAndPath("example", "ores/copper")
+            Identifier.fromNamespaceAndPath("example", "ores/copper")
         );
         TagKey<Item> aggregateOre = TagKey.create(
             Registries.ITEM,
-            ResourceLocation.fromNamespaceAndPath("c", "ores")
+            Identifier.fromNamespaceAndPath("c", "ores")
         );
 
         assertEquals(
@@ -187,15 +191,16 @@ final class AuraConsumerLogicTest {
             0.25D, -0.5D, 0.75D);
         source.setPickUpDelay(37);
 
-        ItemEntity output = AuraConsumerBlockEntity.replacementDrop(null, source, ItemStack.EMPTY);
+        var registries = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
+        ItemEntity output = AuraConsumerBlockEntity.replacementDrop(null, source, ItemStack.EMPTY, registries);
 
         assertEquals(4.25D, output.getX(), 0.0D);
         assertEquals(8.5D, output.getY(), 0.0D);
         assertEquals(-2.75D, output.getZ(), 0.0D);
         assertEquals(new Vec3(0.25D, -0.5D, 0.75D), output.getDeltaMovement());
-        net.minecraft.nbt.CompoundTag outputData = new net.minecraft.nbt.CompoundTag();
-        output.addAdditionalSaveData(outputData);
-        assertEquals(37, outputData.getShort("PickupDelay"));
+        TagValueOutput outputData = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registries);
+        output.saveWithoutId(outputData);
+        assertEquals(37, outputData.buildResult().getShortOr("PickupDelay", (short) 0));
     }
 
     @Test

@@ -15,8 +15,8 @@ final class AngelsteelToolHelperTest {
     void higherDegreesAllocateMoreBuffPointsAndMaterialStats() {
         assertEquals(0, Arrays.stream(AngelsteelToolHelper.randomBuffSet(0, RandomSource.create(1L))).sum());
         assertEquals(22, Arrays.stream(AngelsteelToolHelper.randomBuffSet(11, RandomSource.create(1L))).sum());
-        assertTrue(AngelsteelToolHelper.material(11).getSpeed() > AngelsteelToolHelper.material(0).getSpeed());
-        assertTrue(AngelsteelToolHelper.material(11).getAttackDamageBonus() > AngelsteelToolHelper.material(0).getAttackDamageBonus());
+        assertTrue(AngelsteelToolHelper.material(11).speed() > AngelsteelToolHelper.material(0).speed());
+        assertTrue(AngelsteelToolHelper.material(11).attackDamageBonus() > AngelsteelToolHelper.material(0).attackDamageBonus());
     }
 
     @Test

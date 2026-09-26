@@ -1,15 +1,9 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "minecraft:book"
-    },
-    {
-      "item": "minecraft:paper"
-    },
-    {
-      "item": "aura:arcane_ingot_yellow"
-    }
+    "minecraft:book",
+    "minecraft:paper",
+    "aura:arcane_ingot_yellow"
   ],
   "result": {
     "id": "aura:light_storage_book",

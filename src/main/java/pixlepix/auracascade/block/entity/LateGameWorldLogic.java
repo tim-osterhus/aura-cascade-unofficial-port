@@ -5,10 +5,10 @@ import java.util.LinkedHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.item.ItemStack;
@@ -21,9 +21,9 @@ import pixlepix.auracascade.block.LateGameVariant;
 
 public final class LateGameWorldLogic {
     private static final TagKey<Item> ITEM_ORES = TagKey.create(Registries.ITEM,
-        ResourceLocation.fromNamespaceAndPath("c", "ores"));
+        Identifier.fromNamespaceAndPath("c", "ores"));
     private static final TagKey<Block> BLOCK_ORES = TagKey.create(Registries.BLOCK,
-        ResourceLocation.fromNamespaceAndPath("c", "ores"));
+        Identifier.fromNamespaceAndPath("c", "ores"));
     private static final int TAGGED_ORE_WEIGHT = 1_000;
     private static final List<WeightedItem> ORE_TABLE = List.of(
         weighted(Blocks.COAL_ORE, 46_525),
@@ -71,10 +71,8 @@ public final class LateGameWorldLogic {
 
     public static List<Item> taggedOres() {
         LinkedHashSet<Item> ores = new LinkedHashSet<>();
-        BuiltInRegistries.ITEM.getTag(ITEM_ORES).ifPresent(tag ->
-            tag.forEach(holder -> ores.add(holder.value())));
-        BuiltInRegistries.BLOCK.getTag(BLOCK_ORES).ifPresent(tag ->
-            tag.forEach(holder -> ores.add(holder.value().asItem())));
+        BuiltInRegistries.ITEM.getTagOrEmpty(ITEM_ORES).forEach(holder -> ores.add(holder.value()));
+        BuiltInRegistries.BLOCK.getTagOrEmpty(BLOCK_ORES).forEach(holder -> ores.add(holder.value().asItem()));
         ores.remove(Items.AIR);
         return List.copyOf(ores);
     }
@@ -165,10 +163,10 @@ public final class LateGameWorldLogic {
     }
 
     public static EntityType<?> chooseSpawnType(
-        WeightedRandomList<MobSpawnSettings.SpawnerData> naturalSpawns,
+        WeightedList<MobSpawnSettings.SpawnerData> naturalSpawns,
         RandomSource random
     ) {
-        return naturalSpawns.getRandom(random).map(entry -> entry.type).orElse(null);
+        return naturalSpawns.getRandom(random).map(MobSpawnSettings.SpawnerData::type).orElse(null);
     }
 
     public static boolean withinRitualRadius(int deltaX, int deltaZ) {

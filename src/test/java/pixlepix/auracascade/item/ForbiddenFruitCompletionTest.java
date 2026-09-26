@@ -8,7 +8,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import org.junit.jupiter.api.Test;
 import pixlepix.auracascade.support.TestMinecraftBootstrap;
 
@@ -23,8 +23,8 @@ final class ForbiddenFruitCompletionTest {
         TestMinecraftBootstrap.ensureBootstrapped();
         ItemStack apple = new ItemStack(Items.APPLE);
         assertTrue(apple.has(DataComponents.FOOD));
-        assertEquals(UseAnim.EAT, apple.getUseAnimation());
-        for (UseAnim animation : new UseAnim[] {apple.getUseAnimation(), UseAnim.DRINK}) {
+        assertEquals(ItemUseAnimation.EAT, apple.getUseAnimation());
+        for (ItemUseAnimation animation : new ItemUseAnimation[] {apple.getUseAnimation(), ItemUseAnimation.DRINK}) {
             assertTrue(ForbiddenFruitEffects.acceptsCompletedUse(animation, true, false, true));
             assertFalse(ForbiddenFruitEffects.acceptsCompletedUse(animation, false, false, true));
             assertFalse(ForbiddenFruitEffects.acceptsCompletedUse(animation, true, true, true));
@@ -38,8 +38,8 @@ final class ForbiddenFruitCompletionTest {
         for (var item : new net.minecraft.world.item.Item[] {Items.POTION, Items.MILK_BUCKET}) {
             ItemStack used = new ItemStack(item);
             assertFalse(used.has(DataComponents.FOOD));
-            UseAnim beforeFinish = used.getUseAnimation();
-            assertEquals(UseAnim.DRINK, beforeFinish);
+            ItemUseAnimation beforeFinish = used.getUseAnimation();
+            assertEquals(ItemUseAnimation.DRINK, beforeFinish);
             assertTrue(ForbiddenFruitEffects.acceptsCompletedUse(beforeFinish, true, false, true));
             // Completion may empty the stack or replace it with a bottle/bucket.
             used.setCount(0);
@@ -50,8 +50,8 @@ final class ForbiddenFruitCompletionTest {
 
     @Test
     void everyOtherUseAnimationIsRejected() {
-        for (UseAnim animation : UseAnim.values()) {
-            assertEquals(animation == UseAnim.EAT || animation == UseAnim.DRINK,
+        for (ItemUseAnimation animation : ItemUseAnimation.values()) {
+            assertEquals(animation == ItemUseAnimation.EAT || animation == ItemUseAnimation.DRINK,
                 ForbiddenFruitEffects.acceptsCompletedUse(animation, true, false, true), animation.name());
         }
     }
@@ -60,7 +60,7 @@ final class ForbiddenFruitCompletionTest {
     void completionHookCapturesAnimationAndStackBeforeCallingOriginalAndAppliesOnlyAfter() throws Exception {
         String source = Files.readString(Path.of("src/main/java/pixlepix/auracascade/mixin/ForbiddenFruitFinishMixin.java"));
         int original = source.indexOf("original.call(stack, level, user)");
-        int animation = source.indexOf("UseAnim useAnimation = stack.getUseAnimation()");
+        int animation = source.indexOf("ItemUseAnimation useAnimation = stack.getUseAnimation()");
         assertTrue(animation >= 0 && original > animation);
         assertTrue(source.indexOf("stack.copy()") >= 0 && source.indexOf("stack.copy()") < original);
         assertTrue(source.indexOf("AuraItems.onFoodFinished(player, usedFood, useAnimation)") > original);

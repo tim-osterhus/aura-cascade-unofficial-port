@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:blast_furnace"
-    },
-    "C": {
-      "item": "minecraft:copper_ingot"
-    },
-    "R": {
-      "item": "aura:aura_crystal_red"
-    }
+    "B": "minecraft:blast_furnace",
+    "C": "minecraft:copper_ingot",
+    "R": "aura:aura_crystal_red"
   },
   "pattern": [
     "RCR",

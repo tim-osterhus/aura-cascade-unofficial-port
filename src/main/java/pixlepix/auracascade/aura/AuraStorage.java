@@ -148,7 +148,7 @@ public final class AuraStorage {
         AuraStorage storage = new AuraStorage();
         ListTag entries = NbtCompat.getListOrEmpty(tag, ENTRIES_TAG, Tag.TAG_COMPOUND);
         for (int index = 0; index < entries.size(); index++) {
-            CompoundTag entry = entries.getCompound(index);
+            CompoundTag entry = entries.getCompoundOrEmpty(index);
             String colorId = NbtCompat.getStringOr(entry, COLOR_TAG, AuraColor.WHITE.id());
             AuraColor color = AuraColor.byId(colorId);
             storage.set(color, NbtCompat.getIntOr(entry, AMOUNT_TAG, 0));

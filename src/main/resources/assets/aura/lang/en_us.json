@@ -187,7 +187,7 @@
   "menu.aura.accessories": "Accessories",
   "key.aura.open_accessories": "Open Accessories",
   "key.aura.activate_wing": "Activate Angel's Wing",
-  "key.categories.aura": "Aura Cascade",
+  "key.category.aura.aura": "Aura Cascade",
   "message.aura.accessory.equipped": "Accessory equipped",
   "message.aura.accessory.full": "No empty matching accessory slot",
   "message.aura.fairy_charm.no_ring": "Equip a Ring of Binding first",

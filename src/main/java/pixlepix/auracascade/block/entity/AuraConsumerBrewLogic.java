@@ -57,7 +57,7 @@ final class AuraConsumerBrewLogic {
 
     static boolean canBrew(ItemStack stack) {
         if (!stack.is(Items.POTION)
-            || stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains(TERMINAL_STAGE_TAG)) {
+            || stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().contains(TERMINAL_STAGE_TAG)) {
             return false;
         }
 

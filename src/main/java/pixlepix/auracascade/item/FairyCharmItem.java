@@ -1,6 +1,6 @@
 package pixlepix.auracascade.item;
 
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -10,6 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TooltipDisplay;
 import pixlepix.auracascade.fairy.FairyRole;
 import pixlepix.auracascade.util.NbtCompat;
 
@@ -45,10 +46,11 @@ public final class FairyCharmItem extends Item {
     public void appendHoverText(
         ItemStack stack,
         TooltipContext tooltipContext,
-        java.util.List<Component> tooltip,
+        TooltipDisplay tooltipDisplay,
+        Consumer<Component> tooltip,
         TooltipFlag tooltipFlag
     ) {
-        tooltip.add(Component.translatable(role(stack).translationKey()).withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.translatable("tooltip.aura.fairy_charm.cycle").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable(role(stack).translationKey()).withStyle(ChatFormatting.AQUA));
+        tooltip.accept(Component.translatable("tooltip.aura.fairy_charm.cycle").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

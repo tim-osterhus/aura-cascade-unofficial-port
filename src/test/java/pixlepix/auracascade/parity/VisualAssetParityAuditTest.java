@@ -31,7 +31,8 @@ final class VisualAssetParityAuditTest {
         "minecraft:block/cube_bottom_top",
         "minecraft:block/orientable",
         "minecraft:item/generated",
-        "minecraft:item/handheld"
+        "minecraft:item/handheld",
+        "minecraft:range_dispatch"
     );
 
     @Test
@@ -115,21 +116,35 @@ final class VisualAssetParityAuditTest {
         assertEquals(0.0F, AuraItemModels.attunementValue(AuraColor.WHITE));
         assertEquals(0.0F, AuraItemModels.attunementValue(AuraColor.BLACK));
         for (int degree = 1; degree <= 12; degree++) {
-            var overrides = readJson(ASSET_ROOT.resolve("models/item/angelsteel_sword_" + degree + ".json"))
-                .getAsJsonObject().getAsJsonArray("overrides");
-            assertEquals(colors.size(), overrides.size(), "degree " + degree);
+            JsonObject dispatch = readJson(ASSET_ROOT.resolve("items/angelsteel_sword_" + degree + ".json"))
+                .getAsJsonObject().getAsJsonObject("model");
+            assertEquals("minecraft:range_dispatch", dispatch.get("type").getAsString(), "degree " + degree);
+            assertEquals("aura:attunement", dispatch.get("property").getAsString(), "degree " + degree);
+            var entries = dispatch.getAsJsonArray("entries");
+            assertEquals(colors.size(), entries.size(), "degree " + degree);
             for (int index = 0; index < colors.size(); index++) {
                 AuraColor color = colors.get(index);
-                JsonObject override = overrides.get(index).getAsJsonObject();
+                JsonObject entry = entries.get(index).getAsJsonObject();
                 assertEquals(AuraItemModels.attunementValue(color),
-                    override.getAsJsonObject("predicate").get("aura:attunement").getAsFloat());
-                assertEquals("aura:item/angelsteel_sword_" + color.id(), override.get("model").getAsString());
+                    entry.get("threshold").getAsFloat());
+                JsonObject modelDefinition = entry.getAsJsonObject("model");
+                assertEquals("minecraft:model", modelDefinition.get("type").getAsString());
+                assertEquals("aura:item/angelsteel_sword_" + color.id(), modelDefinition.get("model").getAsString());
                 JsonObject model = readJson(ASSET_ROOT.resolve("models/item/angelsteel_sword_" + color.id() + ".json"))
                     .getAsJsonObject();
                 assertEquals("aura:item/angel_sword_" + color.id(),
                     model.getAsJsonObject("textures").get("layer0").getAsString());
             }
+            JsonObject fallback = dispatch.getAsJsonObject("fallback");
+            assertEquals("minecraft:model", fallback.get("type").getAsString());
+            assertEquals("aura:item/angelsteel_sword_" + degree, fallback.get("model").getAsString());
         }
+    }
+
+    @Test
+    void accessoryKeyMappingsKeepTheirRegisteredCategoryTranslation() throws IOException {
+        JsonObject language = readJson(ASSET_ROOT.resolve("lang/en_us.json")).getAsJsonObject();
+        assertEquals("Aura Cascade", language.get("key.category.aura.aura").getAsString());
     }
 
     @Test

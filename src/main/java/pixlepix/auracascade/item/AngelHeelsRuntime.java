@@ -1,13 +1,13 @@
 package pixlepix.auracascade.item;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import pixlepix.auracascade.AuraCascadeMod;
 
 public final class AngelHeelsRuntime {
-    public static final ResourceLocation MODIFIER_ID =
-        ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, "angel_heels_step_height");
+    public static final Identifier MODIFIER_ID =
+        Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, "angel_heels_step_height");
     public static final double TARGET_STEP_HEIGHT = 2.0D;
     public static final double COLLISION_INCREMENT = 0.3D;
 

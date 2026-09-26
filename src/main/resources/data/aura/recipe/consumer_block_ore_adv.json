@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": {
-      "item": "minecraft:glass"
-    },
-    "P": {
-      "item": "aura:arcane_prism"
-    },
-    "C": {
-      "item": "aura:consumer_block_ore"
-    }
+    "G": "minecraft:glass",
+    "P": "aura:arcane_prism",
+    "C": "aura:consumer_block_ore"
   },
   "pattern": [
     "GPG",

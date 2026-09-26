@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -155,11 +156,11 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
                 String count = compactCount(entry.count());
                 int width = font.width(count);
                 float scale = Math.min(1.0F, 16.0F / Math.max(1, width));
-                graphics.pose().pushPose();
-                graphics.pose().translate(x + 17 - width * scale, y + 17 - font.lineHeight * scale, 200);
-                graphics.pose().scale(scale, scale, 1.0F);
+                graphics.pose().pushMatrix();
+                graphics.pose().translate(x + 17 - width * scale, y + 17 - font.lineHeight * scale);
+                graphics.pose().scale(scale, scale);
                 graphics.drawString(font, count, 0, 0, 0xFFFFFFFF, true);
-                graphics.pose().popPose();
+                graphics.pose().popMatrix();
             }
         }
 
@@ -202,14 +203,14 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
         super.render(graphics, mouseX, mouseY, partialTick);
         BookshelfCoordinatorBlockEntity.BrowserEntry hovered = hoveredEntry(mouseX, mouseY);
         if (hovered != null) {
-            graphics.renderTooltip(font, List.of(
+            graphics.setTooltipForNextFrame(font, List.of(
                 hovered.stack().getHoverName(),
                 Component.translatable("screen.aura.bookshelf_coordinator.item_count", hovered.count())
             ), Optional.empty(), mouseX, mouseY);
         } else if (isOverNetworkStatus(mouseX, mouseY)) {
-            graphics.renderTooltip(font, networkStatus(), mouseX, mouseY);
+            graphics.setTooltipForNextFrame(font, networkStatus(), mouseX, mouseY);
         } else if (isOverPowerStatus(mouseX, mouseY)) {
-            graphics.renderTooltip(font, Component.translatable(
+            graphics.setTooltipForNextFrame(font, Component.translatable(
                 "screen.aura.bookshelf_coordinator.power",
                 menu.availablePower(),
                 menu.requiredPower()
@@ -220,7 +221,10 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         if (button == 0 && isInScrollbar(mouseX, mouseY)) {
             draggingScrollbar = true;
             setScrollFromMouse(mouseY);
@@ -238,22 +242,22 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
             }
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (draggingScrollbar && button == 0) {
-            setScrollFromMouse(mouseY);
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        if (draggingScrollbar && event.button() == 0) {
+            setScrollFromMouse(event.y());
             return true;
         }
-        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        return super.mouseDragged(event, dragX, dragY);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(MouseButtonEvent event) {
         draggingScrollbar = false;
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(event);
     }
 
     @Override

@@ -11,11 +11,11 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import pixlepix.auracascade.item.AuraAccessoryItem;
 
 public final class AuraAccessoryInventory {
@@ -39,7 +39,7 @@ public final class AuraAccessoryInventory {
         Loadout::new
     );
     private static final AttachmentType<Loadout> ATTACHMENT = AttachmentRegistry.create(
-        ResourceLocation.fromNamespaceAndPath("aura", "accessories"),
+        Identifier.fromNamespaceAndPath("aura", "accessories"),
         builder -> builder.persistent(CODEC).copyOnDeath().syncWith(SYNC_CODEC, AttachmentSyncPredicate.targetOnly())
     );
 
@@ -49,7 +49,7 @@ public final class AuraAccessoryInventory {
     public static void bootstrap() {
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
             if (!(entity instanceof ServerPlayer player)
-                || player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+                || player.level().getGameRules().get(GameRules.KEEP_INVENTORY)) {
                 return;
             }
             Loadout old = ((AttachmentTarget) player).getAttached(ATTACHMENT);

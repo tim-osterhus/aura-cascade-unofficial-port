@@ -1,7 +1,7 @@
 package pixlepix.auracascade.item;
 
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -21,7 +21,7 @@ final class UtilityRuntimeContractTest {
         AttributeInstance stepHeight = new AttributeInstance(Attributes.STEP_HEIGHT, ignored -> { });
         stepHeight.setBaseValue(0.6D);
         AttributeModifier otherModifier = new AttributeModifier(
-            ResourceLocation.fromNamespaceAndPath("test", "step_height"),
+            Identifier.fromNamespaceAndPath("test", "step_height"),
             0.25D,
             AttributeModifier.Operation.ADD_VALUE
         );

@@ -58,7 +58,7 @@ public class FortifiedBlock extends Block {
     }
 
     @Override
-    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+    protected boolean propagatesSkylightDown(BlockState state) {
         FortifiedBlockVariant variant = AuraContent.fortifiedVariant(this);
         return variant != null && variant.translucent();
     }

@@ -106,7 +106,7 @@ public final class AuraNodeState {
         ListTag links = NbtCompat.getListOrEmpty(tag, LINKED_NODES_TAG, Tag.TAG_COMPOUND);
         LinkedHashSet<BlockPos> linkedNodes = new LinkedHashSet<>();
         for (int index = 0; index < links.size(); index++) {
-            CompoundTag entry = links.getCompound(index);
+            CompoundTag entry = links.getCompoundOrEmpty(index);
             linkedNodes.add(new BlockPos(
                 NbtCompat.getIntOr(entry, X_TAG, 0),
                 NbtCompat.getIntOr(entry, Y_TAG, 0),

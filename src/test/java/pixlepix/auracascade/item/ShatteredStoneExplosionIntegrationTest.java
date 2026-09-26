@@ -4,6 +4,7 @@ import com.google.gson.JsonParser;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -44,7 +45,7 @@ final class ShatteredStoneExplosionIntegrationTest {
     }
 
     @Test
-    void wearerReturnsAnIndependentOrderedListSafeForVanillaClearAndAddAll() {
+    void wearerReturnsAnIndependentOrderedListSafeForVanillaShuffle() {
         BlockPos stone = new BlockPos(0, 0, 0);
         BlockPos iron = new BlockPos(1, 0, 0);
         BlockPos diamond = new BlockPos(2, 0, 0);
@@ -65,9 +66,9 @@ final class ShatteredStoneExplosionIntegrationTest {
         assertNotSame(affected, filtered);
         assertEquals(original, affected, "Filtering must not mutate the source list");
         assertEquals(List.of(stone, air, stone), filtered);
-        affected.clear();
-        affected.addAll(filtered);
-        assertEquals(List.of(stone, air, stone), affected,
+        Collections.swap(filtered, 0, 1);
+        assertEquals(original, affected, "Vanilla's shuffle must not mutate the source list");
+        assertEquals(List.of(air, stone, stone), filtered,
             "Terrain remains destructible while both ores are omitted from the blast list");
     }
 
@@ -80,28 +81,23 @@ final class ShatteredStoneExplosionIntegrationTest {
 
         assertNotSame(affected, filtered);
         assertTrue(filtered.isEmpty());
-        affected.clear();
-        affected.addAll(filtered);
-        assertTrue(affected.isEmpty(), "An empty filtered result must still replace vanilla's list");
+        filtered.add(BlockPos.ZERO);
+        assertEquals(List.of(BlockPos.ZERO), affected, "The replacement must not mutate vanilla's original list");
     }
 
     @Test
-    void registeredServerExplosionHookGuardsListIdentityBeforeAnyClear() throws Exception {
+    void registeredServerExplosionHookReplacesLocalBlockListBeforeInteraction() throws Exception {
         // Structural integration guard, not a claim that this unit loader applies mixins.
         String source = Files.readString(Path.of(
             "src/main/java/pixlepix/auracascade/mixin/ServerExplosionMixin.java"
         )).replaceAll("(?m)//[^\\r\\n]*", "").replaceAll("\\s+", " ");
-        assertTrue(source.contains("@Mixin(Explosion.class)"));
-        assertTrue(source.contains("@Inject(method = \"explode\", at = @At(\"RETURN\"))"));
+        assertTrue(source.contains("@Mixin(ServerExplosion.class)"));
+        assertTrue(source.contains("@ModifyExpressionValue(method = \"explode\", at = @At(value = \"INVOKE\", target ="));
+        assertTrue(source.contains("ServerExplosion;calculateExplodedPositions()Ljava/util/List;"));
         assertTrue(source.contains(
-            "if (this.level instanceof net.minecraft.server.level.ServerLevel serverLevel) { "
-                + "List<BlockPos> affectedBlocks = this.getToBlow(); "
-                + "List<BlockPos> filteredBlocks = AuraItems.filterShatteredStoneExplosionBlocks(serverLevel, center(), affectedBlocks); "
-                + "if (filteredBlocks == affectedBlocks) { return; } "
-                + "this.clearToBlow(); this.getToBlow().addAll(filteredBlocks);"
-        ), "Never clear the live affected list before recognizing the no-filter identity result");
-        assertEquals(1, source.split("this\\.clearToBlow\\(\\);", -1).length - 1,
-            "There must be no additional unguarded clear in this hook");
+            "return AuraItems.filterShatteredStoneExplosionBlocks(level(), center(), affectedBlocks);"
+        ), "The replacement list must feed both block interaction and fire placement");
+        assertTrue(!source.contains("clearToBlow"), "The 1.21.11 explosion has no mutable affected-block field");
         var mixins = JsonParser.parseString(Files.readString(Path.of(
             "src/main/resources/aura.mixins.json"
         ))).getAsJsonObject().getAsJsonArray("mixins");

@@ -6,15 +6,9 @@
     " d "
   ],
   "key": {
-    "v": {
-      "item": "aura:arcane_ingot_violet"
-    },
-    "p": {
-      "item": "aura:arcane_prism"
-    },
-    "d": {
-      "item": "minecraft:diamond_sword"
-    }
+    "v": "aura:arcane_ingot_violet",
+    "p": "aura:arcane_prism",
+    "d": "minecraft:diamond_sword"
   },
   "result": {
     "id": "aura:transmuting_sword",

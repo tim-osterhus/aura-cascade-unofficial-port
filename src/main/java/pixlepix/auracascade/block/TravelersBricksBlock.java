@@ -36,7 +36,8 @@ public class TravelersBricksBlock extends Block {
     }
 
     @Override
-    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
+                             net.minecraft.world.entity.InsideBlockEffectApplier effects, boolean precise) {
         Vec3 boost = movementBoost(entity.getDeltaMovement());
         if (boost.lengthSqr() > 0.0D) {
             entity.push(boost.x, boost.y, boost.z);

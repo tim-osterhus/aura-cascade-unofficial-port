@@ -15,28 +15,30 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
-import net.minecraft.world.entity.projectile.Fireball;
-import net.minecraft.world.entity.projectile.WitherSkull;
+import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
+import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.item.Item;
@@ -49,7 +51,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 import pixlepix.auracascade.AuraCascadeMod;
 import pixlepix.auracascade.aura.WorldInteractionVisuals;
 import pixlepix.auracascade.block.entity.AuraNetworkBlockEntity;
@@ -96,15 +97,15 @@ public final class AuraItems {
     public static final Item PRISMATIC_WAND = register("prismatic_wand", new PrismaticWandItem(itemProperties("prismatic_wand")));
     public static final Item TRANSMUTING_SWORD = register(
         "transmuting_sword",
-        new TransmutingSwordItem(ToolPropertiesCompat.sword(new Item.Properties().stacksTo(1), AuraUtilityToolMaterials.ARCANE_SWORD, 3, -2.4F))
+        new TransmutingSwordItem(ToolPropertiesCompat.sword(itemProperties("transmuting_sword").stacksTo(1), AuraUtilityToolMaterials.ARCANE_SWORD, 3, -2.4F))
     );
     public static final Item SWORD_OF_THE_THIEF = register(
         "sword_of_the_thief",
-        new Item(ToolPropertiesCompat.sword(new Item.Properties().stacksTo(1), AuraUtilityToolMaterials.ARCANE_SWORD, 2, -2.4F))
+        new Item(ToolPropertiesCompat.sword(itemProperties("sword_of_the_thief").stacksTo(1), AuraUtilityToolMaterials.ARCANE_SWORD, 2, -2.4F))
     );
     public static final Item SWORD_OF_THE_BARBARIAN = register(
         "sword_of_the_barbarian",
-        new SwordOfBarbarianItem(ToolPropertiesCompat.sword(new Item.Properties().stacksTo(1), AuraUtilityToolMaterials.ARCANE_SWORD, 3, -2.4F))
+        new SwordOfBarbarianItem(ToolPropertiesCompat.sword(itemProperties("sword_of_the_barbarian").stacksTo(1), AuraUtilityToolMaterials.ARCANE_SWORD, 3, -2.4F))
     );
 
     static {
@@ -128,12 +129,12 @@ public final class AuraItems {
                     kind == AngelsteelToolKind.SWORD
                         ? new AngelsteelSwordItem(
                             degreeIndex,
-                            kind.createProperties(AngelsteelToolHelper.material(degreeIndex))
+                            kind.createProperties(AngelsteelToolHelper.material(degreeIndex), itemProperties(path))
                         )
                         : new AngelsteelToolItem(
                             kind,
                             degreeIndex,
-                            kind.createProperties(AngelsteelToolHelper.material(degreeIndex))
+                            kind.createProperties(AngelsteelToolHelper.material(degreeIndex), itemProperties(path))
                         )
                 );
             }
@@ -295,12 +296,12 @@ public final class AuraItems {
         return Registry.register(BuiltInRegistries.ITEM, id(path), item);
     }
 
-    private static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path);
+    private static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path);
     }
 
     private static Item.Properties itemProperties(String path) {
-        return new Item.Properties();
+        return new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id(path)));
     }
 
     private static void tickAngelsteelIngots(net.minecraft.server.level.ServerLevel level) {
@@ -371,7 +372,7 @@ public final class AuraItems {
     }
 
     private static void emitAngelsteelGroundCraft(ServerLevel level, Vec3 center) {
-        DustParticleOptions particle = new DustParticleOptions(new Vector3f(1.0F, 0.72F, 0.28F), 1.1F);
+        DustParticleOptions particle = new DustParticleOptions(ARGB.colorFromFloat(1.0F, 1.0F, 0.72F, 0.28F) & 0xFFFFFF, 1.1F);
         for (WorldInteractionVisuals.BurstSample sample : WorldInteractionVisuals.groundCraftBurst(center)) {
             Vec3 point = sample.position();
             Vec3 velocity = sample.velocity();
@@ -462,32 +463,36 @@ public final class AuraItems {
         level.addFreshEntity(new ItemEntity(level, entity.getX(), entity.getY(), entity.getZ(), droppedTrade));
     }
 
-    private static InteractionResultHolder<ItemStack> handleUseItem(Player player, Level world, InteractionHand hand) {
+    private static InteractionResult handleUseItem(Player player, Level world, InteractionHand hand) {
         if (player.isSpectator()) {
-            return InteractionResultHolder.pass(player.getItemInHand(hand));
+            return InteractionResult.PASS;
         }
         ItemStack stack = player.getItemInHand(hand);
 
         if (stack.is(FAIRY_CHARM)) {
-            return useItemResult(handleFairyCharmUse(player, world, stack), stack, world);
+            return useItemResult(handleFairyCharmUse(player, world, stack), world);
         }
         if (stack.is(RING_OF_BINDING)) {
-            return useItemResult(handleRingOfBindingUse(player, world, hand, stack), stack, world);
+            return useItemResult(handleRingOfBindingUse(player, world, hand, stack), world);
         }
         if (stack.is(AMULET_OF_THE_ANGELS_WING)) {
-            return useItemResult(handleAngelWingUse(player, world, stack), stack, world);
+            return useItemResult(handleAngelWingUse(player, world, stack), world);
         }
         if (stack.is(MIRROR_OF_THE_ANGEL)) {
-            return useItemResult(handleMirrorUse(player, world), stack, world);
+            return useItemResult(handleMirrorUse(player, world), world);
         }
         if (stack.getItem() instanceof AuraAccessoryItem accessoryItem) {
-            return useItemResult(handlePassiveAccessoryUse(player, world, stack, accessoryItem.slot()), stack, world);
+            return useItemResult(handlePassiveAccessoryUse(player, world, stack, accessoryItem.slot()), world);
         }
 
-        return InteractionResultHolder.pass(stack);
+        return InteractionResult.PASS;
     }
 
-    public static void onFoodFinished(ServerPlayer player, ItemStack usedFood, net.minecraft.world.item.UseAnim useAnimation) {
+    public static void onFoodFinished(
+        ServerPlayer player,
+        ItemStack usedFood,
+        net.minecraft.world.item.ItemUseAnimation useAnimation
+    ) {
         if (ForbiddenFruitEffects.acceptsCompletedUse(
             useAnimation,
             player.isAlive(),
@@ -498,14 +503,14 @@ public final class AuraItems {
         }
     }
 
-    private static InteractionResultHolder<ItemStack> useItemResult(InteractionResult result, ItemStack stack, Level level) {
+    private static InteractionResult useItemResult(InteractionResult result, Level level) {
         if (result == InteractionResult.PASS) {
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
         }
         if (result == InteractionResult.FAIL) {
-            return InteractionResultHolder.fail(stack);
+            return InteractionResult.FAIL;
         }
-        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     private static InteractionResult handleFairyCharmUse(Player player, Level world, ItemStack stack) {

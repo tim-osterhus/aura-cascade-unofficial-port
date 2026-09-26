@@ -10,9 +10,11 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class FairyTorchBlock extends Block {
     public FairyTorchBlock() {
         super(Properties.of()
+            .setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK,
+                net.minecraft.resources.Identifier.fromNamespaceAndPath("aura", "fairy_torch")))
             .air()
             .replaceable()
-            .noCollission()
+            .noCollision()
             .noLootTable()
             .lightLevel(state -> 15)
             .randomTicks());

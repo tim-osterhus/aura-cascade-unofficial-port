@@ -5,9 +5,9 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.itemgroup.v1.FabricCreativeInventoryScreen;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -34,6 +35,7 @@ import pixlepix.auracascade.compat.client.AuraAccessoryClient;
 import pixlepix.auracascade.item.AuraDiscoverability;
 
 public final class AuraCascadeClient implements ClientModInitializer {
+    private static final Identifier INSPECTION_HUD = Identifier.fromNamespaceAndPath("aura", "inspection_hud");
     private static final int MARGIN = 6;
     private static final int ROW_GAP = 1;
     private static final int ROW_BACKGROUND = 0xA8000000;
@@ -49,7 +51,7 @@ public final class AuraCascadeClient implements ClientModInitializer {
         pixlepix.auracascade.block.entity.client.VortexPedestalRenderer.bootstrapClient();
         AuraAccessoryClient.bootstrapClient();
         BookshelfCoordinatorClientNetworking.register(BookshelfCoordinatorMenu.registeredMenuType());
-        HudRenderCallback.EVENT.register(AuraCascadeClient::renderInspectionHud);
+        HudElementRegistry.addLast(INSPECTION_HUD, AuraCascadeClient::renderInspectionHud);
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
             if (!introducedCreativeTab && screen instanceof CreativeModeInventoryScreen creative) {
                 FabricCreativeInventoryScreen tabs = creative;

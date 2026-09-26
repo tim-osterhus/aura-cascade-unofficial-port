@@ -7,7 +7,9 @@ import java.util.Map;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -224,7 +226,7 @@ public final class AuraContent {
     }
 
     private static void acceptRegisteredBlockItem(Consumer<ItemLike> consumer, Block block) {
-        Item item = BuiltInRegistries.ITEM.get(BuiltInRegistries.BLOCK.getKey(block));
+        Item item = BuiltInRegistries.ITEM.getValue(BuiltInRegistries.BLOCK.getKey(block));
         if (item == null || item == Items.AIR) {
             throw new IllegalStateException("Missing registered Aura block item for " + BuiltInRegistries.BLOCK.getKey(block));
         }
@@ -269,6 +271,7 @@ public final class AuraContent {
             variant.registryPath(),
             new FortifiedBlock(
                 BlockBehaviour.Properties.of()
+                    .setId(ResourceKey.create(Registries.BLOCK, id(variant.registryPath())))
                     .mapColor(MapColor.STONE)
                     .strength(variant.destroyTime(), variant.explosionResistance())
                     .sound(variant.translucent() ? SoundType.GLASS : SoundType.STONE)
@@ -281,6 +284,7 @@ public final class AuraContent {
 
     private static BlockBehaviour.Properties commonProperties(String path, MapColor color, SoundType soundType) {
         return BlockBehaviour.Properties.of()
+            .setId(ResourceKey.create(Registries.BLOCK, id(path)))
             .mapColor(color)
             .strength(3.0F, 6.0F)
             .sound(soundType)
@@ -299,7 +303,7 @@ public final class AuraContent {
                 id(path),
                 new BlockItem(
                     block,
-                    new Item.Properties()
+                    new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id(path))).useBlockDescriptionPrefix()
                 )
             );
         }
@@ -399,7 +403,7 @@ public final class AuraContent {
         );
     }
 
-    private static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path);
+    private static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, path);
     }
 }

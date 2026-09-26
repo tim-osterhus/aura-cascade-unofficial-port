@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -16,7 +16,7 @@ import pixlepix.auracascade.block.AuraContent;
 import pixlepix.auracascade.parity.AuraColor;
 
 public final class AuraDiscoverability {
-    private static final ResourceLocation TAB_ID = ResourceLocation.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, AuraCascadeMod.MOD_ID);
+    private static final Identifier TAB_ID = Identifier.fromNamespaceAndPath(AuraCascadeMod.MOD_ID, AuraCascadeMod.MOD_ID);
 
     public static final CreativeModeTab AURA_TAB = Registry.register(
         BuiltInRegistries.CREATIVE_MODE_TAB,

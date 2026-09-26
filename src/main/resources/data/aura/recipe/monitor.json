@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "N": {
-      "item": "aura:aura_node"
-    },
-    "R": {
-      "item": "minecraft:redstone"
-    }
+    "N": "aura:aura_node",
+    "R": "minecraft:redstone"
   },
   "pattern": [
     "RRR",

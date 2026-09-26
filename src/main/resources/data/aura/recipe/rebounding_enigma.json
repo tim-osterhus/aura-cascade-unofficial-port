@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": {
-      "item": "aura:arcane_ingot_violet"
-    },
-    "S": {
-      "item": "minecraft:slime_ball"
-    }
+    "I": "aura:arcane_ingot_violet",
+    "S": "minecraft:slime_ball"
   },
   "pattern": [
     " S ",

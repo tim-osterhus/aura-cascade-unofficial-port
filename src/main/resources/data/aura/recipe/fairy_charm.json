@@ -2,14 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:brick"
-    },
-    "G": {
-      "item": "aura:arcane_gem_white"
-    }
+    "B": "minecraft:brick",
+    "G": "aura:arcane_gem_white"
   },
-  "pattern": ["BGB"],
+  "pattern": [
+    "BGB"
+  ],
   "result": {
     "id": "aura:fairy_charm",
     "count": 1,

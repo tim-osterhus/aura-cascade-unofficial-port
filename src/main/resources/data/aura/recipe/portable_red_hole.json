@@ -6,18 +6,10 @@
     " f "
   ],
   "key": {
-    "g": {
-      "item": "aura:arcane_gem_red"
-    },
-    "p": {
-      "item": "aura:arcane_prism"
-    },
-    "i": {
-      "item": "aura:arcane_ingot_red"
-    },
-    "f": {
-      "item": "minecraft:fire_charge"
-    }
+    "g": "aura:arcane_gem_red",
+    "p": "aura:arcane_prism",
+    "i": "aura:arcane_ingot_red",
+    "f": "minecraft:fire_charge"
   },
   "result": {
     "id": "aura:portable_red_hole",

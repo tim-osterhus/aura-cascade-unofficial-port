@@ -2,18 +2,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": {
-      "item": "minecraft:diamond_pickaxe"
-    },
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
-    "P": {
-      "item": "aura:arcane_prism"
-    },
-    "R": {
-      "item": "aura:portable_red_hole"
-    }
+    "D": "minecraft:diamond_pickaxe",
+    "I": "minecraft:iron_ingot",
+    "P": "aura:arcane_prism",
+    "R": "aura:portable_red_hole"
   },
   "pattern": [
     "PDP",

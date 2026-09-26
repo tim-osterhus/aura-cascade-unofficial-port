@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "A": {
-      "item": "minecraft:arrow"
-    },
-    "P": {
-      "item": "aura:aura_node_pump"
-    },
-    "V": {
-      "item": "aura:arcane_ingot_violet"
-    }
+    "A": "minecraft:arrow",
+    "P": "aura:aura_node_pump",
+    "V": "aura:arcane_ingot_violet"
   },
   "pattern": [
     "AAA",

@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "aura:aura_crystal_white"
-    },
-    {
-      "item": "minecraft:yellow_dye"
-    }
+    "aura:aura_crystal_white",
+    "minecraft:yellow_dye"
   ],
   "result": {
     "count": 1,

@@ -39,7 +39,7 @@ public class AuraMonitorBlock extends Block {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, net.minecraft.core.Direction direction) {
         return signalFor(level, pos, null);
     }
 
@@ -80,7 +80,7 @@ public class AuraMonitorBlock extends Block {
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos neighborPos, boolean moving) {
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, net.minecraft.world.level.redstone.Orientation orientation, boolean moving) {
         if (!level.isClientSide()) {
             level.scheduleTick(pos, this, 20);
         }

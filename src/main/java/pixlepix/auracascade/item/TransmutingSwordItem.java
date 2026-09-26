@@ -3,6 +3,7 @@ package pixlepix.auracascade.item;
 import java.util.Map;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Slime;
@@ -35,19 +36,19 @@ public final class TransmutingSwordItem extends Item {
     }
 
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (!shouldTransmute(target.isAlive(), target.getHealth()) || !(target.level() instanceof ServerLevel serverLevel)) {
-            return true;
+            return;
         }
 
         EntityType<? extends LivingEntity> mappedType = mappedType(target.getType());
         if (mappedType == null) {
-            return true;
+            return;
         }
 
-        Entity replacement = mappedType.create(serverLevel);
+        Entity replacement = mappedType.create(serverLevel, EntitySpawnReason.TRIGGERED);
         if (!(replacement instanceof LivingEntity replacementLiving)) {
-            return true;
+            return;
         }
 
         replacement.copyPosition(target);
@@ -60,7 +61,6 @@ public final class TransmutingSwordItem extends Item {
         if (serverLevel.addFreshEntity(replacement)) {
             target.discard();
         }
-        return true;
     }
 
     static EntityType<? extends LivingEntity> mappedType(EntityType<?> type) {

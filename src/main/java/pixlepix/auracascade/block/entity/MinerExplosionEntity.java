@@ -2,7 +2,7 @@ package pixlepix.auracascade.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -10,7 +10,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import pixlepix.auracascade.block.FortifiedBlock;
+import pixlepix.auracascade.util.NbtCompat;
 
 public final class MinerExplosionEntity extends Entity {
     private static final String CHARGE_TAG = "charge";
@@ -99,7 +102,7 @@ public final class MinerExplosionEntity extends Entity {
             (random.nextDouble() - 0.5D) * amplitude,
             (random.nextDouble() - 0.5D) * amplitude
         );
-        hasImpulse = true;
+        needsSync = true;
     }
 
     private void explodeOnCollision(ServerLevel level) {
@@ -136,20 +139,25 @@ public final class MinerExplosionEntity extends Entity {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
-        charge = tag.getInt(CHARGE_TAG);
-        lastCharged = tag.getLong(LAST_CHARGED_TAG);
-        lastExplosion = tag.getLong(LAST_EXPLOSION_TAG);
-        sourcePos = tag.contains(SOURCE_POS_TAG) ? BlockPos.of(tag.getLong(SOURCE_POS_TAG)) : null;
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        return false;
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
-        tag.putInt(CHARGE_TAG, charge);
-        tag.putLong(LAST_CHARGED_TAG, lastCharged);
-        tag.putLong(LAST_EXPLOSION_TAG, lastExplosion);
+    protected void readAdditionalSaveData(ValueInput input) {
+        charge = NbtCompat.getIntOr(input, CHARGE_TAG, 0);
+        lastCharged = NbtCompat.getLongOr(input, LAST_CHARGED_TAG, 0L);
+        lastExplosion = NbtCompat.getLongOr(input, LAST_EXPLOSION_TAG, 0L);
+        sourcePos = input.getLong(SOURCE_POS_TAG).map(BlockPos::of).orElse(null);
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        output.putInt(CHARGE_TAG, charge);
+        output.putLong(LAST_CHARGED_TAG, lastCharged);
+        output.putLong(LAST_EXPLOSION_TAG, lastExplosion);
         if (sourcePos != null) {
-            tag.putLong(SOURCE_POS_TAG, sourcePos.asLong());
+            output.putLong(SOURCE_POS_TAG, sourcePos.asLong());
         }
     }
 }

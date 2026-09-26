@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "aura:arcane_ingot_blue"
-    },
-    "F": {
-      "item": "minecraft:feather"
-    },
-    "P": {
-      "item": "aura:aura_node_pump"
-    }
+    "B": "aura:arcane_ingot_blue",
+    "F": "minecraft:feather",
+    "P": "aura:aura_node_pump"
   },
   "pattern": [
     "FFF",

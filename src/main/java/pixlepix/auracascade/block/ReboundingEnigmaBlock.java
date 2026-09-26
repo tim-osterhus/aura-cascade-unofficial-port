@@ -36,7 +36,8 @@ public class ReboundingEnigmaBlock extends Block {
     }
 
     @Override
-    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
+                             net.minecraft.world.entity.InsideBlockEffectApplier effects, boolean precise) {
         entity.setDeltaMovement(launchVelocity(entity.getDeltaMovement()));
     }
 

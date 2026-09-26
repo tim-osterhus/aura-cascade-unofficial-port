@@ -6,15 +6,9 @@
     " i "
   ],
   "key": {
-    "g": {
-      "item": "aura:arcane_gem_violet"
-    },
-    "p": {
-      "item": "aura:arcane_prism"
-    },
-    "i": {
-      "item": "minecraft:iron_ingot"
-    }
+    "g": "aura:arcane_gem_violet",
+    "p": "aura:arcane_prism",
+    "i": "minecraft:iron_ingot"
   },
   "result": {
     "id": "aura:violet_protection_amulet",

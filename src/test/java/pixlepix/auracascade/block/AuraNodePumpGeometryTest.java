@@ -198,7 +198,8 @@ final class AuraNodePumpGeometryTest {
             Method use = block.getClass().getDeclaredMethod("useItemOn", stackClass, stateClass, levelClass, posClass, playerClass, handClass, hitClass);
             use.setAccessible(true);
             Object result = use.invoke(block, stackClass.getField("EMPTY").get(null), null, null, null, null, null, null);
-            assertEquals("PASS_TO_DEFAULT_BLOCK_INTERACTION", result.toString(), field);
+            Class<?> resultClass = Class.forName("net.minecraft.world.InteractionResult", false, auraTargetLoader);
+            assertEquals(resultClass.getField("TRY_WITH_EMPTY_HAND").get(null), result, field);
         }
     }
 

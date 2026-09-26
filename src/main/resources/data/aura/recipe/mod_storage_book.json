@@ -1,15 +1,9 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "aura:basic_storage_book"
-    },
-    {
-      "item": "minecraft:observer"
-    },
-    {
-      "item": "aura:arcane_gem_black"
-    }
+    "aura:basic_storage_book",
+    "minecraft:observer",
+    "aura:arcane_gem_black"
   ],
   "result": {
     "id": "aura:mod_storage_book",

@@ -1,10 +1,13 @@
 package pixlepix.auracascade.block.entity;
 
+import com.mojang.serialization.Codec;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.LongStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.QuartPos;
@@ -17,9 +20,10 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -31,6 +35,8 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -52,6 +58,7 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
     private static final String LAST_RESULT_TAG = "last_result";
     private static final String RITUAL_QUEUE_TAG = "ritual_queue";
     private static final String RITUAL_BIOME_TAG = "ritual_source_biome";
+    private static final Codec<long[]> LONG_ARRAY_CODEC = Codec.LONG_STREAM.xmap(LongStream::toArray, Arrays::stream);
 
     private int storedPower;
     private int progress;
@@ -91,52 +98,52 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        storedPower = NbtCompat.getIntOr(tag, STORED_POWER_TAG, 0);
-        progress = NbtCompat.getIntOr(tag, PROGRESS_TAG, 0);
-        minerCharge = NbtCompat.getIntOr(tag, MINER_CHARGE_TAG, 0);
-        minerPulseLatched = NbtCompat.getBooleanOr(tag, PULSE_LATCH_TAG, false);
-        lastChargedTick = tag.getLong(LAST_CHARGED_TAG);
-        lastExplosionTick = tag.getLong(LAST_EXPLOSION_TAG);
-        String minerId = NbtCompat.getStringOr(tag, MINER_ENTITY_TAG, "");
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        storedPower = NbtCompat.getIntOr(input, STORED_POWER_TAG, 0);
+        progress = NbtCompat.getIntOr(input, PROGRESS_TAG, 0);
+        minerCharge = NbtCompat.getIntOr(input, MINER_CHARGE_TAG, 0);
+        minerPulseLatched = NbtCompat.getBooleanOr(input, PULSE_LATCH_TAG, false);
+        lastChargedTick = NbtCompat.getLongOr(input, LAST_CHARGED_TAG, 0L);
+        lastExplosionTick = NbtCompat.getLongOr(input, LAST_EXPLOSION_TAG, 0L);
+        String minerId = NbtCompat.getStringOr(input, MINER_ENTITY_TAG, "");
         try {
             minerEntityId = minerId.isEmpty() ? null : UUID.fromString(minerId);
         } catch (IllegalArgumentException ignored) {
             minerEntityId = null;
         }
-        lastPower = NbtCompat.getIntOr(tag, LAST_POWER_TAG, 0);
+        lastPower = NbtCompat.getIntOr(input, LAST_POWER_TAG, 0);
         try {
-            lastResult = WorkResult.valueOf(NbtCompat.getStringOr(tag, LAST_RESULT_TAG, "NONE"));
+            lastResult = WorkResult.valueOf(NbtCompat.getStringOr(input, LAST_RESULT_TAG, "NONE"));
         } catch (IllegalArgumentException ignored) {
             lastResult = WorkResult.NONE;
         }
         ritualQueue.clear();
-        for (long packed : tag.getLongArray(RITUAL_QUEUE_TAG)) {
+        for (long packed : NbtCompat.read(input, RITUAL_QUEUE_TAG, LONG_ARRAY_CODEC).orElseGet(() -> new long[0])) {
             ritualQueue.add(BlockPos.of(packed));
         }
-        String biomeId = NbtCompat.getStringOr(tag, RITUAL_BIOME_TAG, "");
+        String biomeId = NbtCompat.getStringOr(input, RITUAL_BIOME_TAG, "");
         ritualSourceBiome = biomeId.isEmpty() ? null
-            : ResourceKey.create(Registries.BIOME, ResourceLocation.parse(biomeId));
+            : ResourceKey.create(Registries.BIOME, Identifier.parse(biomeId));
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putInt(STORED_POWER_TAG, storedPower);
-        tag.putInt(PROGRESS_TAG, progress);
-        tag.putInt(MINER_CHARGE_TAG, minerCharge);
-        tag.putBoolean(PULSE_LATCH_TAG, minerPulseLatched);
-        tag.putLong(LAST_CHARGED_TAG, lastChargedTick);
-        tag.putLong(LAST_EXPLOSION_TAG, lastExplosionTick);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt(STORED_POWER_TAG, storedPower);
+        output.putInt(PROGRESS_TAG, progress);
+        output.putInt(MINER_CHARGE_TAG, minerCharge);
+        output.putBoolean(PULSE_LATCH_TAG, minerPulseLatched);
+        output.putLong(LAST_CHARGED_TAG, lastChargedTick);
+        output.putLong(LAST_EXPLOSION_TAG, lastExplosionTick);
         if (minerEntityId != null) {
-            tag.putString(MINER_ENTITY_TAG, minerEntityId.toString());
+            output.putString(MINER_ENTITY_TAG, minerEntityId.toString());
         }
-        tag.putInt(LAST_POWER_TAG, lastPower);
-        tag.putString(LAST_RESULT_TAG, lastResult.name());
-        tag.putLongArray(RITUAL_QUEUE_TAG, ritualQueue.stream().mapToLong(BlockPos::asLong).toArray());
+        output.putInt(LAST_POWER_TAG, lastPower);
+        output.putString(LAST_RESULT_TAG, lastResult.name());
+        NbtCompat.store(output, RITUAL_QUEUE_TAG, LONG_ARRAY_CODEC, ritualQueue.stream().mapToLong(BlockPos::asLong).toArray());
         if (ritualSourceBiome != null) {
-            tag.putString(RITUAL_BIOME_TAG, ritualSourceBiome.location().toString());
+            output.putString(RITUAL_BIOME_TAG, ritualSourceBiome.identifier().toString());
         }
     }
 
@@ -331,7 +338,7 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
             level.getBiome(pos), level.structureManager(), MobCategory.MONSTER, pos
         );
         var type = LateGameWorldLogic.chooseSpawnType(naturalSpawns, level.getRandom());
-        if (type == null || !(type.create(level) instanceof Mob mob)) {
+        if (type == null || !(type.create(level, EntitySpawnReason.TRIGGERED) instanceof Mob mob)) {
             lastResult = WorkResult.BLOCKED;
             return false;
         }
@@ -367,7 +374,7 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
             lastResult = WorkResult.BLOCKED;
             return true;
         }
-        Holder<Biome> target = level.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(targetBiome());
+        Holder<Biome> target = level.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(targetBiome());
         Set<LevelChunk> changedChunks = new HashSet<>();
         int processed = 0;
         while (processed < 2 && !ritualQueue.isEmpty()) {
@@ -385,7 +392,7 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
                     if (!LateGameWorldLogic.withinRitualRadius(x - origin.getX(), z - origin.getZ())) {
                         continue;
                     }
-                    for (int y = level.getMinBuildHeight(); y < level.getMaxBuildHeight(); y++) {
+                    for (int y = level.getMinY(); y <= level.getMaxY(); y++) {
                         BlockPos blockPos = new BlockPos(x, y, z);
                         BlockState state = level.getBlockState(blockPos);
                         var mapped = LateGameWorldLogic.ritualMapping(variant(), state.getBlock(), level.getRandom());
@@ -435,7 +442,7 @@ public class LateGameBlockEntity extends BlockEntity implements AuraSignalSource
                 palette.set(x, y, z, target);
             }
         }
-        chunk.setUnsaved(true);
+        chunk.markUnsaved();
     }
 
     private ResourceKey<Biome> targetBiome() {

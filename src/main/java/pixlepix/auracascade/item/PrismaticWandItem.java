@@ -2,6 +2,7 @@ package pixlepix.auracascade.item;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -10,12 +11,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -44,11 +45,11 @@ public final class PrismaticWandItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         InteractionResult result = handleUse(player, level, stack, null);
-        return result == InteractionResult.PASS ? InteractionResultHolder.pass(stack)
-            : InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        return result == InteractionResult.PASS ? InteractionResult.PASS
+            : level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
     }
 
     private InteractionResult handleUse(Player player, Level level, ItemStack stack, BlockPos clicked) {
@@ -88,7 +89,7 @@ public final class PrismaticWandItem extends Item {
             return InteractionResult.SUCCESS;
         }
         PasteResult result = paste(world, copied, playerPosition(player), player.getInventory(),
-            player.getInventory().items.size(), player.getAbilities().instabuild);
+            player.getInventory().getNonEquipmentItems().size(), player.getAbilities().instabuild);
         if (!result.safe()) {
             status(player, Component.translatable("message.aura.prismatic_wand_invalid_selection"));
         } else if (result.placed() == 0 && result.missingMaterial()) {
@@ -260,9 +261,15 @@ public final class PrismaticWandItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(PrismaticWandState.mode(stack).displayComponent().copy().withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("tooltip.aura.prismatic_wand.copy_limits").withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.translatable("tooltip.aura.prismatic_wand.material_limits").withStyle(ChatFormatting.DARK_GRAY));
+    public void appendHoverText(
+        ItemStack stack,
+        TooltipContext context,
+        TooltipDisplay tooltipDisplay,
+        Consumer<Component> tooltip,
+        TooltipFlag flag
+    ) {
+        tooltip.accept(PrismaticWandState.mode(stack).displayComponent().copy().withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip.aura.prismatic_wand.copy_limits").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable("tooltip.aura.prismatic_wand.material_limits").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

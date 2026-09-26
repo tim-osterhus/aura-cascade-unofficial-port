@@ -1,5 +1,12 @@
 # Aura Cascade Unofficial Port
 
+## Unreleased `0.2.1+1.21.11`
+
+Forward port of the corrected 0.2.1 gameplay to Fabric 1.21.11, with Java 21.
+Uses the external Patchouli: Fabric Edition dependency and adapts saved data,
+rendering, item models, recipes and Minecraft hooks. Validation is in progress;
+no target publication is claimed by this entry.
+
 ## Beta `0.2.1+1.21.1`
 
 Published as Aura Cascade Reimagined. Restores dropped-item crafting feedback,

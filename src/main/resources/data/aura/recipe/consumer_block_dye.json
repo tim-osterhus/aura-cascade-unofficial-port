@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "aura:aura_crystal_orange"
-    },
-    "S": {
-      "item": "minecraft:shears"
-    },
-    "W": {
-      "item": "minecraft:white_wool"
-    }
+    "C": "aura:aura_crystal_orange",
+    "S": "minecraft:shears",
+    "W": "minecraft:white_wool"
   },
   "pattern": [
     "CWC",

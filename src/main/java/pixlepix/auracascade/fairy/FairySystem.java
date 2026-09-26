@@ -33,7 +33,7 @@ import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -53,19 +53,19 @@ public final class FairySystem {
     private static final Map<UUID, Long> LAST_RECONCILE_TICKS = new HashMap<>();
     private static final List<Holder<MobEffect>> DEBUFF_EFFECTS = List.of(
         MobEffects.POISON,
-        MobEffects.CONFUSION,
+        MobEffects.NAUSEA,
         MobEffects.WEAKNESS,
         MobEffects.WITHER,
-        MobEffects.MOVEMENT_SLOWDOWN,
+        MobEffects.SLOWNESS,
         MobEffects.HUNGER
     );
     private static final List<Holder<MobEffect>> BUFF_EFFECTS = List.of(
         MobEffects.REGENERATION,
-        MobEffects.DAMAGE_RESISTANCE,
-        MobEffects.DAMAGE_BOOST,
+        MobEffects.RESISTANCE,
+        MobEffects.STRENGTH,
         MobEffects.ABSORPTION,
-        MobEffects.JUMP,
-        MobEffects.MOVEMENT_SPEED
+        MobEffects.JUMP_BOOST,
+        MobEffects.SPEED
     );
     private static boolean bootstrapped;
 
@@ -93,7 +93,7 @@ public final class FairySystem {
             ServerPlayer player = handler.player;
             PlayerLocation last = LAST_PLAYER_LOCATIONS.remove(player.getUUID());
             forgetOwnerState(player.getUUID());
-            clearNearby(last == null ? player.serverLevel() : last.level(), player.getUUID(),
+            clearNearby(last == null ? player.level() : last.level(), player.getUUID(),
                 last == null ? player.getBoundingBox() : last.bounds());
         });
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
@@ -104,7 +104,7 @@ public final class FairySystem {
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
             PlayerLocation last = LAST_PLAYER_LOCATIONS.remove(oldPlayer.getUUID());
             forgetOwnerState(oldPlayer.getUUID());
-            clearNearby(last == null ? oldPlayer.serverLevel() : last.level(), oldPlayer.getUUID(),
+            clearNearby(last == null ? oldPlayer.level() : last.level(), oldPlayer.getUUID(),
                 last == null ? oldPlayer.getBoundingBox() : last.bounds());
         });
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
@@ -116,7 +116,7 @@ public final class FairySystem {
     }
 
     public static void syncPlayerFairies(ServerPlayer player) {
-        ServerLevel level = player.serverLevel();
+        ServerLevel level = player.level();
         UUID ownerId = player.getUUID();
         PlayerLocation previousLocation = LAST_PLAYER_LOCATIONS.put(ownerId, new PlayerLocation(level, player.getBoundingBox()));
         if (previousLocation != null && previousLocation.level() != level) {
@@ -153,7 +153,7 @@ public final class FairySystem {
     }
 
     private static void reconcilePlayerFairies(ServerPlayer player, List<FairyRole> roles) {
-        ServerLevel level = player.serverLevel();
+        ServerLevel level = player.level();
         UUID ownerId = player.getUUID();
         List<AuraFairyEntity> existing = level.getEntitiesOfClass(
             AuraFairyEntity.class,
@@ -194,7 +194,7 @@ public final class FairySystem {
     }
 
     private static AuraFairyEntity spawnFairy(ServerLevel level, ServerPlayer owner, int slot, FairyRole role) {
-        AuraFairyEntity fairy = AuraFairyEntityRegistry.entityType().create(level);
+        AuraFairyEntity fairy = AuraFairyEntityRegistry.entityType().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (fairy == null) {
             return null;
         }
@@ -322,7 +322,7 @@ public final class FairySystem {
         int count;
         if (player instanceof ServerPlayer serverPlayer) {
             count = countOwnedRoleFairies(serverPlayer, FairyRole.DIGGER, 20.0D);
-        } else if (player.level().isClientSide) {
+        } else if (player.level().isClientSide()) {
             count = countVisibleClientFairies(player, FairyRole.DIGGER, roles, 20.0D);
         } else {
             return baseSpeed;
@@ -377,7 +377,7 @@ public final class FairySystem {
         UUID ownerId = owner.getUUID();
         List<FairyRole> roles = equippedRoles(owner);
         int count = 0;
-        for (AuraFairyEntity fairy : owner.serverLevel().getEntitiesOfClass(
+        for (AuraFairyEntity fairy : owner.level().getEntitiesOfClass(
             AuraFairyEntity.class,
             owner.getBoundingBox().inflate(radius),
             candidate -> ownerId.equals(candidate.ownerId()) && candidate.role() == role
@@ -477,10 +477,10 @@ public final class FairySystem {
             fairy.getBoundingBox().inflate(2.0D),
             player -> player != owner && player.isAlive() && !player.getMainHandItem().isEmpty()
         )) {
-            ItemEntity stolen = new ItemEntity(owner.serverLevel(), owner.getX(), owner.getY(), owner.getZ(), target.getMainHandItem().copy());
+            ItemEntity stolen = new ItemEntity(owner.level(), owner.getX(), owner.getY(), owner.getZ(), target.getMainHandItem().copy());
             stolen.setPickUpDelay(0);
             stolen.setDeltaMovement(Vec3.ZERO);
-            if (owner.serverLevel().addFreshEntity(stolen)) {
+            if (owner.level().addFreshEntity(stolen)) {
                 target.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             }
         }
@@ -515,8 +515,9 @@ public final class FairySystem {
             arrow = firstArrow;
             fairy.setTrackedArrowId(arrow.getUUID());
         }
-        if (arrow.getBaseDamage() < 10.0D) {
-            arrow.setBaseDamage(arrow.getBaseDamage() + 10.0D);
+        double baseDamage = ((pixlepix.auracascade.mixin.ArrowDamageAccessor) arrow).aura$getBaseDamage();
+        if (baseDamage < 10.0D) {
+            arrow.setBaseDamage(baseDamage + 10.0D);
             arrow.setCritArrow(true);
         }
     }
@@ -539,11 +540,11 @@ public final class FairySystem {
             EntityType.SHEEP
         );
         ServerLevel level = (ServerLevel) fairy.level();
-        Animal animal = choices.get(level.getRandom().nextInt(choices.size())).create(level);
+        Animal animal = choices.get(level.getRandom().nextInt(choices.size())).create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
         if (animal == null) {
             return;
         }
-        animal.moveTo(fairy.getX(), fairy.getY(), fairy.getZ(), level.getRandom().nextFloat() * 360.0F, 0.0F);
+        animal.snapTo(fairy.getX(), fairy.getY(), fairy.getZ(), level.getRandom().nextFloat() * 360.0F, 0.0F);
         level.addFreshEntity(animal);
     }
 

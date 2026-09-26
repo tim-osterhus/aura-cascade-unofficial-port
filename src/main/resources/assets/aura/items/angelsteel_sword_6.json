@@ -1,6 +1,15 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "aura:item/angelsteel_sword_6"
+    "type": "minecraft:range_dispatch",
+    "property": "aura:attunement",
+    "entries": [
+      { "threshold": 0.125, "model": { "type": "minecraft:model", "model": "aura:item/angelsteel_sword_red" } },
+      { "threshold": 0.25, "model": { "type": "minecraft:model", "model": "aura:item/angelsteel_sword_orange" } },
+      { "threshold": 0.375, "model": { "type": "minecraft:model", "model": "aura:item/angelsteel_sword_yellow" } },
+      { "threshold": 0.5, "model": { "type": "minecraft:model", "model": "aura:item/angelsteel_sword_green" } },
+      { "threshold": 0.625, "model": { "type": "minecraft:model", "model": "aura:item/angelsteel_sword_blue" } },
+      { "threshold": 0.75, "model": { "type": "minecraft:model", "model": "aura:item/angelsteel_sword_violet" } }
+    ],
+    "fallback": { "type": "minecraft:model", "model": "aura:item/angelsteel_sword_6" }
   }
 }

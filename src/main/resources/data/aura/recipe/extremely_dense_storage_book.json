@@ -1,15 +1,9 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "aura:super_dense_storage_book"
-    },
-    {
-      "item": "aura:arcane_prism"
-    },
-    {
-      "item": "minecraft:nether_star"
-    }
+    "aura:super_dense_storage_book",
+    "aura:arcane_prism",
+    "minecraft:nether_star"
   ],
   "result": {
     "id": "aura:extremely_dense_storage_book",

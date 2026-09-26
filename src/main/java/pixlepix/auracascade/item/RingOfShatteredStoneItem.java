@@ -3,12 +3,14 @@ package pixlepix.auracascade.item;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -59,10 +61,11 @@ public final class RingOfShatteredStoneItem extends AuraAccessoryItem {
     public void appendHoverText(
         ItemStack stack,
         TooltipContext tooltipContext,
-        List<Component> tooltip,
+        TooltipDisplay tooltipDisplay,
+        Consumer<Component> tooltip,
         TooltipFlag tooltipFlag
     ) {
-        tooltip.add(Component.translatable("tooltip.aura.ring_of_shattered_stone.residual").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable("tooltip.aura.ring_of_shattered_stone.residual").withStyle(ChatFormatting.DARK_GRAY));
     }
 }
 

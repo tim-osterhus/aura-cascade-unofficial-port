@@ -2,7 +2,7 @@ package pixlepix.auracascade.block.entity;
 
 import java.util.Optional;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -92,14 +92,14 @@ public final class AuraConsumerLogic {
     }
 
     static Optional<TagKey<Item>> commonDustTagForOre(TagKey<Item> oreTag) {
-        ResourceLocation location = oreTag.location();
+        Identifier location = oreTag.location();
         String path = location.getPath();
         if (!location.getNamespace().equals("c") || !path.startsWith("ores/") || path.length() == "ores/".length()) {
             return Optional.empty();
         }
         return Optional.of(TagKey.create(
             Registries.ITEM,
-            ResourceLocation.fromNamespaceAndPath("c", "dusts/" + path.substring("ores/".length()))
+            Identifier.fromNamespaceAndPath("c", "dusts/" + path.substring("ores/".length()))
         ));
     }
 

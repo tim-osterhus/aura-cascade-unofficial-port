@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "A": {
-      "item": "aura:angelsteel_ingot_3"
-    },
-    "S": {
-      "item": "minecraft:stick"
-    }
+    "A": "aura:angelsteel_ingot_3",
+    "S": "minecraft:stick"
   },
   "pattern": [
     "AAA",

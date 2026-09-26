@@ -241,10 +241,10 @@ public final class KaleidoscopicEnchanterLogic {
         syncPersistentRuntimeEnchantments(stack, level.registryAccess());
         MiningProfile miningProfile = runtimeMiningProfile(levels(stack, level.registryAccess()), level.getBlockState(pos));
         if (miningProfile.hasteLevel() > 0) {
-            player.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 12, miningProfile.hasteLevel() - 1, true, false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.HASTE, 12, miningProfile.hasteLevel() - 1, true, false, false));
         }
         if (miningProfile.fatigueLevel() > 0) {
-            player.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 12, miningProfile.fatigueLevel() - 1, true, false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.MINING_FATIGUE, 12, miningProfile.fatigueLevel() - 1, true, false, false));
         }
         return InteractionResult.PASS;
     }

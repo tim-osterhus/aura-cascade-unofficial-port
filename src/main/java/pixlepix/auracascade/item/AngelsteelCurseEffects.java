@@ -4,7 +4,7 @@ import java.util.EnumMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
 import pixlepix.auracascade.AuraCascadeMod;
 import pixlepix.auracascade.parity.AuraColor;
@@ -24,7 +24,7 @@ public final class AngelsteelCurseEffects {
             if (!isAttunedColor(color)) {
                 continue;
             }
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
+            Identifier id = Identifier.fromNamespaceAndPath(
                 AuraCascadeMod.MOD_ID,
                 "angelsteel_curse_" + color.id()
             );

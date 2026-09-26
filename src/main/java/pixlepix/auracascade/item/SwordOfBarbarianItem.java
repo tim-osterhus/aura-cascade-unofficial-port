@@ -24,8 +24,7 @@ public final class SwordOfBarbarianItem extends Item {
     }
 
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        return true;
+    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
     }
 
     static float modifyIncomingDamage(Player attacker, ItemStack stack, float original) {

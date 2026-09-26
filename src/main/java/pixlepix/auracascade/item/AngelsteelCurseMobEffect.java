@@ -8,6 +8,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
@@ -50,21 +51,18 @@ final class AngelsteelCurseMobEffect extends MobEffect {
     }
 
     @Override
-    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
-        if (!(entity.level() instanceof ServerLevel level)) {
-            return false;
-        }
+    public boolean applyEffectTick(ServerLevel level, LivingEntity entity, int amplifier) {
         switch (color) {
             case RED -> placeFire(level, entity);
             case ORANGE -> {
                 Vec3 motion = entity.getDeltaMovement();
                 entity.setDeltaMovement(motion.x, motion.y + 1.0D, motion.z);
-                entity.hasImpulse = true;
+                entity.needsSync = true;
             }
             case YELLOW -> {
-                LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(level);
+                LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
                 if (lightning != null) {
-                    lightning.moveTo(entity.getX(), entity.getY(), entity.getZ());
+                    lightning.snapTo(entity.getX(), entity.getY(), entity.getZ());
                     level.addFreshEntity(lightning);
                 }
             }

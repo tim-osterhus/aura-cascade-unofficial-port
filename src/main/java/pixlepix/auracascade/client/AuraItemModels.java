@@ -1,25 +1,25 @@
 package pixlepix.auracascade.client;
 
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperties;
+import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import pixlepix.auracascade.item.AngelsteelSwordItem;
 import pixlepix.auracascade.parity.AuraColor;
 
 public final class AuraItemModels {
-    private static final ResourceLocation ATTUNEMENT = ResourceLocation.fromNamespaceAndPath("aura", "attunement");
+    private static final Identifier ATTUNEMENT = Identifier.fromNamespaceAndPath("aura", "attunement");
+    private static final MapCodec<AttunementProperty> ATTUNEMENT_CODEC = MapCodec.unit(new AttunementProperty());
 
     private AuraItemModels() {
     }
 
     public static void bootstrapClient() {
-        for (Item item : BuiltInRegistries.ITEM) {
-            if (item instanceof AngelsteelSwordItem sword) {
-                ItemProperties.register(item, ATTUNEMENT, (stack, level, entity, seed) ->
-                    sword.swordAura(stack).map(AuraItemModels::attunementValue).orElse(0.0F));
-            }
-        }
+        RangeSelectItemModelProperties.ID_MAPPER.put(ATTUNEMENT, ATTUNEMENT_CODEC);
     }
 
     public static float attunementValue(AuraColor color) {
@@ -33,5 +33,20 @@ public final class AuraItemModels {
             case VIOLET -> 0.75F;
             default -> 0.0F;
         };
+    }
+
+    private record AttunementProperty() implements RangeSelectItemModelProperty {
+        @Override
+        public float get(ItemStack stack, ClientLevel level, ItemOwner owner, int seed) {
+            Item item = stack.getItem();
+            return item instanceof AngelsteelSwordItem sword
+                ? sword.swordAura(stack).map(AuraItemModels::attunementValue).orElse(0.0F)
+                : 0.0F;
+        }
+
+        @Override
+        public MapCodec<AttunementProperty> type() {
+            return ATTUNEMENT_CODEC;
+        }
     }
 }

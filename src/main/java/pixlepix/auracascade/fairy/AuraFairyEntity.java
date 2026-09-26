@@ -1,7 +1,7 @@
 package pixlepix.auracascade.fairy;
 
-import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -10,15 +10,18 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import pixlepix.auracascade.item.RingOfBindingItem;
 import pixlepix.auracascade.util.NbtCompat;
 
 public final class AuraFairyEntity extends Entity {
-    private static final EntityDataAccessor<Optional<UUID>> OWNER_ID = SynchedEntityData.defineId(
+    private static final EntityDataAccessor<String> OWNER_ID = SynchedEntityData.defineId(
         AuraFairyEntity.class,
-        EntityDataSerializers.OPTIONAL_UUID
+        EntityDataSerializers.STRING
     );
     private static final EntityDataAccessor<Integer> SLOT = SynchedEntityData.defineId(
         AuraFairyEntity.class,
@@ -37,7 +40,7 @@ public final class AuraFairyEntity extends Entity {
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(OWNER_ID, Optional.empty());
+        builder.define(OWNER_ID, "");
         builder.define(SLOT, -1);
         builder.define(ROLE, FairyRole.defaultRole().id());
     }
@@ -46,13 +49,18 @@ public final class AuraFairyEntity extends Entity {
         if (role != FairyRole.SHOOTER) {
             trackedArrowId = null;
         }
-        entityData.set(OWNER_ID, Optional.of(ownerId));
+        entityData.set(OWNER_ID, ownerId.toString());
         entityData.set(SLOT, slot);
         entityData.set(ROLE, role.id());
     }
 
     public UUID ownerId() {
-        return entityData.get(OWNER_ID).orElse(null);
+        String value = entityData.get(OWNER_ID);
+        try {
+            return value.isEmpty() ? null : UUID.fromString(value);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     public int slot() {
@@ -72,15 +80,15 @@ public final class AuraFairyEntity extends Entity {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
-        tag.merge(new SavedState(ownerId(), slot(), role()).write());
+    protected void addAdditionalSaveData(ValueOutput output) {
+        new SavedState(ownerId(), slot(), role()).write(output);
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
-        SavedState saved = SavedState.read(tag);
+    protected void readAdditionalSaveData(ValueInput input) {
+        SavedState saved = SavedState.read(input);
         trackedArrowId = null;
-        entityData.set(OWNER_ID, Optional.ofNullable(saved.ownerId()));
+        entityData.set(OWNER_ID, saved.ownerId() == null ? "" : saved.ownerId().toString());
         entityData.set(SLOT, saved.slot());
         entityData.set(ROLE, saved.role().id());
     }
@@ -88,7 +96,7 @@ public final class AuraFairyEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             return;
         }
         if (!(level() instanceof ServerLevel serverLevel)) {
@@ -121,6 +129,11 @@ public final class AuraFairyEntity extends Entity {
         return false;
     }
 
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        return false;
+    }
+
     static boolean canRemainLoaded(
         UUID savedOwner,
         int slot,
@@ -142,19 +155,38 @@ public final class AuraFairyEntity extends Entity {
         CompoundTag write() {
             CompoundTag tag = new CompoundTag();
             if (ownerId != null) {
-                tag.putUUID("Owner", ownerId);
+                NbtCompat.store(tag, "Owner", UUIDUtil.CODEC, ownerId);
             }
             tag.putInt("Slot", slot);
             tag.putString("Role", role.id());
             return tag;
         }
 
+        void write(ValueOutput output) {
+            if (ownerId != null) {
+                NbtCompat.store(output, "Owner", UUIDUtil.CODEC, ownerId);
+            }
+            output.putInt("Slot", slot);
+            output.putString("Role", role.id());
+        }
+
         static SavedState read(CompoundTag tag) {
-            UUID owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
+            UUID owner = NbtCompat.read(tag, "Owner", UUIDUtil.CODEC).orElse(null);
+            return readFields(owner, NbtCompat.getIntOr(tag, "Slot", -1),
+                NbtCompat.getStringOr(tag, "Role", FairyRole.defaultRole().id()));
+        }
+
+        static SavedState read(ValueInput input) {
+            UUID owner = NbtCompat.read(input, "Owner", UUIDUtil.CODEC).orElse(null);
+            return readFields(owner, NbtCompat.getIntOr(input, "Slot", -1),
+                NbtCompat.getStringOr(input, "Role", FairyRole.defaultRole().id()));
+        }
+
+        private static SavedState readFields(UUID owner, int slot, String role) {
             return new SavedState(
                 owner,
-                NbtCompat.getIntOr(tag, "Slot", -1),
-                FairyRole.byId(NbtCompat.getStringOr(tag, "Role", FairyRole.defaultRole().id()))
+                slot,
+                FairyRole.byId(role)
             );
         }
     }

@@ -6,15 +6,9 @@
     " s "
   ],
   "key": {
-    "b": {
-      "item": "aura:arcane_gem_blue"
-    },
-    "i": {
-      "item": "aura:arcane_ingot_black"
-    },
-    "s": {
-      "item": "minecraft:iron_sword"
-    }
+    "b": "aura:arcane_gem_blue",
+    "i": "aura:arcane_ingot_black",
+    "s": "minecraft:iron_sword"
   },
   "result": {
     "id": "aura:sword_of_the_thief",

@@ -15,10 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ReleaseDocumentationAuditTest {
     @Test
-    void metadataTargetsOnlyTheValidatedMinecraftVersion() throws IOException {
+    void metadataTargetsOnlyTheBranchMinecraftVersion() throws IOException {
         var metadata = JsonParser.parseString(Files.readString(
             Path.of("src/main/resources/fabric.mod.json"), StandardCharsets.UTF_8)).getAsJsonObject();
-        assertEquals("1.21.1", metadata.getAsJsonObject("depends").get("minecraft").getAsString());
+        assertEquals("1.21.11", metadata.getAsJsonObject("depends").get("minecraft").getAsString());
     }
 
     private static final String STALE_SERVER_RUN_ID = "run-3389d91e5f0a4f5e802d8023f25c209c";
@@ -113,8 +113,9 @@ final class ReleaseDocumentationAuditTest {
             () -> assertTrue(portingNotes.contains("Historical artifact records")),
             () -> assertTrue(hasArtifactRecord(portingNotes, "Built release artifact", RELEASE_JAR)),
             () -> assertTrue(hasArtifactRecord(portingNotes, "Built sources artifact", SOURCES_JAR)),
-            () -> assertFalse(readme.contains("1.21.11")),
-            () -> assertFalse(changelog.contains("1.21.11")),
+            () -> assertTrue(readme.contains("fabric/1.21.11")),
+            () -> assertTrue(readme.contains("historical 1.21.1 evidence, not target-version passes")),
+            () -> assertTrue(changelog.contains("0.2.1+1.21.11")),
             () -> assertFalse(readme.contains("repo-local audit evidence")),
             () -> assertFalse(readme.contains("archived live-client replay")),
             () -> assertFalse(readme.contains("### Remaining Unresolved Gaps")),
@@ -126,7 +127,7 @@ final class ReleaseDocumentationAuditTest {
             () -> assertFalse(portingNotes.contains("### Unresolved Gaps")),
             () -> assertFalse(portingNotes.contains("still does not limit nearby explosion block damage")),
             () -> assertFalse(portingNotes.contains("still skips block entities and fluids")),
-            () -> assertFalse(portingNotes.contains("1.21.11")),
+            () -> assertTrue(portingNotes.contains("1.21.11 Forward Port")),
             () -> assertFalse(portingNotes.contains("contains `180` `Parsing error loading recipe` entries")),
             () -> assertFalse(portingNotes.contains("Dedicated-server smoke was not re-run")),
             () -> assertFalse(portingNotes.contains("remains outstanding for the follow-up release-truthfulness pass")),

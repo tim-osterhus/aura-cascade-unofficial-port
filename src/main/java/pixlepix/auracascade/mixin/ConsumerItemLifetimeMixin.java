@@ -1,8 +1,9 @@
 package pixlepix.auracascade.mixin;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -36,19 +37,19 @@ abstract class ConsumerItemLifetimeMixin implements ConsumerItemLifetimeAccess {
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void aura$saveConsumerLifetime(CompoundTag tag, CallbackInfo ci) {
+    private void aura$saveConsumerLifetime(ValueOutput output, CallbackInfo ci) {
         if (aura$consumerKeptAlive) {
-            tag.putBoolean(ConsumerItemKeepAlive.PROTECTED_TAG, true);
+            output.putBoolean(ConsumerItemKeepAlive.PROTECTED_TAG, true);
             // Vanilla Age is a short, insufficient for the extended lifetime.
-            tag.putInt(ConsumerItemKeepAlive.AGE_TAG, age);
+            output.putInt(ConsumerItemKeepAlive.AGE_TAG, age);
         }
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-    private void aura$loadConsumerLifetime(CompoundTag tag, CallbackInfo ci) {
-        aura$consumerKeptAlive = tag.getBoolean(ConsumerItemKeepAlive.PROTECTED_TAG);
-        if (aura$consumerKeptAlive && tag.contains(ConsumerItemKeepAlive.AGE_TAG, 99)) {
-            age = tag.getInt(ConsumerItemKeepAlive.AGE_TAG);
+    private void aura$loadConsumerLifetime(ValueInput input, CallbackInfo ci) {
+        aura$consumerKeptAlive = input.getBooleanOr(ConsumerItemKeepAlive.PROTECTED_TAG, false);
+        if (aura$consumerKeptAlive) {
+            age = input.getIntOr(ConsumerItemKeepAlive.AGE_TAG, age);
         }
     }
 

@@ -10,7 +10,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.flag.FeatureFlags;
@@ -19,10 +19,10 @@ import pixlepix.auracascade.item.AuraItems;
 
 public final class AuraAccessoryNetworking {
     public static final CustomPacketPayload.Type<OpenRequest> OPEN_TYPE = new CustomPacketPayload.Type<>(
-        ResourceLocation.fromNamespaceAndPath("aura", "open_accessories")
+        Identifier.fromNamespaceAndPath("aura", "open_accessories")
     );
     public static final CustomPacketPayload.Type<WingRequest> WING_TYPE = new CustomPacketPayload.Type<>(
-        ResourceLocation.fromNamespaceAndPath("aura", "activate_wing")
+        Identifier.fromNamespaceAndPath("aura", "activate_wing")
     );
     private static final StreamCodec<RegistryFriendlyByteBuf, OpenRequest> OPEN_CODEC = StreamCodec.of(
         (buffer, payload) -> {}, buffer -> new OpenRequest()
@@ -43,7 +43,7 @@ public final class AuraAccessoryNetworking {
         AuraAccessoryInventory.bootstrap();
         menuType = Registry.register(
             BuiltInRegistries.MENU,
-            ResourceLocation.fromNamespaceAndPath("aura", "accessories"),
+            Identifier.fromNamespaceAndPath("aura", "accessories"),
             new MenuType<>(AuraAccessoryMenu::new, FeatureFlags.VANILLA_SET)
         );
         PayloadTypeRegistry.playC2S().register(OPEN_TYPE, OPEN_CODEC);

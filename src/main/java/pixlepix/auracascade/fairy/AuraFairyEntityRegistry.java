@@ -1,13 +1,13 @@
 package pixlepix.auracascade.fairy;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.core.Registry;
 
 public final class AuraFairyEntityRegistry {
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("aura", "fairy");
+    private static final Identifier ID = Identifier.fromNamespaceAndPath("aura", "fairy");
     private static EntityType<AuraFairyEntity> entityType;
 
     private AuraFairyEntityRegistry() {
@@ -24,7 +24,7 @@ public final class AuraFairyEntityRegistry {
                 .sized(0.1F, 0.1F)
                 .clientTrackingRange(8)
                 .updateInterval(2)
-                .build()
+                .build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, ID))
         );
     }
 

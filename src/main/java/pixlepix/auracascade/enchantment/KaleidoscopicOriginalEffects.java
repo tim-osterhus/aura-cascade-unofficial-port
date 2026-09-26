@@ -13,7 +13,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -47,7 +47,7 @@ import pixlepix.auracascade.parity.AuraColor;
 
 public final class KaleidoscopicOriginalEffects {
     private static final TagKey<Block> COMMON_ORES = TagKey.create(Registries.BLOCK,
-        ResourceLocation.fromNamespaceAndPath("c", "ores"));
+        Identifier.fromNamespaceAndPath("c", "ores"));
     private static boolean bootstrapped;
     private static boolean temporaryBreak;
     private static boolean chainBreak;
@@ -195,7 +195,10 @@ public final class KaleidoscopicOriginalEffects {
             }
         }
         int knockback = level(powers, AuraColor.BLUE);
-        if (knockback > 0 && !target.isInvulnerableTo(server.damageSources().playerAttack(attacker))) {
+        boolean invulnerable = target instanceof LivingEntity living
+            ? living.isInvulnerableTo(server, server.damageSources().playerAttack(attacker))
+            : target.isInvulnerable();
+        if (knockback > 0 && !invulnerable) {
             double angle = Math.toRadians(attacker.getYRot());
             target.push(-Math.sin(angle) * knockback * 0.5D, 0.1D, Math.cos(angle) * knockback * 0.5D);
         }
@@ -312,8 +315,8 @@ public final class KaleidoscopicOriginalEffects {
     }
 
     public static void extraLoot(ServerLevel level, LivingEntity victim, DamageSource source) {
-        if (!(victim instanceof Mob) || !(source.getEntity() instanceof ServerPlayer attacker) || !level.getGameRules().getBoolean(
-            net.minecraft.world.level.GameRules.RULE_DOMOBLOOT)) {
+        if (!(victim instanceof Mob) || !(source.getEntity() instanceof ServerPlayer attacker) || !level.getGameRules().get(
+            net.minecraft.world.level.gamerules.GameRules.MOB_DROPS) || victim.getLootTable().isEmpty()) {
             return;
         }
         int strength = pair(levels(attacker), AuraColor.YELLOW, AuraColor.VIOLET);
@@ -336,9 +339,9 @@ public final class KaleidoscopicOriginalEffects {
             .create(LootContextParamSets.ENTITY);
         try {
             stack.set(DataComponents.ENCHANTMENTS, temporary.toImmutable());
-            for (ItemStack extra : level.getServer().reloadableRegistries().getLootTable(victim.getLootTable())
+            for (ItemStack extra : level.getServer().reloadableRegistries().getLootTable(victim.getLootTable().orElseThrow())
                 .getRandomItems(params, level.getRandom())) {
-                victim.spawnAtLocation(extra);
+                victim.spawnAtLocation(level, extra);
             }
         } finally {
             if (!stack.isEmpty()) {
@@ -358,13 +361,13 @@ public final class KaleidoscopicOriginalEffects {
         if (block == Blocks.COPPER_ORE || block == Blocks.DEEPSLATE_COPPER_ORE) {
             return Items.COPPER_INGOT;
         }
-        return BuiltInRegistries.BLOCK.getTagNames()
+        return BuiltInRegistries.BLOCK.getTags().map(net.minecraft.core.HolderSet.Named::key)
             .filter(tag -> tag.location().getNamespace().equals("c")
                 && tag.location().getPath().startsWith("ores/") && state.is(tag))
             .map(tag -> tag.location().getPath().substring("ores/".length()))
             .map(material -> TagKey.create(Registries.ITEM,
-                ResourceLocation.fromNamespaceAndPath("c", "ingots/" + material)))
-            .map(BuiltInRegistries.ITEM::getTag)
+                Identifier.fromNamespaceAndPath("c", "ingots/" + material)))
+            .map(BuiltInRegistries.ITEM::get)
             .flatMap(java.util.Optional::stream)
             .flatMap(holders -> holders.stream().map(Holder::value))
             .findFirst().orElse(null);

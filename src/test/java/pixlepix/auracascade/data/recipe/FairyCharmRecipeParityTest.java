@@ -1,6 +1,7 @@
 package pixlepix.auracascade.data.recipe;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
@@ -39,8 +40,8 @@ final class FairyCharmRecipeParityTest {
         JsonObject base = read(CRAFTING_ROOT.resolve("fairy_charm.json"));
         assertEquals("minecraft:crafting_shaped", base.get("type").getAsString());
         assertEquals(List.of("BGB"), strings(base.getAsJsonArray("pattern")));
-        assertEquals("minecraft:brick", base.getAsJsonObject("key").getAsJsonObject("B").get("item").getAsString());
-        assertEquals("aura:arcane_gem_white", base.getAsJsonObject("key").getAsJsonObject("G").get("item").getAsString());
+        assertEquals("minecraft:brick", base.getAsJsonObject("key").get("B").getAsString());
+        assertEquals("aura:arcane_gem_white", base.getAsJsonObject("key").get("G").getAsString());
         assertRoleOutput(base, "fairy");
 
         assertEquals(17, countCraftingCharmRecipes());
@@ -52,9 +53,9 @@ final class FairyCharmRecipeParityTest {
             JsonObject key = recipe.getAsJsonObject("key");
             JsonObject baseCharm = key.getAsJsonObject("C");
             assertEquals("fabric:custom_data", baseCharm.get("fabric:type").getAsString(), expected.role());
-            assertEquals("aura:fairy_charm", baseCharm.getAsJsonObject("base").get("item").getAsString(), expected.role());
+            assertEquals("aura:fairy_charm", baseCharm.get("base").getAsString(), expected.role());
             assertEquals("fairy", baseCharm.getAsJsonObject("nbt").get("fairyRole").getAsString(), expected.role());
-            assertExpectedIngredient(key.getAsJsonObject("X"), expected);
+            assertExpectedIngredient(key.get("X"), expected);
             assertRoleOutput(recipe, expected.role());
         }
     }
@@ -80,17 +81,18 @@ final class FairyCharmRecipeParityTest {
         assertEquals("aura:ring_of_binding", recipe.getAsJsonObject("result").get("item").getAsString());
     }
 
-    private static void assertExpectedIngredient(JsonObject ingredient, RoleIngredient expected) {
+    private static void assertExpectedIngredient(JsonElement ingredient, RoleIngredient expected) {
         if (expected.potion() == null) {
-            assertEquals(expected.item(), ingredient.get("item").getAsString(), expected.role());
+            assertEquals(expected.item(), ingredient.getAsString(), expected.role());
             return;
         }
 
-        assertEquals("fabric:components", ingredient.get("fabric:type").getAsString(), expected.role());
-        assertEquals("minecraft:potion", ingredient.getAsJsonObject("base").get("item").getAsString(), expected.role());
+        JsonObject customIngredient = ingredient.getAsJsonObject();
+        assertEquals("fabric:components", customIngredient.get("fabric:type").getAsString(), expected.role());
+        assertEquals("minecraft:potion", customIngredient.get("base").getAsString(), expected.role());
         assertEquals(
             expected.potion(),
-            ingredient.getAsJsonObject("components")
+            customIngredient.getAsJsonObject("components")
                 .getAsJsonObject("minecraft:potion_contents")
                 .get("potion")
                 .getAsString(),
