@@ -1,34 +1,35 @@
 package pixlepix.auracascade.compat;
 
-import java.util.List;
+import com.mojang.serialization.Codec;
 import java.lang.reflect.Method;
+import java.util.List;
 import io.netty.buffer.Unpooled;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import pixlepix.auracascade.item.AuraItems;
 import pixlepix.auracascade.support.TestMinecraftBootstrap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class AuraAccessoryInventoryTest {
-    private static ClassLoader auraTargetLoader;
-
     @BeforeAll
-    static void bootstrapMinecraft() throws ReflectiveOperationException {
+    static void bootstrapMinecraft() {
         TestMinecraftBootstrap.ensureBootstrapped();
-        TestMinecraftBootstrap.auraRegistrationSnapshot();
-        Method loaderMethod = TestMinecraftBootstrap.class.getDeclaredMethod("fabricTargetClassLoader");
-        loaderMethod.setAccessible(true);
-        auraTargetLoader = (ClassLoader) loaderMethod.invoke(null);
     }
 
     @Test
@@ -56,35 +57,25 @@ final class AuraAccessoryInventoryTest {
     }
 
     @Test
-    void accessoryTypesCannotEnterOtherPhysicalSlots() throws ReflectiveOperationException {
-        Object ring = registeredStack("pixlepix.auracascade.item.AuraItems", "RING_OF_BINDING");
-        Object amulet = registeredStack("pixlepix.auracascade.item.AuraItems", "AMULET_OF_THE_ANGELS_WING");
-        Object belt = registeredStack("pixlepix.auracascade.item.AuraItems", "SASH_OF_THE_ANGELS_HEELS");
-        Object ordinary = registeredStack("net.minecraft.world.item.Items", "GOLD_INGOT");
-        Class<?> stackType = Class.forName("net.minecraft.world.item.ItemStack", false, auraTargetLoader);
-        Method accepts = Class.forName("pixlepix.auracascade.compat.AuraAccessoryInventory", true, auraTargetLoader)
-            .getMethod("accepts", int.class, stackType);
+    void accessoryTypesCannotEnterOtherPhysicalSlots() {
+        ItemStack ring = new ItemStack(AuraItems.RING_OF_BINDING);
+        ItemStack amulet = new ItemStack(AuraItems.AMULET_OF_THE_ANGELS_WING);
+        ItemStack belt = new ItemStack(AuraItems.SASH_OF_THE_ANGELS_HEELS);
+        ItemStack ordinary = new ItemStack(Items.GOLD_INGOT);
 
-        assertTrue((boolean) accepts.invoke(null, 1, ring));
-        assertTrue((boolean) accepts.invoke(null, 2, ring));
-        assertFalse((boolean) accepts.invoke(null, 0, ring));
-        assertTrue((boolean) accepts.invoke(null, 0, amulet));
-        assertTrue((boolean) accepts.invoke(null, 3, belt));
-        assertFalse((boolean) accepts.invoke(null, 1, belt));
-        assertFalse((boolean) accepts.invoke(null, 1, ordinary));
-    }
-
-    private static Object registeredStack(String holderClassName, String fieldName) throws ReflectiveOperationException {
-        Object item = Class.forName(holderClassName, true, auraTargetLoader).getField(fieldName).get(null);
-        Class<?> itemLike = Class.forName("net.minecraft.world.level.ItemLike", false, auraTargetLoader);
-        return Class.forName("net.minecraft.world.item.ItemStack", false, auraTargetLoader)
-            .getConstructor(itemLike).newInstance(item);
+        assertTrue(AuraAccessoryInventory.accepts(1, ring));
+        assertTrue(AuraAccessoryInventory.accepts(2, ring));
+        assertFalse(AuraAccessoryInventory.accepts(0, ring));
+        assertTrue(AuraAccessoryInventory.accepts(0, amulet));
+        assertTrue(AuraAccessoryInventory.accepts(3, belt));
+        assertFalse(AuraAccessoryInventory.accepts(1, belt));
+        assertFalse(AuraAccessoryInventory.accepts(1, ordinary));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void ownerSyncCodecPreservesAllSlotsAndItemComponents() throws ReflectiveOperationException {
-        Class<?> loadoutClass = Class.forName("pixlepix.auracascade.compat.AuraAccessoryInventory$Loadout");
+        Class<?> loadoutClass = loadoutClass();
         var constructor = loadoutClass.getDeclaredConstructor(ItemStack.class, ItemStack.class, ItemStack.class, ItemStack.class);
         constructor.setAccessible(true);
         ItemStack named = new ItemStack(Items.GOLD_INGOT);
@@ -109,5 +100,38 @@ final class AuraAccessoryInventoryTest {
         } finally {
             buffer.release();
         }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void attachmentPersistsSlotsAndRequestsDeathCopy() throws ReflectiveOperationException {
+        var attachment = NeoForgeRegistries.ATTACHMENT_TYPES.get(
+            ResourceLocation.fromNamespaceAndPath("aura", "accessories")
+        );
+        assertNotNull(attachment);
+        var copyOnDeath = attachment.getClass().getDeclaredField("copyOnDeath");
+        copyOnDeath.setAccessible(true);
+        assertTrue(copyOnDeath.getBoolean(attachment));
+
+        Class<?> loadoutClass = loadoutClass();
+        var constructor = loadoutClass.getDeclaredConstructor(ItemStack.class, ItemStack.class, ItemStack.class, ItemStack.class);
+        constructor.setAccessible(true);
+        ItemStack named = new ItemStack(Items.GOLD_INGOT);
+        named.set(DataComponents.CUSTOM_NAME, Component.literal("Persistent ring"));
+        Object loadout = constructor.newInstance(ItemStack.EMPTY, named, ItemStack.EMPTY, ItemStack.EMPTY);
+        var codecField = AuraAccessoryInventory.class.getDeclaredField("CODEC");
+        codecField.setAccessible(true);
+        Codec<Object> codec = (Codec<Object>) codecField.get(null);
+        var ops = RegistryOps.create(NbtOps.INSTANCE, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
+        var encoded = codec.encodeStart(ops, loadout).result().orElseThrow();
+        Object decoded = codec.parse(ops, encoded).result().orElseThrow();
+        Method get = loadoutClass.getDeclaredMethod("get", int.class);
+        get.setAccessible(true);
+        assertTrue(ItemStack.matches(named, (ItemStack) get.invoke(decoded, AuraAccessoryInventory.FIRST_RING)));
+        assertTrue(((ItemStack) get.invoke(decoded, AuraAccessoryInventory.AMULET)).isEmpty());
+    }
+
+    private static Class<?> loadoutClass() throws ClassNotFoundException {
+        return Class.forName("pixlepix.auracascade.compat.AuraAccessoryInventory$Loadout");
     }
 }

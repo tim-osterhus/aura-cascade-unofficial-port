@@ -2,7 +2,6 @@ package pixlepix.auracascade.item;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -19,6 +18,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 public final class PrismaticWandItem extends Item {
     static final int MAX_REGION_VOLUME = 512;
@@ -27,12 +28,20 @@ public final class PrismaticWandItem extends Item {
     public PrismaticWandItem(Properties properties) {
         super(properties.stacksTo(1));
         if (!blockCallbackRegistered) {
-            UseBlockCallback.EVENT.register((player, level, hand, hit) -> {
-                ItemStack held = player.getItemInHand(hand);
-                return held.getItem() instanceof PrismaticWandItem wand
-                    ? wand.handleUse(player, level, held, hit.getBlockPos()) : InteractionResult.PASS;
-            });
+            NeoForge.EVENT_BUS.addListener(PrismaticWandItem::handleRightClickBlock);
             blockCallbackRegistered = true;
+        }
+    }
+
+    private static void handleRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        ItemStack held = event.getItemStack();
+        if (!(held.getItem() instanceof PrismaticWandItem wand)) {
+            return;
+        }
+        InteractionResult result = wand.handleUse(event.getEntity(), event.getLevel(), held, event.getPos());
+        if (result != InteractionResult.PASS) {
+            event.setCancellationResult(result);
+            event.setCanceled(true);
         }
     }
 

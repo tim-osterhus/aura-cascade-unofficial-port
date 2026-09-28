@@ -3,9 +3,10 @@ package pixlepix.auracascade.item;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.lang.reflect.Method;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -13,6 +14,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import pixlepix.auracascade.parity.AuraColor;
 import pixlepix.auracascade.support.TestMinecraftBootstrap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,15 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class UtilityGearLogicTest {
-    private static ClassLoader auraTargetLoader;
-
     @BeforeAll
-    static void bootstrapMinecraft() throws ReflectiveOperationException {
+    static void bootstrapMinecraft() {
         TestMinecraftBootstrap.ensureBootstrapped();
-        TestMinecraftBootstrap.auraRegistrationSnapshot();
-        Method loaderMethod = TestMinecraftBootstrap.class.getDeclaredMethod("fabricTargetClassLoader");
-        loaderMethod.setAccessible(true);
-        auraTargetLoader = (ClassLoader) loaderMethod.invoke(null);
     }
 
     @Test
@@ -51,23 +47,11 @@ final class UtilityGearLogicTest {
     }
 
     @Test
-    void everyAuraCrystalCarriesTheLegacyThousandAuraCharge() throws ReflectiveOperationException {
-        Class<?> auraItems = Class.forName("pixlepix.auracascade.item.AuraItems", true, auraTargetLoader);
-        Class<?> auraColor = Class.forName("pixlepix.auracascade.parity.AuraColor", true, auraTargetLoader);
-        Class<?> itemStack = Class.forName("net.minecraft.world.item.ItemStack", false, auraTargetLoader);
-        Class<?> itemLike = Class.forName("net.minecraft.world.level.ItemLike", false, auraTargetLoader);
-        var stackConstructor = itemStack.getConstructor(itemLike);
-        Method crystal = auraItems.getMethod("crystal", auraColor);
-        Method charge = auraItems.getMethod("auraCrystalCharge", itemStack);
-        Object values = auraColor.getMethod("values").invoke(null);
-        for (Object color : (Object[]) values) {
-            Object stack = stackConstructor.newInstance(crystal.invoke(null, color));
-            assertEquals(1_000, ((Number) charge.invoke(null, stack)).intValue(), color.toString());
+    void everyAuraCrystalCarriesTheLegacyThousandAuraCharge() {
+        for (AuraColor color : AuraColor.values()) {
+            assertEquals(1_000, AuraItems.auraCrystalCharge(new ItemStack(AuraItems.crystal(color))), color.toString());
         }
-        Class<?> items = Class.forName("net.minecraft.world.item.Items", true, auraTargetLoader);
-        Object amethyst = items.getField("AMETHYST_SHARD").get(null);
-        Object amethystStack = stackConstructor.newInstance(amethyst);
-        assertEquals(0, ((Number) charge.invoke(null, amethystStack)).intValue());
+        assertEquals(0, AuraItems.auraCrystalCharge(new ItemStack(Items.AMETHYST_SHARD)));
     }
 
     @Test
@@ -194,18 +178,11 @@ final class UtilityGearLogicTest {
     }
 
     @Test
-    void mirrorRedirectVelocityPreservesTheLegacyUnnormalizedTargetVector() throws ReflectiveOperationException {
-        Class<?> vector = Class.forName("net.minecraft.world.phys.Vec3", false, auraTargetLoader);
-        Object origin = vector.getField("ZERO").get(null);
-        Object target = vector.getConstructor(double.class, double.class, double.class)
-            .newInstance(15.0D, 30.0D, -15.0D);
-        Class<?> auraItems = Class.forName("pixlepix.auracascade.item.AuraItems", false, auraTargetLoader);
-        Method redirect = auraItems.getDeclaredMethod("mirrorRedirectVelocity", vector, vector);
-        redirect.setAccessible(true);
-        Object redirected = redirect.invoke(null, origin, target);
-        assertEquals(1.0D, vector.getField("x").getDouble(redirected), 0.000001D);
-        assertEquals(2.0D, vector.getField("y").getDouble(redirected), 0.000001D);
-        assertEquals(-1.0D, vector.getField("z").getDouble(redirected), 0.000001D);
+    void mirrorRedirectVelocityPreservesTheLegacyUnnormalizedTargetVector() {
+        Vec3 redirected = AuraItems.mirrorRedirectVelocity(Vec3.ZERO, new Vec3(15.0D, 30.0D, -15.0D));
+        assertEquals(1.0D, redirected.x, 0.000001D);
+        assertEquals(2.0D, redirected.y, 0.000001D);
+        assertEquals(-1.0D, redirected.z, 0.000001D);
     }
 
     @Test

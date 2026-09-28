@@ -4,6 +4,8 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import pixlepix.auracascade.item.AngelsteelSwordItem;
 import pixlepix.auracascade.parity.AuraColor;
 
@@ -13,7 +15,15 @@ public final class AuraItemModels {
     private AuraItemModels() {
     }
 
-    public static void bootstrapClient() {
+    public static void bootstrapClient(IEventBus modBus) {
+        modBus.addListener(AuraItemModels::onClientSetup);
+    }
+
+    private static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(AuraItemModels::registerPredicates);
+    }
+
+    private static void registerPredicates() {
         for (Item item : BuiltInRegistries.ITEM) {
             if (item instanceof AngelsteelSwordItem sword) {
                 ItemProperties.register(item, ATTUNEMENT, (stack, level, entity, seed) ->

@@ -1,6 +1,30 @@
 # Aura Cascade Reimagined
 
-Aura Cascade is an unofficial modern Fabric port of the shipped `AuraCascade-592.jar` artifact, targeting Minecraft `1.21.1` and Java `21`. This repository treats the shipped jar as the primary parity reference and keeps the release-facing parity audit, substitutions, shipped runtime bounds, and validation evidence in `PORTING_NOTES.md`.
+Aura Cascade is an unofficial modern NeoForge port of the shipped `AuraCascade-592.jar` artifact, targeting Minecraft `1.21.1` and Java `21`. This repository treats the shipped jar as the primary parity reference and keeps the release-facing parity audit, substitutions, shipped runtime bounds, and validation evidence in `PORTING_NOTES.md`.
+
+## NeoForge Development Status
+
+This branch is a native NeoForge port in progress, based on canonical Fabric
+0.2.1 checkpoint `44cc057`. The intended release is **0.2.2 beta**, after importing
+the accepted canonical repairs and passing target-specific acceptance. Development
+artifacts are not release-approved builds. See the
+[implementation plan](docs/specs/2026-09-28-neoforge-1.21.1-port.md) and
+[target execution record](docs/audits/2026-09-28-neoforge-1211.md).
+
+Use NeoForge `21.1.252` and Patchouli `1.21.1-93-NEOFORGE`, not Fabric API or
+Team Reborn Energy. The native energy adapter targets NeoForge energy receivers.
+Build outputs have the `aura-cascade-neoforge-` prefix. Client and server
+development runs use separate `run/client` and `run/server` directories.
+Existing Fabric-world migration is unverified; use separate worlds or backups.
+
+The current development checkpoint passes 263 native regression tests, packaged
+client/server smoke checks and five targeted server event controls. Multiplayer,
+full native gameplay/UI acceptance and canonical 0.2.2 repair integration remain
+open. `qaObserverJar` builds a separate test helper, never bundled into the mod.
+
+The release, gameplay and parity records below describe the inherited **Fabric
+baseline and its history**, not completed NeoForge validation. Historical hashes,
+test counts and publication records do not establish acceptance for this branch.
 
 ## Attribution And Provenance
 

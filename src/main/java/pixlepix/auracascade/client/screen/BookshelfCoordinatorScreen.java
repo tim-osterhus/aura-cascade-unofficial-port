@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.network.PacketDistributor;
 import pixlepix.auracascade.block.entity.BookshelfCoordinatorBlockEntity;
 import pixlepix.auracascade.block.menu.BookshelfCoordinatorMenu;
 import pixlepix.auracascade.network.BookshelfCoordinatorNetworking;
@@ -419,7 +420,7 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
         if (amount <= 0) {
             return;
         }
-        net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
+        PacketDistributor.sendToServer(
             new BookshelfCoordinatorNetworking.ExtractRequest(menu.containerId, selectedStack, amount)
         );
     }

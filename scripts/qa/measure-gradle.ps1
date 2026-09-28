@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory = $true)][string]$JavaHome,
     [string]$Label = 'baseline',
     [string[]]$Tasks = @('test', 'build'),
-    [int]$StopAtMB = 3800
+    [int]$StopAtMB = 3800,
+    [string]$ToolJvmOptions = '-Xmx512m -XX:ActiveProcessorCount=2'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -11,6 +12,8 @@ $outputDir = Join-Path $repo "build/qa-audit/$Label"
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 $env:JAVA_HOME = $JavaHome
 $env:PATH = "$JavaHome\bin;$env:PATH"
+$previousToolOptions = $env:JAVA_TOOL_OPTIONS
+$env:JAVA_TOOL_OPTIONS = "$previousToolOptions $ToolJvmOptions".Trim()
 $arguments = @('--console=plain', '--no-daemon', '--no-parallel', '--max-workers=1',
     '-Dorg.gradle.jvmargs=-Xmx1536m', '-I', 'scripts/qa/audit.init.gradle') + $Tasks
 $started = [DateTime]::UtcNow
@@ -62,6 +65,7 @@ try {
         java_home = $JavaHome
         gradle_heap_mb = 1536
         test_heap_mb = 512
+        child_jvm_defaults = $ToolJvmOptions
         stop_at_mb = $StopAtMB
         peak_working_set_mb = ($samples | Measure-Object working_set_mb -Maximum).Maximum
         peak_private_bytes_mb = ($samples | Measure-Object private_bytes_mb -Maximum).Maximum
@@ -71,6 +75,7 @@ try {
     }
     $summary | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputDir 'summary.json')
     $summary | ConvertTo-Json
+    $env:JAVA_TOOL_OPTIONS = $previousToolOptions
 }
 if ($stoppedForMemory) { exit 124 }
 exit $launcher.ExitCode

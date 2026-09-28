@@ -1,0 +1,36 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+
+[[mods]]
+modId="aura"
+version="${version}"
+displayName="Aura Cascade Reimagined"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/aura-cascade-reimagined"
+authors="pixlepix, Tim Osterhus"
+credits="Original 1.8.x port: williewillus. Original textures: Futureazoo, Drullkus and pixlepix."
+description='''Unofficial modern port of Aura Cascade, featuring aura-powered machinery, fairies, and an in-game encyclopedia.'''
+
+[[mixins]]
+config="aura.mixins.json"
+
+[[dependencies.aura]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.252,21.2)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.aura]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.aura]]
+modId="patchouli"
+type="required"
+versionRange="[1.21.1-93-NEOFORGE,)"
+ordering="AFTER"
+side="BOTH"

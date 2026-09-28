@@ -24,7 +24,7 @@ public final class AuraFairyEntityRegistry {
                 .sized(0.1F, 0.1F)
                 .clientTrackingRange(8)
                 .updateInterval(2)
-                .build()
+                .build(ID.toString())
         );
     }
 

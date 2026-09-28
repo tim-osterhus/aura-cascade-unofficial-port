@@ -50,10 +50,7 @@ final class FairyCharmRecipeParityTest {
             assertEquals(List.of(" X ", "XCX", " X "), strings(recipe.getAsJsonArray("pattern")), expected.role());
 
             JsonObject key = recipe.getAsJsonObject("key");
-            JsonObject baseCharm = key.getAsJsonObject("C");
-            assertEquals("fabric:custom_data", baseCharm.get("fabric:type").getAsString(), expected.role());
-            assertEquals("aura:fairy_charm", baseCharm.getAsJsonObject("base").get("item").getAsString(), expected.role());
-            assertEquals("fairy", baseCharm.getAsJsonObject("nbt").get("fairyRole").getAsString(), expected.role());
+            assertCharmUpgradeIngredient(key.getAsJsonObject("C"), expected.role());
             assertExpectedIngredient(key.getAsJsonObject("X"), expected);
             assertRoleOutput(recipe, expected.role());
         }
@@ -86,8 +83,9 @@ final class FairyCharmRecipeParityTest {
             return;
         }
 
-        assertEquals("fabric:components", ingredient.get("fabric:type").getAsString(), expected.role());
-        assertEquals("minecraft:potion", ingredient.getAsJsonObject("base").get("item").getAsString(), expected.role());
+        assertEquals("neoforge:components", ingredient.get("type").getAsString(), expected.role());
+        assertEquals("minecraft:potion", ingredient.get("items").getAsString(), expected.role());
+        assertFalse(ingredient.get("strict").getAsBoolean(), expected.role());
         assertEquals(
             expected.potion(),
             ingredient.getAsJsonObject("components")
@@ -96,6 +94,12 @@ final class FairyCharmRecipeParityTest {
                 .getAsString(),
             expected.role()
         );
+    }
+
+    private static void assertCharmUpgradeIngredient(JsonObject ingredient, String role) {
+        assertEquals("aura:custom_data", ingredient.get("type").getAsString(), role);
+        assertEquals("aura:fairy_charm", ingredient.get("items").getAsString(), role);
+        assertEquals("fairy", ingredient.getAsJsonObject("nbt").get("fairyRole").getAsString(), role);
     }
 
     private static void assertRoleOutput(JsonObject recipe, String role) {

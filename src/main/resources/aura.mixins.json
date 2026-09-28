@@ -2,6 +2,9 @@
   "required": true,
   "package": "pixlepix.auracascade.mixin",
   "compatibilityLevel": "JAVA_21",
+  "client": [
+    "client.CreativeModeInventoryScreenAccessor"
+  ],
   "mixins": [
     "ServerExplosionMixin",
     "CreeperAccessor",
@@ -9,6 +12,7 @@
     "KaleidoscopicMiningMixin",
     "KaleidoscopicLootMixin",
     "KaleidoscopicOreDropsMixin",
+    "KaleidoscopicBreakAfterMixin",
     "FairyNaturalSpawnMixin",
     "FairyMiningSpeedMixin",
     "FairyFallDistanceMixin",

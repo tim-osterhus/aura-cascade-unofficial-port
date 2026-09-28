@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.minecraft.core.Registry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -148,19 +150,49 @@ public final class AuraItems {
     private AuraItems() {
     }
 
+    public static void registerItems() {
+        // Loading this class during the item registry event registers its catalog.
+    }
+
     public static void bootstrap() {
-        AngelsteelCurseEffects.bootstrap();
         if (!angelsteelTickHookRegistered) {
-            ServerTickEvents.END_WORLD_TICK.register(AuraItems::tickAngelsteelIngots);
+            NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post event) -> {
+                if (event.getLevel() instanceof ServerLevel level) {
+                    tickAngelsteelIngots(level);
+                }
+            });
             angelsteelTickHookRegistered = true;
         }
         if (!utilityHooksRegistered) {
-            ServerTickEvents.END_SERVER_TICK.register(AuraItems::tickPlayerAccessories);
-            ServerLivingEntityEvents.ALLOW_DAMAGE.register(AuraItems::allowAccessoryDamage);
-            ServerLivingEntityEvents.AFTER_DEATH.register(AuraItems::afterAccessoryDeath);
-            UseItemCallback.EVENT.register(AuraItems::handleUseItem);
-            UseBlockCallback.EVENT.register(AuraItems::handleUseBlock);
-            AttackEntityCallback.EVENT.register(AuraItems::handleAttackEntity);
+            NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tickPlayerAccessories(event.getServer()));
+            NeoForge.EVENT_BUS.addListener((LivingIncomingDamageEvent event) -> {
+                if (!allowAccessoryDamage(event.getEntity(), event.getSource(), event.getAmount())) {
+                    event.setCanceled(true);
+                }
+            });
+            NeoForge.EVENT_BUS.addListener((LivingDropsEvent event) ->
+                afterAccessoryDeath(event.getEntity(), event.getSource(), event.getDrops()::add));
+            NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.RightClickItem event) -> {
+                InteractionResultHolder<ItemStack> result = handleUseItem(event.getEntity(), event.getLevel(), event.getHand());
+                if (result.getResult() != InteractionResult.PASS) {
+                    event.setCancellationResult(result.getResult());
+                    event.setCanceled(true);
+                }
+            });
+            NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.RightClickBlock event) -> {
+                InteractionResult result = handleUseBlock(event.getEntity(), event.getLevel(), event.getHand(), event.getHitVec());
+                if (result != InteractionResult.PASS) {
+                    event.setCancellationResult(result);
+                    event.setCanceled(true);
+                }
+            });
+            NeoForge.EVENT_BUS.addListener((AttackEntityEvent event) -> {
+                InteractionResult result = handleAttackEntity(event.getEntity(), event.getEntity().level(),
+                    InteractionHand.MAIN_HAND, event.getTarget(), null);
+                if (result != InteractionResult.PASS) {
+                    event.setCanceled(true);
+                }
+            });
             KaleidoscopicOriginalEffects.bootstrap();
             utilityHooksRegistered = true;
         }
@@ -443,7 +475,8 @@ public final class AuraItems {
         AngelHeelsRuntime.update(player.getAttribute(Attributes.STEP_HEIGHT), equipped, player.horizontalCollision);
     }
 
-    private static void afterAccessoryDeath(net.minecraft.world.entity.LivingEntity entity, DamageSource damageSource) {
+    private static void afterAccessoryDeath(net.minecraft.world.entity.LivingEntity entity, DamageSource damageSource,
+                                           java.util.function.Consumer<ItemEntity> drops) {
         if (!(entity instanceof Villager villager) || !(entity.level() instanceof ServerLevel level)) {
             return;
         }
@@ -459,7 +492,7 @@ public final class AuraItems {
         }
 
         ItemStack droppedTrade = villager.getOffers().get(0).getResult().copy();
-        level.addFreshEntity(new ItemEntity(level, entity.getX(), entity.getY(), entity.getZ(), droppedTrade));
+        drops.accept(new ItemEntity(level, entity.getX(), entity.getY(), entity.getZ(), droppedTrade));
     }
 
     private static InteractionResultHolder<ItemStack> handleUseItem(Player player, Level world, InteractionHand hand) {

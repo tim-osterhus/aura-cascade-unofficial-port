@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Properties;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +21,7 @@ public final class AuraConfig {
     }
 
     public static void bootstrap() {
-        questlineEnabled = load(FabricLoader.getInstance().getConfigDir().resolve("aura.properties"));
+        questlineEnabled = load(FMLPaths.CONFIGDIR.get().resolve("aura.properties"));
     }
 
     public static boolean questlineEnabled() {

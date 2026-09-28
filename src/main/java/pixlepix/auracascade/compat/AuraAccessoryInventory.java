@@ -4,18 +4,24 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
-import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
-import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
-import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
-import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import java.util.function.Supplier;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import pixlepix.auracascade.item.AuraAccessoryItem;
 
 public final class AuraAccessoryInventory {
@@ -38,32 +44,54 @@ public final class AuraAccessoryInventory {
         ItemStack.OPTIONAL_STREAM_CODEC, Loadout::belt,
         Loadout::new
     );
-    private static final AttachmentType<Loadout> ATTACHMENT = AttachmentRegistry.create(
-        ResourceLocation.fromNamespaceAndPath("aura", "accessories"),
-        builder -> builder.persistent(CODEC).copyOnDeath().syncWith(SYNC_CODEC, AttachmentSyncPredicate.targetOnly())
+    private static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
+        DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, "aura");
+    private static final Supplier<AttachmentType<Loadout>> ATTACHMENT = ATTACHMENTS.register(
+        "accessories", () -> AttachmentType.builder(() -> Loadout.EMPTY).serialize(CODEC).copyOnDeath().build()
     );
 
     private AuraAccessoryInventory() {
     }
 
-    public static void bootstrap() {
-        ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
-            if (!(entity instanceof ServerPlayer player)
-                || player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
-                return;
+    public static void bootstrap(IEventBus modBus) {
+        ATTACHMENTS.register(modBus);
+        NeoForge.EVENT_BUS.addListener(AuraAccessoryInventory::onDrops);
+        NeoForge.EVENT_BUS.addListener(AuraAccessoryInventory::onLogin);
+        NeoForge.EVENT_BUS.addListener(AuraAccessoryInventory::onRespawn);
+        NeoForge.EVENT_BUS.addListener(AuraAccessoryInventory::onDimensionChange);
+    }
+
+    private static void onDrops(LivingDropsEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)
+            || player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)
+            || !player.hasData(ATTACHMENT)) {
+            return;
+        }
+        Loadout old = player.getData(ATTACHMENT);
+        player.setData(ATTACHMENT, Loadout.EMPTY);
+        for (ItemStack stack : old.snapshot()) {
+            if (!stack.isEmpty()) {
+                event.getDrops().add(new ItemEntity(player.level(), player.getX(), player.getY(), player.getZ(), stack));
             }
-            Loadout old = ((AttachmentTarget) player).getAttached(ATTACHMENT);
-            if (old == null) {
-                return;
-            }
-            ((AttachmentTarget) player).setAttached(ATTACHMENT, Loadout.EMPTY);
-            for (int index = 0; index < SLOT_COUNT; index++) {
-                ItemStack stack = old.get(index);
-                if (!stack.isEmpty()) {
-                    player.drop(stack.copy(), false);
-                }
-            }
-        });
+        }
+    }
+
+    private static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        sync(event.getEntity());
+    }
+
+    private static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        sync(event.getEntity());
+    }
+
+    private static void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        sync(event.getEntity());
+    }
+
+    private static void sync(Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            PacketDistributor.sendToPlayer(serverPlayer, new SyncPayload(serverPlayer.getData(ATTACHMENT).copy()));
+        }
     }
 
     public static AuraAccessorySlot slotType(int index) {
@@ -92,8 +120,7 @@ public final class AuraAccessoryInventory {
     }
 
     public static ItemStack get(Player player, int index) {
-        Loadout loadout = ((AttachmentTarget) player).getAttached(ATTACHMENT);
-        return loadout == null ? ItemStack.EMPTY : loadout.get(index);
+        return player.hasData(ATTACHMENT) ? player.getData(ATTACHMENT).get(index) : ItemStack.EMPTY;
     }
 
     public static List<ItemStack> equipped(Player player, AuraAccessorySlot type) {
@@ -114,21 +141,37 @@ public final class AuraAccessoryInventory {
         if (!stack.isEmpty() && !accepts(index, stack)) {
             throw new IllegalArgumentException("Accessory does not fit slot " + index);
         }
-        Loadout current = ((AttachmentTarget) player).getAttached(ATTACHMENT);
-        ((AttachmentTarget) player).setAttached(ATTACHMENT, (current == null ? Loadout.EMPTY : current).with(index, stack));
+        player.setData(ATTACHMENT, player.getData(ATTACHMENT).with(index, stack));
+        sync(player);
     }
 
     // Call after changing components on an equipped stack, such as a binding ring.
     public static void touch(Player player) {
-        Loadout current = ((AttachmentTarget) player).getAttached(ATTACHMENT);
-        if (current != null) {
-            ((AttachmentTarget) player).setAttached(ATTACHMENT, current.copy());
+        if (player.hasData(ATTACHMENT)) {
+            player.setData(ATTACHMENT, player.getData(ATTACHMENT).copy());
+            sync(player);
         }
     }
 
     public static List<ItemStack> snapshot(Player player) {
-        Loadout current = ((AttachmentTarget) player).getAttached(ATTACHMENT);
-        return (current == null ? Loadout.EMPTY : current).snapshot();
+        return player.hasData(ATTACHMENT) ? player.getData(ATTACHMENT).snapshot() : Loadout.EMPTY.snapshot();
+    }
+
+    static void applySync(Player player, SyncPayload payload) {
+        player.setData(ATTACHMENT, payload.loadout().copy());
+    }
+
+    public record SyncPayload(Loadout loadout) implements CustomPacketPayload {
+        public static final Type<SyncPayload> TYPE = new Type<>(
+            ResourceLocation.fromNamespaceAndPath("aura", "accessories_sync")
+        );
+        public static final StreamCodec<RegistryFriendlyByteBuf, SyncPayload> STREAM_CODEC =
+            SYNC_CODEC.map(SyncPayload::new, SyncPayload::loadout);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
     }
 
     private record Loadout(ItemStack amulet, ItemStack ring1, ItemStack ring2, ItemStack belt) {

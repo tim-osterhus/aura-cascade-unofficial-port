@@ -7,12 +7,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import pixlepix.auracascade.block.entity.AuraNodeBlockEntity;
+import pixlepix.auracascade.block.entity.AuraPumpBlockEntity;
+import pixlepix.auracascade.block.entity.AuraPumpLogic;
 import pixlepix.auracascade.support.TestMinecraftBootstrap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +41,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class AuraNodePumpGeometryTest {
     private static final double EPSILON = 1.0e-9;
-    private static ClassLoader auraTargetLoader;
     private static final String[] BLOCK_IDS = {
         "aura_node",
         "aura_node_black",
@@ -45,49 +63,19 @@ final class AuraNodePumpGeometryTest {
 
     @BeforeAll
     static void bootstrapMinecraft() {
-        auraTargetLoader = loadRegisteredAuraContent();
-    }
-
-    private static ClassLoader loadRegisteredAuraContent() {
-        try {
-            ClassLoader loader = fabricTargetLoader();
-            Class.forName("net.minecraft.SharedConstants", true, loader).getMethod("tryDetectVersion").invoke(null);
-            Class.forName("net.minecraft.server.Bootstrap", true, loader).getMethod("bootStrap").invoke(null);
-            unfreezeTargetAuraRegistries(loader);
-            Class<?> content = Class.forName("pixlepix.auracascade.block.AuraContent", true, loader);
-            Method registerTypes = content.getDeclaredMethod("registerBlockEntityTypes");
-            registerTypes.setAccessible(true);
-            registerTypes.invoke(null);
-            Class.forName("pixlepix.auracascade.item.AuraItems", true, loader);
-            return loader;
-        } catch (ReflectiveOperationException exception) {
-            throw new IllegalStateException("Failed to load registered Aura blocks in the Fabric target loader.", exception);
-        }
-    }
-
-    private static ClassLoader fabricTargetLoader() throws ReflectiveOperationException {
-        Method method = TestMinecraftBootstrap.class.getDeclaredMethod("fabricTargetClassLoader");
-        method.setAccessible(true);
-        return (ClassLoader) method.invoke(null);
-    }
-
-    private static void unfreezeTargetAuraRegistries(ClassLoader loader) throws ReflectiveOperationException {
-        Method method = TestMinecraftBootstrap.class.getDeclaredMethod("unfreezeAuraRegistries", ClassLoader.class);
-        method.setAccessible(true);
-        method.invoke(null, loader);
+        TestMinecraftBootstrap.ensureBootstrapped();
     }
 
     @Test
-    void nodeAndPumpSelectionAndCollisionShapesMatchTheirBlockModels() throws IOException, ReflectiveOperationException {
-        Class<?> content = Class.forName("pixlepix.auracascade.block.AuraContent", false, auraTargetLoader);
-        Object node = content.getField("AURA_NODE").get(null);
-        Object pump = content.getField("AURA_NODE_PUMP").get(null);
-        Bounds nodeSelection = registeredShapeBounds(node, "getShape");
-        Bounds nodeCollision = registeredShapeBounds(node, "getCollisionShape");
-        Bounds pumpSelection = registeredShapeBounds(pump, "getShape");
-        Bounds pumpCollision = registeredShapeBounds(pump, "getCollisionShape");
-        assertFalse(registeredBlockCanOcclude(node), "Aura Node should not occlude neighboring faces");
-        assertFalse(registeredBlockCanOcclude(pump), "Aura Pump should not occlude neighboring faces");
+    void nodeAndPumpSelectionAndCollisionShapesMatchTheirBlockModels() throws IOException {
+        Block node = AuraContent.AURA_NODE;
+        Block pump = AuraContent.AURA_NODE_PUMP;
+        Bounds nodeSelection = selectionBounds(node);
+        Bounds nodeCollision = collisionBounds(node);
+        Bounds pumpSelection = selectionBounds(pump);
+        Bounds pumpCollision = collisionBounds(pump);
+        assertFalse(node.defaultBlockState().canOcclude(), "Aura Node should not occlude neighboring faces");
+        assertFalse(pump.defaultBlockState().canOcclude(), "Aura Pump should not occlude neighboring faces");
 
         for (String blockId : BLOCK_IDS) {
             JsonObject blockstate = readJson("/assets/aura/blockstates/" + blockId + ".json");
@@ -105,137 +93,120 @@ final class AuraNodePumpGeometryTest {
     }
 
     @Test
-    void vortexPedestalMatchesItsSmallModelWithoutOccludingNeighbors() throws IOException, ReflectiveOperationException {
-        Class<?> content = Class.forName("pixlepix.auracascade.block.AuraContent", false, auraTargetLoader);
-        Object pedestal = content.getField("VORTEX_PEDESTAL").get(null);
+    void vortexPedestalMatchesItsSmallModelWithoutOccludingNeighbors() throws IOException {
+        Block pedestal = AuraContent.VORTEX_PEDESTAL;
         Bounds model = inheritedModelBounds("aura:block/aura_node_crafting_pedestal", new HashSet<>());
-        assertShapeBounds(registeredShapeBounds(pedestal, "getShape"), model, "pedestal selection");
-        assertShapeBounds(registeredShapeBounds(pedestal, "getCollisionShape"), model, "pedestal collision");
-        assertFalse(registeredBlockCanOcclude(pedestal));
+        assertShapeBounds(selectionBounds(pedestal), model, "pedestal selection");
+        assertShapeBounds(collisionBounds(pedestal), model, "pedestal collision");
+        assertFalse(pedestal.defaultBlockState().canOcclude());
     }
 
-    private static Bounds registeredShapeBounds(Object block, String shapeMethod)
-        throws ReflectiveOperationException {
-        Class<?>[] parameterTypes = {
-            Class.forName("net.minecraft.world.level.block.state.BlockState", false, auraTargetLoader),
-            Class.forName("net.minecraft.world.level.BlockGetter", false, auraTargetLoader),
-            Class.forName("net.minecraft.core.BlockPos", false, auraTargetLoader),
-            Class.forName("net.minecraft.world.phys.shapes.CollisionContext", false, auraTargetLoader)
-        };
-        Object shape = block.getClass().getMethod(shapeMethod, parameterTypes).invoke(block, null, null, null, null);
-        Class<?> voxelShapeClass = Class.forName("net.minecraft.world.phys.shapes.VoxelShape", false, auraTargetLoader);
-        Object bounds = voxelShapeClass.getMethod("bounds").invoke(shape);
-        int cuboidCount = ((List<?>) voxelShapeClass.getMethod("toAabbs").invoke(shape)).size();
-        Class<?> aabbClass = Class.forName("net.minecraft.world.phys.AABB", false, auraTargetLoader);
+    private static Bounds shapeBounds(VoxelShape shape) {
+        AABB bounds = shape.bounds();
         return new Bounds(
-            aabbClass.getField("minX").getDouble(bounds),
-            aabbClass.getField("minY").getDouble(bounds),
-            aabbClass.getField("minZ").getDouble(bounds),
-            aabbClass.getField("maxX").getDouble(bounds),
-            aabbClass.getField("maxY").getDouble(bounds),
-            aabbClass.getField("maxZ").getDouble(bounds),
-            cuboidCount
+            bounds.minX, bounds.minY, bounds.minZ,
+            bounds.maxX, bounds.maxY, bounds.maxZ,
+            shape.toAabbs().size()
         );
     }
 
+    private static Bounds selectionBounds(Block block) {
+        return shapeBounds(block.defaultBlockState().getShape(
+            EmptyBlockGetter.INSTANCE, BlockPos.ZERO, CollisionContext.empty()
+        ));
+    }
+
+    private static Bounds collisionBounds(Block block) {
+        return shapeBounds(block.defaultBlockState().getCollisionShape(
+            EmptyBlockGetter.INSTANCE, BlockPos.ZERO, CollisionContext.empty()
+        ));
+    }
+
     @Test
-    void traversalBlocksKeepLegacyContactHeightAndFullLight() throws ReflectiveOperationException {
-        Class<?> content = Class.forName("pixlepix.auracascade.block.AuraContent", false, auraTargetLoader);
-        Class<?> stateClass = Class.forName("net.minecraft.world.level.block.state.BlockState", false, auraTargetLoader);
+    void traversalBlocksKeepLegacyContactHeightAndFullLight() {
         Bounds expected = new Bounds(0, 0, 0, 1, 0.8D, 1, 1);
-        for (String field : List.of("TRAVELERS_BRICKS", "REBOUNDING_ENIGMA")) {
-            Object block = content.getField(field).get(null);
-            assertShapeBounds(registeredShapeBounds(block, "getShape"), expected, field + " selection");
-            assertShapeBounds(registeredShapeBounds(block, "getCollisionShape"), expected, field + " collision");
-            assertFalse(registeredBlockCanOcclude(block), field);
-            Object state = block.getClass().getMethod("defaultBlockState").invoke(block);
-            assertEquals(15, stateClass.getMethod("getLightEmission").invoke(state), field);
-        }
-    }
-
-    private static boolean registeredBlockCanOcclude(Object block) throws ReflectiveOperationException {
-        Object defaultState = block.getClass().getMethod("defaultBlockState").invoke(block);
-        Class<?> blockStateClass = Class.forName("net.minecraft.world.level.block.state.BlockState", false, auraTargetLoader);
-        return (boolean) blockStateClass.getMethod("canOcclude").invoke(defaultState);
-    }
-
-    @Test
-    void nodesAndPumpsExposeComparatorReadoutWithoutPoweringNeighbors() throws ReflectiveOperationException {
-        Class<?> content = Class.forName("pixlepix.auracascade.block.AuraContent", false, auraTargetLoader);
-        Class<?> stateClass = Class.forName("net.minecraft.world.level.block.state.BlockState", false, auraTargetLoader);
-        for (String field : List.of("AURA_NODE", "AURA_NODE_PUMP", "VORTEX_CONTROLLER", "VORTEX_PEDESTAL", "CONSUMER_BLOCK_ORE")) {
-            Object block = content.getField(field).get(null);
-            Object state = block.getClass().getMethod("defaultBlockState").invoke(block);
-            assertFalse((boolean) stateClass.getMethod("isSignalSource").invoke(state), field);
-            assertTrue((boolean) stateClass.getMethod("hasAnalogOutputSignal").invoke(state), field);
+        for (var entry : Map.<String, Block>of(
+            "TRAVELERS_BRICKS", AuraContent.TRAVELERS_BRICKS,
+            "REBOUNDING_ENIGMA", AuraContent.REBOUNDING_ENIGMA
+        ).entrySet()) {
+            Block block = entry.getValue();
+            String field = entry.getKey();
+            assertShapeBounds(selectionBounds(block), expected, field + " selection");
+            assertShapeBounds(collisionBounds(block), expected, field + " collision");
+            assertFalse(block.defaultBlockState().canOcclude(), field);
+            assertEquals(15, block.defaultBlockState().getLightEmission(), field);
         }
     }
 
     @Test
-    void capacitorThresholdControlCyclesAllFourRegisteredValues() throws ReflectiveOperationException {
-        Object capacitor = registeredBlockEntity("AURA_NODE_CAPACITOR", 0, 0, 0);
-        Method threshold = capacitor.getClass().getMethod("capacitorThreshold");
-        Method cycle = capacitor.getClass().getMethod("cycleCapacitorThreshold");
-        assertEquals(1_000, threshold.invoke(capacitor));
+    void nodesAndPumpsExposeComparatorReadoutWithoutPoweringNeighbors() {
+        for (var entry : Map.<String, Block>of(
+            "AURA_NODE", AuraContent.AURA_NODE,
+            "AURA_NODE_PUMP", AuraContent.AURA_NODE_PUMP,
+            "VORTEX_CONTROLLER", AuraContent.VORTEX_CONTROLLER,
+            "VORTEX_PEDESTAL", AuraContent.VORTEX_PEDESTAL,
+            "CONSUMER_BLOCK_ORE", AuraContent.CONSUMER_BLOCK_ORE
+        ).entrySet()) {
+            BlockState state = entry.getValue().defaultBlockState();
+            assertFalse(state.isSignalSource(), entry.getKey());
+            assertTrue(state.hasAnalogOutputSignal(), entry.getKey());
+        }
+    }
+
+    @Test
+    void capacitorThresholdControlCyclesAllFourRegisteredValues() {
+        AuraNodeBlockEntity capacitor = (AuraNodeBlockEntity) AuraContent.AURA_NODE_CAPACITOR.newBlockEntity(
+            BlockPos.ZERO, AuraContent.AURA_NODE_CAPACITOR.defaultBlockState()
+        );
+        assertNotNull(capacitor);
+        assertEquals(1_000, capacitor.capacitorThreshold());
         for (int expected : new int[] {10_000, 100_000, 100, 1_000}) {
-            assertEquals(expected, cycle.invoke(capacitor));
-            assertEquals(expected, threshold.invoke(capacitor));
+            assertEquals(expected, capacitor.cycleCapacitorThreshold());
+            assertEquals(expected, capacitor.capacitorThreshold());
         }
     }
 
     @Test
     void emptyHandStorageInteractionsFallThroughToOpeningOrWithdrawal() throws ReflectiveOperationException {
-        Class<?> content = Class.forName("pixlepix.auracascade.block.AuraContent", false, auraTargetLoader);
-        Class<?> stackClass = Class.forName("net.minecraft.world.item.ItemStack", false, auraTargetLoader);
-        Class<?> stateClass = Class.forName("net.minecraft.world.level.block.state.BlockState", false, auraTargetLoader);
-        Class<?> levelClass = Class.forName("net.minecraft.world.level.Level", false, auraTargetLoader);
-        Class<?> posClass = Class.forName("net.minecraft.core.BlockPos", false, auraTargetLoader);
-        Class<?> playerClass = Class.forName("net.minecraft.world.entity.player.Player", false, auraTargetLoader);
-        Class<?> handClass = Class.forName("net.minecraft.world.InteractionHand", false, auraTargetLoader);
-        Class<?> hitClass = Class.forName("net.minecraft.world.phys.BlockHitResult", false, auraTargetLoader);
-        for (String field : List.of("BOOKSHELF_COORDINATOR", "STORAGE_BOOKSHELF")) {
-            Object block = content.getField(field).get(null);
-            Method use = block.getClass().getDeclaredMethod("useItemOn", stackClass, stateClass, levelClass, posClass, playerClass, handClass, hitClass);
+        for (var entry : Map.<String, Block>of(
+            "BOOKSHELF_COORDINATOR", AuraContent.BOOKSHELF_COORDINATOR,
+            "STORAGE_BOOKSHELF", AuraContent.STORAGE_BOOKSHELF
+        ).entrySet()) {
+            Method use = entry.getValue().getClass().getDeclaredMethod("useItemOn",
+                ItemStack.class, BlockState.class, Level.class, BlockPos.class,
+                Player.class, InteractionHand.class, BlockHitResult.class);
             use.setAccessible(true);
-            Object result = use.invoke(block, stackClass.getField("EMPTY").get(null), null, null, null, null, null, null);
-            assertEquals("PASS_TO_DEFAULT_BLOCK_INTERACTION", result.toString(), field);
+            Object result = use.invoke(entry.getValue(), ItemStack.EMPTY, null, null, null, null, null, null);
+            assertEquals(ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION, result, entry.getKey());
         }
     }
 
     @Test
     void monitorReportsFirstEligiblePumpStatusAndExcludesOutputNeighbor() throws ReflectiveOperationException {
-        Class<?> posClass = Class.forName("net.minecraft.core.BlockPos", false, auraTargetLoader);
-        Class<?> directionClass = Class.forName("net.minecraft.core.Direction", false, auraTargetLoader);
-        Class<?> stateClass = Class.forName("net.minecraft.world.level.block.state.BlockState", false, auraTargetLoader);
-        Class<?> getterClass = Class.forName("net.minecraft.world.level.BlockGetter", false, auraTargetLoader);
-        Object origin = posClass.getConstructor(int.class, int.class, int.class).newInstance(0, 0, 0);
-        Object empty = registeredBlockEntity("AURA_NODE_PUMP", 0, -1, 0);
-        Object fueled = registeredBlockEntity("AURA_NODE_PUMP", 0, 1, 0);
-        Class<?> fuelClass = Class.forName("pixlepix.auracascade.block.entity.AuraPumpLogic$PumpState", false, auraTargetLoader);
-        var fuelField = fueled.getClass().getDeclaredField("pumpState");
+        AuraPumpBlockEntity empty = (AuraPumpBlockEntity) AuraContent.AURA_NODE_PUMP.newBlockEntity(
+            new BlockPos(0, -1, 0), AuraContent.AURA_NODE_PUMP.defaultBlockState()
+        );
+        AuraPumpBlockEntity fueled = (AuraPumpBlockEntity) AuraContent.AURA_NODE_PUMP.newBlockEntity(
+            new BlockPos(0, 1, 0), AuraContent.AURA_NODE_PUMP.defaultBlockState()
+        );
+        assertNotNull(empty);
+        assertNotNull(fueled);
+        var fuelField = AuraPumpBlockEntity.class.getDeclaredField("pumpState");
         fuelField.setAccessible(true);
-        fuelField.set(fueled, fuelClass.getConstructor(int.class, int.class).newInstance(20, 300));
-        Object getter = java.lang.reflect.Proxy.newProxyInstance(auraTargetLoader, new Class<?>[] {getterClass}, (proxy, method, args) -> {
-            if (!method.getName().equals("getBlockEntity")) {
-                throw new UnsupportedOperationException(method.getName());
+        fuelField.set(fueled, new AuraPumpLogic.PumpState(20, 300));
+        BlockGetter getter = (BlockGetter) Proxy.newProxyInstance(
+            BlockGetter.class.getClassLoader(), new Class<?>[] {BlockGetter.class}, (proxy, method, args) -> {
+                if (!method.getName().equals("getBlockEntity")) {
+                    throw new UnsupportedOperationException(method.getName());
+                }
+                int y = ((BlockPos) args[0]).getY();
+                return y == -1 ? empty : y == 1 ? fueled : null;
             }
-            int y = (int) posClass.getMethod("getY").invoke(args[0]);
-            return y == -1 ? empty : y == 1 ? fueled : null;
-        });
-        Object monitor = Class.forName("pixlepix.auracascade.block.AuraContent", false, auraTargetLoader).getField("MONITOR").get(null);
-        Method signal = monitor.getClass().getMethod("getSignal", stateClass, getterClass, posClass, directionClass);
-        assertEquals(15, signal.invoke(monitor, null, getter, origin, directionClass.getField("NORTH").get(null)), "empty DOWN pump wins over fueled UP pump");
-        assertEquals(0, signal.invoke(monitor, null, getter, origin, directionClass.getField("UP").get(null)), "output's opposite neighbor is excluded");
-    }
-
-    private static Object registeredBlockEntity(String field, int x, int y, int z) throws ReflectiveOperationException {
-        Class<?> content = Class.forName("pixlepix.auracascade.block.AuraContent", false, auraTargetLoader);
-        Class<?> posClass = Class.forName("net.minecraft.core.BlockPos", false, auraTargetLoader);
-        Class<?> stateClass = Class.forName("net.minecraft.world.level.block.state.BlockState", false, auraTargetLoader);
-        Object block = content.getField(field).get(null);
-        Object state = block.getClass().getMethod("defaultBlockState").invoke(block);
-        Object pos = posClass.getConstructor(int.class, int.class, int.class).newInstance(x, y, z);
-        return block.getClass().getMethod("newBlockEntity", posClass, stateClass).invoke(block, pos, state);
+        );
+        assertEquals(15, AuraContent.MONITOR.getSignal(null, getter, BlockPos.ZERO, Direction.NORTH),
+            "empty DOWN pump wins over fueled UP pump");
+        assertEquals(0, AuraContent.MONITOR.getSignal(null, getter, BlockPos.ZERO, Direction.UP),
+            "output's opposite neighbor is excluded");
     }
 
     private static Bounds inheritedModelBounds(String modelId, Set<String> visited) throws IOException {

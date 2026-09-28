@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.itemgroup.v1.FabricCreativeInventoryScreen;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,8 +12,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.gui.CreativeTabsScreenPage;
+import net.neoforged.neoforge.common.NeoForge;
 import pixlepix.auracascade.aura.AuraInspectionText;
 import pixlepix.auracascade.aura.AuraConsumerInspectionText;
 import pixlepix.auracascade.block.entity.AuraConsumerBlockEntity;
@@ -29,11 +31,11 @@ import pixlepix.auracascade.block.entity.VortexControllerBlockEntity;
 import pixlepix.auracascade.block.entity.VortexPedestalBlockEntity;
 import pixlepix.auracascade.block.entity.LateGameBlockEntity;
 import pixlepix.auracascade.parity.AuraColor;
-import pixlepix.auracascade.block.menu.BookshelfCoordinatorMenu;
 import pixlepix.auracascade.compat.client.AuraAccessoryClient;
 import pixlepix.auracascade.item.AuraDiscoverability;
+import pixlepix.auracascade.mixin.client.CreativeModeInventoryScreenAccessor;
 
-public final class AuraCascadeClient implements ClientModInitializer {
+public final class AuraCascadeClient {
     private static final int MARGIN = 6;
     private static final int ROW_GAP = 1;
     private static final int ROW_BACKGROUND = 0xA8000000;
@@ -41,25 +43,40 @@ public final class AuraCascadeClient implements ClientModInitializer {
     private static AuraNetworkBlockEntity inspectedNetwork;
     private static boolean introducedCreativeTab;
 
-    @Override
-    public void onInitializeClient() {
-        AuraItemModels.bootstrapClient();
-        AuraFairyClientRegistry.bootstrapClient();
-        pixlepix.auracascade.block.entity.client.MinerExplosionClient.bootstrapClient();
-        pixlepix.auracascade.block.entity.client.VortexPedestalRenderer.bootstrapClient();
-        AuraAccessoryClient.bootstrapClient();
-        BookshelfCoordinatorClientNetworking.register(BookshelfCoordinatorMenu.registeredMenuType());
-        HudRenderCallback.EVENT.register(AuraCascadeClient::renderInspectionHud);
-        ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
-            if (!introducedCreativeTab && screen instanceof CreativeModeInventoryScreen creative) {
-                FabricCreativeInventoryScreen tabs = creative;
-                tabs.setSelectedItemGroup(AuraDiscoverability.AURA_TAB);
-                introducedCreativeTab = tabs.getSelectedItemGroup() == AuraDiscoverability.AURA_TAB;
-            }
-        });
+    private AuraCascadeClient() {
     }
 
-    private static void renderInspectionHud(GuiGraphics graphics, DeltaTracker tickCounter) {
+    public static void bootstrapClient(IEventBus modBus) {
+        AuraItemModels.bootstrapClient(modBus);
+        AuraFairyClientRegistry.bootstrapClient(modBus);
+        pixlepix.auracascade.block.entity.client.MinerExplosionClient.bootstrapClient(modBus);
+        pixlepix.auracascade.block.entity.client.VortexPedestalRenderer.bootstrapClient(modBus);
+        AuraAccessoryClient.bootstrapClient(modBus);
+        BookshelfCoordinatorClientNetworking.register(modBus);
+        NeoForge.EVENT_BUS.addListener(AuraCascadeClient::renderInspectionHud);
+        NeoForge.EVENT_BUS.addListener(AuraCascadeClient::selectAuraTabOnFirstOpen);
+    }
+
+    private static void selectAuraTabOnFirstOpen(ScreenEvent.Init.Post event) {
+        if (introducedCreativeTab || !(event.getScreen() instanceof CreativeModeInventoryScreen creative)) {
+            return;
+        }
+
+        CreativeModeInventoryScreenAccessor accessor = (CreativeModeInventoryScreenAccessor) (Object) creative;
+        CreativeModeTab auraTab = AuraDiscoverability.AURA_TAB;
+        for (CreativeTabsScreenPage page : accessor.aura$getPages()) {
+            if (page.getVisibleTabs().contains(auraTab)) {
+                creative.setCurrentPage(page);
+                accessor.aura$selectTab(auraTab);
+                introducedCreativeTab = true;
+                return;
+            }
+        }
+    }
+
+    private static void renderInspectionHud(RenderGuiEvent.Post event) {
+        GuiGraphics graphics = event.getGuiGraphics();
+        DeltaTracker tickCounter = event.getPartialTick();
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null
             || minecraft.level == null

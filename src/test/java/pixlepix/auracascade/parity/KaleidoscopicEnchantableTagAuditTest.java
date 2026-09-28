@@ -7,7 +7,6 @@ import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.JarURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -173,12 +172,11 @@ final class KaleidoscopicEnchantableTagAuditTest {
     }
 
     private static JsonObject readVanillaTag(String resourcePath) throws IOException {
-        // getResourceAsStream alone can select the Aura overlay instead of vanilla.
+        // ModDevGradle places vanilla data in a separate Minecraft resources JAR.
         var resources = Thread.currentThread().getContextClassLoader().getResources(resourcePath);
         while (resources.hasMoreElements()) {
             var resource = resources.nextElement();
-            if (resource.openConnection() instanceof JarURLConnection jar
-                && jar.getJarFile().getJarEntry("net/minecraft/world/item/Items.class") != null) {
+            if (resource.toExternalForm().contains("client-extra-aka-minecraft-resources.jar")) {
                 try (InputStream input = resource.openStream()) {
                     return JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8)).getAsJsonObject();
                 }

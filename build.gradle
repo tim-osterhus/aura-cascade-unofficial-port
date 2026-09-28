@@ -1,5 +1,6 @@
 plugins {
-    id "net.fabricmc.fabric-loom-remap" version "${loom_version}"
+    id "java-library"
+    id "net.neoforged.moddev" version "${moddev_version}"
     id "maven-publish"
 }
 
@@ -15,23 +16,66 @@ repositories {
     maven { url = "https://maven.blamejared.com" }
 }
 
+sourceSets {
+    qaObserver {
+        java.srcDirs = ['scripts/qa/neoforge/observer/src/main/java']
+        resources.srcDirs = ['scripts/qa/neoforge/observer/src/main/resources']
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
+tasks.register('qaObserverJar', Jar) {
+    archiveBaseName = 'aura-neoforge-qa-observer'
+    archiveVersion = '1.0.0'
+    destinationDirectory = layout.buildDirectory.dir('qa-tools')
+    from sourceSets.qaObserver.output
+}
+
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    modImplementation "vazkii.patchouli:Patchouli:${project.patchouli_version}"
-    include modApi("teamreborn:energy:${project.energy_api_version}")
+    implementation "vazkii.patchouli:Patchouli:${project.patchouli_version}"
 
     testImplementation platform("org.junit:junit-bom:5.12.1")
     testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.tomlj:tomlj:1.1.1"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+neoForge {
+    enable {
+        version = project.neo_version
+        // The binary pipeline avoids a full Minecraft decompile/recompile in bounded builds.
+        disableRecompilation = true
+    }
+    runs {
+        client {
+            client()
+            gameDirectory = file('run/client')
+        }
+        server {
+            server()
+            gameDirectory = file('run/server')
+            programArgument '--nogui'
+        }
+        configureEach {
+            jvmArgument '-Xmx1280m'
+        }
+    }
+    mods {
+        aura {
+            sourceSet sourceSets.main
+        }
+    }
+    unitTest {
+        enable()
+        testedMod = mods.aura
+    }
 }
 
 processResources {
     inputs.property "version", project.version
 
-    filesMatching("fabric.mod.json") {
+    filesMatching("META-INF/neoforge.mods.toml") {
         expand "version": inputs.properties.version
     }
 }
@@ -41,6 +85,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
@@ -56,8 +101,16 @@ tasks.named("sourcesJar", Jar).configure {
 
 test {
     useJUnitPlatform()
+    inputs.files('README.md', 'PORTING_NOTES.md', 'AuraCascade-592.jar')
     maxHeapSize = "512m"
     maxParallelForks = 1
+}
+
+// ModDevGradle sets this after evaluation; resource audits need the repository root.
+afterEvaluate {
+    tasks.named('test', Test).configure {
+        workingDir = project.projectDir
+    }
 }
 
 publishing {

@@ -1,7 +1,5 @@
 package pixlepix.auracascade.item;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -24,37 +22,29 @@ import pixlepix.auracascade.support.TestMinecraftBootstrap;
 import static org.junit.jupiter.api.Assertions.*;
 
 public final class AngelsteelDropFortuneTest {
-    private static Class<?> runtimeCases;
-
     @BeforeAll
-    static void bootstrap() throws ReflectiveOperationException {
+    static void bootstrap() {
         TestMinecraftBootstrap.ensureBootstrapped();
-        TestMinecraftBootstrap.auraRegistrationSnapshot();
-        Method method = TestMinecraftBootstrap.class.getDeclaredMethod("fabricTargetClassLoader");
-        method.setAccessible(true);
-        ClassLoader loader = (ClassLoader) method.invoke(null);
-        // Registrations, stacks and the tested helper must all use the same Fabric loader.
-        runtimeCases = Class.forName(AngelsteelDropFortuneTest.class.getName() + "$RuntimeCases", true, loader);
     }
 
     @Test
-    void onlyTheLootCopyReceivesFortuneAndOtherComponentsSurvive() throws Throwable {
-        run("copyOnly");
+    void onlyTheLootCopyReceivesFortuneAndOtherComponentsSurvive() {
+        RuntimeCases.copyOnly();
     }
 
     @Test
-    void equalOrStrongerFortuneIsNeverLowered() throws Throwable {
-        run("strongerFortune");
+    void equalOrStrongerFortuneIsNeverLowered() {
+        RuntimeCases.strongerFortune();
     }
 
     @Test
-    void wrongToolCropsAndNonAngelsteelToolsDoNotReceiveFortune() throws Throwable {
-        run("eligibilityGates");
+    void wrongToolCropsAndNonAngelsteelToolsDoNotReceiveFortune() {
+        RuntimeCases.eligibilityGates();
     }
 
     @Test
-    void uninitializedToolsAreNotRolledDuringDrops() throws Throwable {
-        run("uninitialized");
+    void uninitializedToolsAreNotRolledDuringDrops() {
+        RuntimeCases.uninitialized();
     }
 
     @Test
@@ -66,14 +56,6 @@ public final class AngelsteelDropFortuneTest {
         String effects = Files.readString(Path.of("src/main/java/pixlepix/auracascade/enchantment/KaleidoscopicOriginalEffects.java"));
         assertTrue(effects.contains("AngelsteelToolHelper.dropFortuneTool(tool, state, fortune)"));
         assertTrue(effects.contains("Block.dropResources(state, level, pos, blockEntity, breaker, lootTool)"));
-    }
-
-    private static void run(String name) throws Throwable {
-        try {
-            runtimeCases.getMethod(name).invoke(null);
-        } catch (InvocationTargetException exception) {
-            throw exception.getCause();
-        }
     }
 
     public static final class RuntimeCases {

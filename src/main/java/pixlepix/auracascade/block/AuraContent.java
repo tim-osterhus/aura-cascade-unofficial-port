@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import java.util.function.Consumer;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import java.util.LinkedHashMap;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -32,6 +32,7 @@ import pixlepix.auracascade.block.entity.VortexPedestalBlockEntity;
 import pixlepix.auracascade.item.AuraItems;
 
 public final class AuraContent {
+    private static final Map<String, Block> BLOCK_ITEMS = new LinkedHashMap<>();
     private static final Map<Block, AuraNodeVariant> NODE_VARIANTS = new IdentityHashMap<>();
     private static final Map<Block, AuraPumpVariant> PUMP_VARIANTS = new IdentityHashMap<>();
     private static final Map<Block, AuraConsumerVariant> CONSUMER_VARIANTS = new IdentityHashMap<>();
@@ -144,8 +145,6 @@ public final class AuraContent {
     }
 
     public static void bootstrap() {
-        registerBlockEntityTypes();
-        AuraItems.bootstrap();
         EXTRA_NETWORK_BLOCKS.put(VORTEX_PEDESTAL, Boolean.TRUE);
         AuraCascadeMod.LOGGER.info("Registered aura node, pump, consumer, storage, guidebook, fairy, ritual, and late-game runtime content.");
     }
@@ -294,19 +293,17 @@ public final class AuraContent {
     private static <T extends Block> T registerBlock(String path, T block, boolean withItem) {
         Registry.register(BuiltInRegistries.BLOCK, id(path), block);
         if (withItem) {
-            Registry.register(
-                BuiltInRegistries.ITEM,
-                id(path),
-                new BlockItem(
-                    block,
-                    new Item.Properties()
-                )
-            );
+            BLOCK_ITEMS.put(path, block);
         }
         return block;
     }
 
-    private static void registerBlockEntityTypes() {
+    public static void registerBlockItems() {
+        BLOCK_ITEMS.forEach((path, block) -> Registry.register(
+            BuiltInRegistries.ITEM, id(path), new BlockItem(block, new Item.Properties())));
+    }
+
+    public static void registerBlockEntityTypes() {
         if (AURA_NODE_BLOCK_ENTITY != null) {
             return;
         }
@@ -314,7 +311,7 @@ public final class AuraContent {
         AURA_NODE_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             id("aura_node"),
-            FabricBlockEntityTypeBuilder.create(
+            BlockEntityType.Builder.of(
                 AuraNodeBlockEntity::new,
                 AURA_NODE,
                 AURA_NODE_CAPACITOR,
@@ -328,7 +325,7 @@ public final class AuraContent {
         AURA_PUMP_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             id("aura_node_pump"),
-            FabricBlockEntityTypeBuilder.create(
+            BlockEntityType.Builder.of(
                 AuraPumpBlockEntity::new,
                 AURA_NODE_PUMP,
                 AURA_NODE_PUMP_ALT,
@@ -347,7 +344,7 @@ public final class AuraContent {
         AURA_CONSUMER_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             id("aura_consumer"),
-            FabricBlockEntityTypeBuilder.create(
+            BlockEntityType.Builder.of(
                 AuraConsumerBlockEntity::new,
                 CONSUMER_BLOCK_ORE,
                 CONSUMER_BLOCK_ORE_ADV,
@@ -364,19 +361,19 @@ public final class AuraContent {
         VORTEX_CONTROLLER_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             id("aura_node_crafting_center"),
-            FabricBlockEntityTypeBuilder.create(VortexControllerBlockEntity::new, VORTEX_CONTROLLER).build(null)
+            BlockEntityType.Builder.of(VortexControllerBlockEntity::new, VORTEX_CONTROLLER).build(null)
         );
 
         VORTEX_PEDESTAL_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             id("aura_node_crafting_pedestal"),
-            FabricBlockEntityTypeBuilder.create(VortexPedestalBlockEntity::new, VORTEX_PEDESTAL).build(null)
+            BlockEntityType.Builder.of(VortexPedestalBlockEntity::new, VORTEX_PEDESTAL).build(null)
         );
 
         LATE_GAME_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             id("late_game_world"),
-            FabricBlockEntityTypeBuilder.create(
+            BlockEntityType.Builder.of(
                 LateGameBlockEntity::new,
                 CONSUMER_BLOCK_LOOT,
                 CONSUMER_BLOCK_SPAWN,
@@ -389,13 +386,13 @@ public final class AuraContent {
         STORAGE_BOOKSHELF_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             id("storage_bookshelf"),
-            FabricBlockEntityTypeBuilder.create(StorageBookshelfBlockEntity::new, STORAGE_BOOKSHELF).build(null)
+            BlockEntityType.Builder.of(StorageBookshelfBlockEntity::new, STORAGE_BOOKSHELF).build(null)
         );
 
         BOOKSHELF_COORDINATOR_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             id("bookshelf_coordinator"),
-            FabricBlockEntityTypeBuilder.create(BookshelfCoordinatorBlockEntity::new, BOOKSHELF_COORDINATOR).build(null)
+            BlockEntityType.Builder.of(BookshelfCoordinatorBlockEntity::new, BOOKSHELF_COORDINATOR).build(null)
         );
     }
 

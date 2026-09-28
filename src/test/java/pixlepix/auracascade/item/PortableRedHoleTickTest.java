@@ -58,7 +58,8 @@ final class PortableRedHoleTickTest {
         assertTrue(mixin.contains("@Mixin(ItemEntity.class)"));
         assertTrue(mixin.contains("@Inject(method = \"tick\", at = @At(\"HEAD\"), cancellable = true)"));
         assertTrue(mixin.contains("if (PortableRedHoleItem.onEntityItemTick((ItemEntity) (Object) this)) { ci.cancel(); }"));
-        assertTrue(mixin.contains("ConsumerItemKeepAlive.effectiveLifetime(item, PortableRedHoleItem.lifetimeTicks(item.getItem(), vanillaLifetime))"));
+        assertTrue(mixin.contains("item.lifespan = pixlepix.auracascade.item.ConsumerItemKeepAlive.effectiveLifetime(item, Math.max(item.lifespan, PortableRedHoleItem.lifetimeTicks(item.getItem(), item.lifespan)))"));
+        assertFalse(mixin.contains("@ModifyExpressionValue"), "Expiry-event extensions must reach the final discard check");
 
         var mixins = JsonParser.parseString(Files.readString(Path.of("src/main/resources/aura.mixins.json")))
             .getAsJsonObject().getAsJsonArray("mixins");

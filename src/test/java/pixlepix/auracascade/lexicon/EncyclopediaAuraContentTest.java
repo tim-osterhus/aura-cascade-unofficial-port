@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
+import org.tomlj.Toml;
 import pixlepix.auracascade.support.TestMinecraftBootstrap;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -34,16 +35,22 @@ final class EncyclopediaAuraContentTest {
     @Test
     void patchouliBookRetainsTheAuraItemAndRequiredDependency() throws IOException {
         JsonObject book = readJson(BOOK_DATA);
-        JsonObject fabric = readJson(Path.of("src/main/resources/fabric.mod.json"));
-        JsonObject dependencies = fabric.getAsJsonObject("depends");
+        var metadata = Toml.parse(Files.readString(Path.of("src/main/resources/META-INF/neoforge.mods.toml")));
+        assertFalse(metadata.hasErrors(), metadata.errors().toString());
+        var dependencies = metadata.getArray("dependencies.aura");
+        var patchouli = java.util.stream.IntStream.range(0, dependencies.size())
+            .mapToObj(dependencies::getTable)
+            .filter(dependency -> "patchouli".equals(dependency.getString("modId")))
+            .findFirst().orElseThrow();
 
         assertAll(
             () -> assertEquals("item.aura.encyclopedia_aura", book.get("name").getAsString()),
             () -> assertEquals("aura:encyclopedia_aura", book.get("custom_book_item").getAsString()),
-            () -> assertEquals("aura", fabric.get("id").getAsString()),
+            () -> assertEquals("aura", metadata.getArray("mods").getTable(0).getString("modId")),
             () -> assertTrue(book.get("dont_generate_book").getAsBoolean()),
             () -> assertTrue(book.get("use_resource_pack").getAsBoolean()),
-            () -> assertTrue(dependencies.has("patchouli")),
+            () -> assertEquals("required", patchouli.getString("type")),
+            () -> assertEquals("BOTH", patchouli.getString("side")),
             () -> assertTrue(Files.exists(Path.of("src/main/resources/data/aura/recipe/encyclopedia_aura.json")))
         );
     }

@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
-import com.google.gson.JsonParser;
+import org.tomlj.Toml;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -16,9 +16,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class ReleaseDocumentationAuditTest {
     @Test
     void metadataTargetsOnlyTheValidatedMinecraftVersion() throws IOException {
-        var metadata = JsonParser.parseString(Files.readString(
-            Path.of("src/main/resources/fabric.mod.json"), StandardCharsets.UTF_8)).getAsJsonObject();
-        assertEquals("1.21.1", metadata.getAsJsonObject("depends").get("minecraft").getAsString());
+        var metadata = Toml.parse(Files.readString(
+            Path.of("src/main/resources/META-INF/neoforge.mods.toml"), StandardCharsets.UTF_8));
+        assertFalse(metadata.hasErrors(), metadata.errors().toString());
+        var dependencies = metadata.getArray("dependencies.aura");
+        var minecraft = java.util.stream.IntStream.range(0, dependencies.size())
+            .mapToObj(dependencies::getTable)
+            .filter(dependency -> "minecraft".equals(dependency.getString("modId")))
+            .findFirst().orElseThrow();
+        assertEquals("[1.21.1]", minecraft.getString("versionRange"));
+        assertEquals("required", minecraft.getString("type"));
     }
 
     private static final String STALE_SERVER_RUN_ID = "run-3389d91e5f0a4f5e802d8023f25c209c";
@@ -35,10 +42,10 @@ final class ReleaseDocumentationAuditTest {
         String changelog = Files.readString(Path.of("CHANGELOG.md"), StandardCharsets.UTF_8);
         String license = Files.readString(Path.of("LICENSE"), StandardCharsets.UTF_8);
         String portingNotes = Files.readString(Path.of("PORTING_NOTES.md"), StandardCharsets.UTF_8);
-        String fabricMod = Files.readString(Path.of("src/main/resources/fabric.mod.json"), StandardCharsets.UTF_8);
+        String modMetadata = Files.readString(Path.of("src/main/resources/META-INF/neoforge.mods.toml"), StandardCharsets.UTF_8);
 
         assertAll(
-            () -> assertTrue(readme.contains("unofficial modern Fabric port")),
+            () -> assertTrue(readme.contains("unofficial modern NeoForge port")),
             () -> assertTrue(readme.contains("pixlepix")),
             () -> assertTrue(readme.contains("williewillus")),
             () -> assertTrue(readme.contains("./gradlew --console=plain test")),
@@ -138,8 +145,8 @@ final class ReleaseDocumentationAuditTest {
             () -> assertFalse(portingNotes.contains(STALE_RELEASE_JAR_SHA256)),
             () -> assertFalse(portingNotes.contains(STALE_SOURCES_JAR_SIZE)),
             () -> assertFalse(portingNotes.contains(STALE_SOURCES_JAR_SHA256)),
-            () -> assertTrue(fabricMod.contains("\"license\": \"MIT\"")),
-            () -> assertFalse(fabricMod.contains("LicenseRef-Provenance-Pending"))
+            () -> assertEquals("MIT", Toml.parse(modMetadata).getString("license")),
+            () -> assertFalse(modMetadata.contains("LicenseRef-Provenance-Pending"))
         );
     }
 

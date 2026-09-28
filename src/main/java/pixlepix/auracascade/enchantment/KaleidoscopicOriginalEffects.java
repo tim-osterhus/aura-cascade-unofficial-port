@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.IntSupplier;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -41,7 +39,9 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.EntityHitResult;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import pixlepix.auracascade.block.entity.KaleidoscopicEnchanterLogic;
 import pixlepix.auracascade.parity.AuraColor;
 
@@ -60,9 +60,8 @@ public final class KaleidoscopicOriginalEffects {
         if (bootstrapped) {
             return;
         }
-        AttackEntityCallback.EVENT.register(KaleidoscopicOriginalEffects::onAttack);
-        PlayerBlockBreakEvents.BEFORE.register(KaleidoscopicOriginalEffects::beforeBreak);
-        PlayerBlockBreakEvents.AFTER.register(KaleidoscopicOriginalEffects::afterBreak);
+        NeoForge.EVENT_BUS.addListener(KaleidoscopicOriginalEffects::onAttack);
+        NeoForge.EVENT_BUS.addListener(KaleidoscopicOriginalEffects::beforeBreak);
         bootstrapped = true;
     }
 
@@ -171,15 +170,21 @@ public final class KaleidoscopicOriginalEffects {
         Block.dropResources(state, level, pos, blockEntity, breaker, lootTool);
     }
 
-    private static InteractionResult onAttack(Player player, net.minecraft.world.level.Level level, InteractionHand hand,
-                                              Entity target, EntityHitResult hit) {
-        if (!(player instanceof ServerPlayer attacker) || attacker.isSpectator() || hand != InteractionHand.MAIN_HAND
-            || !(level instanceof ServerLevel server)) {
-            return InteractionResult.PASS;
+    public static void afterSuccessfulBlockBreak(ServerPlayer player, BlockPos pos, BlockState state,
+                                                 BlockEntity blockEntity) {
+        afterBreak(player.level(), player, pos, state, blockEntity);
+    }
+
+    private static void onAttack(AttackEntityEvent event) {
+        Player player = event.getEntity();
+        if (!(player instanceof ServerPlayer attacker) || attacker.isSpectator()
+            || !(player.level() instanceof ServerLevel server)) {
+            return;
         }
+        Entity target = event.getTarget();
         Map<AuraColor, Integer> powers = levels(attacker);
         if (powers.isEmpty()) {
-            return InteractionResult.PASS;
+            return;
         }
         int splash = pair(powers, AuraColor.BLUE, AuraColor.VIOLET);
         int fire = pair(powers, AuraColor.YELLOW, AuraColor.BLUE);
@@ -210,26 +215,28 @@ public final class KaleidoscopicOriginalEffects {
         if (fire > 0) {
             target.igniteForSeconds(fire);
         }
-        return InteractionResult.PASS;
     }
 
-    private static boolean beforeBreak(net.minecraft.world.level.Level level, Player player, BlockPos pos,
-                                       BlockState state, BlockEntity blockEntity) {
-        if (temporaryBreak || !(player instanceof ServerPlayer serverPlayer) || player.getAbilities().instabuild) {
-            return true;
+    private static void beforeBreak(BlockEvent.BreakEvent event) {
+        if (!(event.getLevel() instanceof net.minecraft.world.level.Level level)
+            || !(event.getPlayer() instanceof ServerPlayer serverPlayer)
+            || temporaryBreak || serverPlayer.getAbilities().instabuild) {
+            return;
         }
-        ItemStack stack = player.getMainHandItem();
-        Map<AuraColor, Integer> powers = levels(player);
+        BlockPos pos = event.getPos();
+        BlockState state = event.getState();
+        ItemStack stack = serverPlayer.getMainHandItem();
+        Map<AuraColor, Integer> powers = levels(serverPlayer);
         if (powers.isEmpty()) {
-            return true;
+            return;
         }
         int red = level(powers, AuraColor.RED);
         int yellow = level(powers, AuraColor.YELLOW);
         if (red <= 0 && yellow <= 0) {
-            return true;
+            return;
         }
         if (red <= 0 && state.getBlock() instanceof CropBlock) {
-            return true;
+            return;
         }
         ItemEnchantments original = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
         ItemEnchantments.Mutable temporary = new ItemEnchantments.Mutable(original);
@@ -237,7 +244,7 @@ public final class KaleidoscopicOriginalEffects {
         Holder<Enchantment> enchantment = enchantments.getOrThrow(red > 0 ? Enchantments.SILK_TOUCH : Enchantments.FORTUNE);
         int desired = red > 0 ? 1 : yellow;
         if (original.getLevel(enchantment) >= desired) {
-            return true;
+            return;
         }
         temporary.set(enchantment, desired);
         temporaryBreak = true;
@@ -255,7 +262,7 @@ public final class KaleidoscopicOriginalEffects {
                 afterBreak(pending.level(), pending.player(), pending.pos(), pending.state(), pending.blockEntity());
             }
         }
-        return false;
+        event.setCanceled(true);
     }
 
     private static void afterBreak(net.minecraft.world.level.Level level, Player player, BlockPos pos,

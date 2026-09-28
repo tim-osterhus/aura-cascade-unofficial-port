@@ -1,10 +1,11 @@
-# Gradle/Fabric build state
+# Gradle and loader build/runtime state
 .gradle/
 .fabric/
 build/
 run/
 logs/
 mods/
+/config/
 
 # IDE/editor cruft
 .idea/

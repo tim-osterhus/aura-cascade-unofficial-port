@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.junit.jupiter.api.Test;
-import team.reborn.energy.api.EnergyStorage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,7 +26,7 @@ final class AuraFluxTransferLogicTest {
     void receiverScanUsesLoadedChunksAndTheTargetFacingSide() {
         BlockPos origin = pos(0);
         BlockPos adjacent = pos(1);
-        MockEnergyStorage receiver = new MockEnergyStorage(1_000L, 1_000L);
+        MockEnergyStorage receiver = new MockEnergyStorage(1_000, 1_000);
         List<LookupCall> calls = new ArrayList<>();
 
         AuraFluxEnergyBridge.ReceiverScan scan = AuraFluxEnergyBridge.findConnectedReceivers(
@@ -48,10 +46,10 @@ final class AuraFluxTransferLogicTest {
     @Test
     void receiverScanRetriesAnotherFaceWhenTheFirstFaceHasNoStorage() {
         BlockPos target = new BlockPos(1, 64, 1);
-        MockEnergyStorage firstPath = new MockEnergyStorage(1_000L, 1_000L);
-        MockEnergyStorage secondPath = new MockEnergyStorage(1_000L, 1_000L);
-        MockEnergyStorage targetStorage = new MockEnergyStorage(1_000L, 1_000L);
-        Map<BlockPos, EnergyStorage> graph = Map.of(
+        MockEnergyStorage firstPath = new MockEnergyStorage(1_000, 1_000);
+        MockEnergyStorage secondPath = new MockEnergyStorage(1_000, 1_000);
+        MockEnergyStorage targetStorage = new MockEnergyStorage(1_000, 1_000);
+        Map<BlockPos, IEnergyStorage> graph = Map.of(
             pos(1), firstPath,
             new BlockPos(0, 64, 1), secondPath
         );
@@ -77,9 +75,9 @@ final class AuraFluxTransferLogicTest {
 
     @Test
     void receiverScanFollowsTheConnectedGraphAndDeduplicatesStorageIdentity() {
-        MockEnergyStorage shared = new MockEnergyStorage(10_000L, 10_000L);
-        MockEnergyStorage next = new MockEnergyStorage(10_000L, 10_000L);
-        Map<BlockPos, EnergyStorage> graph = Map.of(
+        MockEnergyStorage shared = new MockEnergyStorage(10_000, 10_000);
+        MockEnergyStorage next = new MockEnergyStorage(10_000, 10_000);
+        Map<BlockPos, IEnergyStorage> graph = Map.of(
             pos(1), shared,
             pos(2), shared,
             pos(3), next
@@ -97,9 +95,9 @@ final class AuraFluxTransferLogicTest {
 
     @Test
     void receiverScanStopsWhenTheConnectedGraphExceedsFourMachines() {
-        Map<BlockPos, EnergyStorage> graph = new HashMap<>();
+        Map<BlockPos, IEnergyStorage> graph = new HashMap<>();
         for (int x = 1; x <= 6; x++) {
-            graph.put(pos(x), new MockEnergyStorage(10_000L, 10_000L));
+            graph.put(pos(x), new MockEnergyStorage(10_000, 10_000));
         }
 
         AuraFluxEnergyBridge.ReceiverScan scan = AuraFluxEnergyBridge.findConnectedReceivers(
@@ -111,46 +109,46 @@ final class AuraFluxTransferLogicTest {
         assertEquals(5, scan.machineCount());
         assertEquals(5, scan.receivers().size());
         assertEquals(0, AuraFluxEnergyBridge.exportToReceivers(scan.receivers(), 1_000));
-        assertTrue(scan.receivers().stream().allMatch(storage -> storage.getAmount() == 0L));
+        assertTrue(scan.receivers().stream().allMatch(storage -> storage.getEnergyStored() == 0));
     }
 
     @Test
     void fourReceiversReceiveTheLegacyRateBatchedAcrossTwentyTicks() {
         List<MockEnergyStorage> receivers = List.of(
-            new MockEnergyStorage(10_000L, 10_000L),
-            new MockEnergyStorage(10_000L, 10_000L),
-            new MockEnergyStorage(10_000L, 10_000L),
-            new MockEnergyStorage(10_000L, 10_000L)
+            new MockEnergyStorage(10_000, 10_000),
+            new MockEnergyStorage(10_000, 10_000),
+            new MockEnergyStorage(10_000, 10_000),
+            new MockEnergyStorage(10_000, 10_000)
         );
 
         int consumed = AuraFluxEnergyBridge.exportToReceivers(new ArrayList<>(receivers), 1_000);
 
         assertEquals(998, consumed);
-        assertTrue(receivers.stream().allMatch(receiver -> receiver.getAmount() == 3_740L));
+        assertTrue(receivers.stream().allMatch(receiver -> receiver.getEnergyStored() == 3_740));
         assertTrue(totalEnergy(receivers) <= consumed * 15L);
     }
 
     @Test
-    void partialInsertionCommitsOnlyWhatWasAcceptedAndDebitsItsAuraEquivalent() {
-        MockEnergyStorage receiver = new MockEnergyStorage(1_000L, 37L);
+    void partialInsertionDebitsOnlyWhatWasAccepted() {
+        MockEnergyStorage receiver = new MockEnergyStorage(1_000, 37);
 
         int consumed = AuraFluxEnergyBridge.exportToReceivers(List.of(receiver), 100);
 
-        assertEquals(37L, receiver.getAmount());
+        assertEquals(37, receiver.getEnergyStored());
         assertEquals(3, consumed);
-        assertTrue(receiver.getAmount() <= consumed * 15L);
+        assertTrue(receiver.getEnergyStored() <= consumed * 15L);
     }
 
     @Test
-    void fullReceiverSimulationDoesNotMutateAndOnlyAvailableEnergyIsDebited() {
-        MockEnergyStorage full = new MockEnergyStorage(10L, 100L, 10L);
-        MockEnergyStorage available = new MockEnergyStorage(1_000L, 100L);
+    void fullReceiverSimulationDoesNotMutateAndOnlyAcceptedEnergyIsDebited() {
+        MockEnergyStorage full = new MockEnergyStorage(10, 100, 10);
+        MockEnergyStorage available = new MockEnergyStorage(1_000, 100);
         long initialEnergy = totalEnergy(List.of(full, available));
 
         int consumed = AuraFluxEnergyBridge.exportToReceivers(List.of(full, available), 100);
 
-        assertEquals(10L, full.getAmount());
-        assertEquals(100L, available.getAmount());
+        assertEquals(10, full.getEnergyStored());
+        assertEquals(100, available.getEnergyStored());
         assertEquals(7, consumed);
         long insertedEnergy = totalEnergy(List.of(full, available)) - initialEnergy;
         assertEquals(100L, insertedEnergy);
@@ -159,12 +157,49 @@ final class AuraFluxTransferLogicTest {
 
     @Test
     void theSameStorageObjectCannotMultiplyReceiverCapacity() {
-        MockEnergyStorage shared = new MockEnergyStorage(2_000L, 2_000L);
+        MockEnergyStorage shared = new MockEnergyStorage(2_000, 2_000);
 
         int consumed = AuraFluxEnergyBridge.exportToReceivers(List.of(shared, shared), 100);
 
-        assertEquals(1_500L, shared.getAmount());
+        assertEquals(1_500, shared.getEnergyStored());
         assertEquals(100, consumed);
+    }
+
+    @Test
+    void receiverThatRejectsSimulationIsNotDebited() {
+        MockEnergyStorage rejecting = new MockEnergyStorage(1_000, 0);
+
+        int consumed = AuraFluxEnergyBridge.exportToReceivers(List.of(rejecting), 100);
+
+        assertEquals(0, rejecting.getEnergyStored());
+        assertEquals(0, rejecting.actualInsertCalls());
+        assertEquals(0, consumed);
+    }
+
+    @Test
+    void receiverThatCannotReceiveIsNotCountedAsAMachine() {
+        MockEnergyStorage disabled = new MockEnergyStorage(1_000, 1_000, false);
+
+        AuraFluxEnergyBridge.ReceiverScan scan = AuraFluxEnergyBridge.findConnectedReceivers(
+            pos(0),
+            ignored -> true,
+            (target, side) -> disabled
+        );
+
+        assertTrue(scan.receivers().isEmpty());
+        assertEquals(0, scan.machineCount());
+    }
+
+    @Test
+    void longRateAllowanceIsBoundedToTheNativeIntTransfer() {
+        MockEnergyStorage receiver = new MockEnergyStorage(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        assertTrue(AuraFluxTransferLogic.maximumEnergyPerReceiver(Integer.MAX_VALUE, 1) > Integer.MAX_VALUE);
+
+        int consumed = AuraFluxEnergyBridge.exportToReceivers(List.of(receiver), Integer.MAX_VALUE);
+
+        assertEquals(Integer.MAX_VALUE, receiver.getEnergyStored());
+        assertEquals(Integer.MAX_VALUE, receiver.lastActualRequest());
+        assertEquals(AuraFluxTransferLogic.auraConsumed(Integer.MAX_VALUE, Integer.MAX_VALUE), consumed);
     }
 
     @Test
@@ -183,82 +218,92 @@ final class AuraFluxTransferLogicTest {
         return new BlockPos(x, 64, 0);
     }
 
-    private static long totalEnergy(List<? extends EnergyStorage> storages) {
-        return storages.stream().mapToLong(EnergyStorage::getAmount).sum();
+    private static long totalEnergy(List<? extends IEnergyStorage> storages) {
+        return storages.stream().mapToLong(IEnergyStorage::getEnergyStored).sum();
     }
 
     private record LookupCall(BlockPos pos, Direction side) {
     }
 
-    private static final class MockEnergyStorage extends SnapshotParticipant<Long> implements EnergyStorage {
-        private final long capacity;
-        private final long insertLimit;
-        private long amount;
+    private static final class MockEnergyStorage implements IEnergyStorage {
+        private final int capacity;
+        private final int insertLimit;
+        private final boolean receiveEnabled;
+        private int amount;
+        private int actualInsertCalls;
+        private int lastActualRequest;
 
-        private MockEnergyStorage(long capacity, long insertLimit) {
-            this(capacity, insertLimit, 0L);
+        private MockEnergyStorage(int capacity, int insertLimit) {
+            this(capacity, insertLimit, 0, true);
         }
 
-        private MockEnergyStorage(long capacity, long insertLimit, long initialAmount) {
+        private MockEnergyStorage(int capacity, int insertLimit, int initialAmount) {
+            this(capacity, insertLimit, initialAmount, true);
+        }
+
+        private MockEnergyStorage(int capacity, int insertLimit, boolean receiveEnabled) {
+            this(capacity, insertLimit, 0, receiveEnabled);
+        }
+
+        private MockEnergyStorage(int capacity, int insertLimit, int initialAmount, boolean receiveEnabled) {
             this.capacity = capacity;
             this.insertLimit = insertLimit;
+            this.receiveEnabled = receiveEnabled;
             this.amount = initialAmount;
         }
 
         @Override
-        public boolean supportsInsertion() {
-            return true;
-        }
-
-        @Override
-        public long insert(long maximum, TransactionContext transaction) {
-            if (transaction == null || maximum <= 0L) {
-                return 0L;
+        public int receiveEnergy(int toReceive, boolean simulate) {
+            if (!receiveEnabled || toReceive <= 0) {
+                return 0;
             }
-            long accepted = Math.min(maximum, Math.min(insertLimit, capacity - amount));
-            if (accepted > 0L) {
-                updateSnapshots(transaction);
+            int accepted = Math.min(toReceive, Math.min(insertLimit, capacity - amount));
+            if (!simulate) {
+                actualInsertCalls++;
+                lastActualRequest = toReceive;
                 amount += accepted;
             }
             return accepted;
         }
 
         @Override
-        public boolean supportsExtraction() {
-            return amount > 0L;
-        }
-
-        @Override
-        public long extract(long maximum, TransactionContext transaction) {
-            if (transaction == null || maximum <= 0L) {
-                return 0L;
+        public int extractEnergy(int toExtract, boolean simulate) {
+            if (toExtract <= 0) {
+                return 0;
             }
-            long extracted = Math.min(maximum, amount);
-            if (extracted > 0L) {
-                updateSnapshots(transaction);
+            int extracted = Math.min(toExtract, amount);
+            if (!simulate) {
                 amount -= extracted;
             }
             return extracted;
         }
 
         @Override
-        public long getAmount() {
+        public int getEnergyStored() {
             return amount;
         }
 
         @Override
-        public long getCapacity() {
+        public int getMaxEnergyStored() {
             return capacity;
         }
 
         @Override
-        protected Long createSnapshot() {
-            return amount;
+        public boolean canExtract() {
+            return amount > 0;
         }
 
         @Override
-        protected void readSnapshot(Long snapshot) {
-            amount = snapshot;
+        public boolean canReceive() {
+            return receiveEnabled;
+        }
+
+        int actualInsertCalls() {
+            return actualInsertCalls;
+        }
+
+        int lastActualRequest() {
+            return lastActualRequest;
         }
     }
 }

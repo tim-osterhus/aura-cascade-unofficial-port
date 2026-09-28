@@ -3,13 +3,14 @@
   "category": "misc",
   "key": {
     "X": {
-      "fabric:type": "fabric:components",
-      "base": { "item": "minecraft:potion" },
-      "components": { "minecraft:potion_contents": { "potion": "minecraft:poison" } }
+      "type": "neoforge:components",
+      "items": "minecraft:potion",
+      "components": { "minecraft:potion_contents": { "potion": "minecraft:poison" } },
+      "strict": false
     },
     "C": {
-      "fabric:type": "fabric:custom_data",
-      "base": { "item": "aura:fairy_charm" },
+      "type": "aura:custom_data",
+      "items": "aura:fairy_charm",
       "nbt": { "fairyRole": "fairy" }
     }
   },

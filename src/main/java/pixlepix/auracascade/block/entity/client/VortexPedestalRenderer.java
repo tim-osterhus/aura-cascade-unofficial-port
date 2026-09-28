@@ -1,7 +1,6 @@
 package pixlepix.auracascade.block.entity.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -9,6 +8,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
 import pixlepix.auracascade.block.AuraContent;
@@ -18,8 +19,12 @@ public final class VortexPedestalRenderer implements BlockEntityRenderer<VortexP
     public VortexPedestalRenderer(BlockEntityRendererProvider.Context context) {
     }
 
-    public static void bootstrapClient() {
-        BlockEntityRendererRegistry.register(AuraContent.VORTEX_PEDESTAL_BLOCK_ENTITY, VortexPedestalRenderer::new);
+    public static void bootstrapClient(IEventBus modBus) {
+        modBus.addListener(VortexPedestalRenderer::registerRenderers);
+    }
+
+    private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(AuraContent.VORTEX_PEDESTAL_BLOCK_ENTITY, VortexPedestalRenderer::new);
     }
 
     @Override

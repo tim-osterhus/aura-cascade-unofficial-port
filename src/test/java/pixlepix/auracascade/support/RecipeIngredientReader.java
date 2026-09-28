@@ -6,10 +6,10 @@ import com.mojang.serialization.JsonOps;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.world.item.component.CustomData;
 
 public final class RecipeIngredientReader {
     private RecipeIngredientReader() {
@@ -37,38 +37,43 @@ public final class RecipeIngredientReader {
         }
 
         JsonObject ingredient = element.getAsJsonObject();
-        if (ingredient.has("fabric:type")) {
-            String type = ingredient.get("fabric:type").getAsString();
-            List<String> baseIds = readIngredientIds(ingredient.get("base"));
-            switch (type) {
-                case "fabric:custom_data" -> {
-                    var decoded = TagParser.LENIENT_CODEC.parse(JsonOps.INSTANCE, required(ingredient, "nbt"));
-                    var nbt = decoded.result().orElseThrow(() ->
-                        new AssertionError("Invalid custom_data NBT: " + decoded.error()));
-                    if (nbt.isEmpty()) {
-                        throw new AssertionError("Custom_data ingredient NBT cannot be empty");
-                    }
+        if (ingredient.has("type")) {
+            String type = stringValue(required(ingredient, "type"), "ingredient type");
+            if ("aura:custom_data".equals(type)) {
+                List<String> itemIds = readItemSet(required(ingredient, "items"));
+                var decoded = CustomData.CODEC.parse(JsonOps.INSTANCE, required(ingredient, "nbt"));
+                var data = decoded.result().orElseThrow(() ->
+                    new AssertionError("Invalid custom-data ingredient NBT: " + decoded.error()));
+                if (data.isEmpty()) {
+                    throw new AssertionError("Custom-data ingredient NBT cannot be empty");
                 }
-                case "fabric:components" -> {
-                    TestMinecraftBootstrap.ensureBootstrapped();
-                    var ops = RegistryOps.create(JsonOps.INSTANCE,
-                        RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
-                    var decoded = DataComponentPatch.CODEC.parse(ops, required(ingredient, "components"));
-                    var components = decoded.result().orElseThrow(() ->
-                        new AssertionError("Invalid ingredient components: " + decoded.error()));
-                    if (components.isEmpty()) {
-                        throw new AssertionError("Components ingredient must define at least one component");
-                    }
-                }
-                default -> throw new AssertionError("Unsupported custom ingredient type: " + type);
+                return itemIds;
             }
-            return baseIds;
+            if (!"neoforge:components".equals(type)) {
+                throw new AssertionError("Unsupported custom ingredient type: " + type);
+            }
+            List<String> itemIds = readItemSet(required(ingredient, "items"));
+            JsonElement strict = ingredient.get("strict");
+            if (strict != null && (!strict.isJsonPrimitive() || !strict.getAsJsonPrimitive().isBoolean())) {
+                throw new AssertionError("Ingredient strict flag must be a boolean: " + ingredient);
+            }
+
+            TestMinecraftBootstrap.ensureBootstrapped();
+            var ops = RegistryOps.create(JsonOps.INSTANCE,
+                RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
+            var decoded = DataComponentPredicate.CODEC.parse(ops, required(ingredient, "components"));
+            var predicate = decoded.result().orElseThrow(() ->
+                new AssertionError("Invalid ingredient components: " + decoded.error()));
+            if (predicate.alwaysMatches()) {
+                throw new AssertionError("Components ingredient must define at least one component");
+            }
+            return itemIds;
         }
         if (ingredient.has("item")) {
-            return List.of(ingredient.get("item").getAsString());
+            return List.of(stringValue(ingredient.get("item"), "item"));
         }
         if (ingredient.has("tag")) {
-            return List.of("#" + ingredient.get("tag").getAsString());
+            return List.of("#" + stringValue(ingredient.get("tag"), "tag"));
         }
 
         throw new AssertionError("Unsupported ingredient payload: " + ingredient);
@@ -80,5 +85,34 @@ public final class RecipeIngredientReader {
             throw new AssertionError("Missing custom ingredient field '" + field + "': " + ingredient);
         }
         return value;
+    }
+
+    private static List<String> readItemSet(JsonElement element) {
+        if (element.isJsonArray()) {
+            if (element.getAsJsonArray().isEmpty()) {
+                throw new AssertionError("Component ingredient items cannot be empty");
+            }
+            ArrayList<String> ids = new ArrayList<>();
+            for (JsonElement item : element.getAsJsonArray()) {
+                ids.add(itemSetEntry(item));
+            }
+            return ids;
+        }
+        return List.of(itemSetEntry(element));
+    }
+
+    private static String itemSetEntry(JsonElement element) {
+        String id = stringValue(element, "component ingredient item");
+        if (id.isBlank()) {
+            throw new AssertionError("Component ingredient item cannot be blank");
+        }
+        return id;
+    }
+
+    private static String stringValue(JsonElement element, String field) {
+        if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isString()) {
+            throw new AssertionError("Ingredient field '" + field + "' must be a string: " + element);
+        }
+        return element.getAsString();
     }
 }

@@ -2,8 +2,11 @@ package pixlepix.auracascade.network;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -51,14 +54,25 @@ public final class BookshelfCoordinatorNetworking {
     private BookshelfCoordinatorNetworking() {
     }
 
-    public static void register() {
-        PayloadTypeRegistry.playC2S().register(EXTRACT_TYPE, EXTRACT_CODEC);
-        PayloadTypeRegistry.playS2C().register(SNAPSHOT_TYPE, SNAPSHOT_CODEC);
-        ServerPlayNetworking.registerGlobalReceiver(EXTRACT_TYPE, BookshelfCoordinatorNetworking::receiveExtract);
+    public static void register(IEventBus modBus) {
+        modBus.addListener(BookshelfCoordinatorNetworking::registerPayloads);
+    }
+
+    private static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar("1");
+        registrar.playToServer(EXTRACT_TYPE, EXTRACT_CODEC, BookshelfCoordinatorNetworking::receiveExtract);
+        registrar.playToClient(SNAPSHOT_TYPE, SNAPSHOT_CODEC, BookshelfCoordinatorNetworking::receiveSnapshot);
+    }
+
+    private static void receiveSnapshot(SnapshotPayload payload, IPayloadContext context) {
+        if (context.player().containerMenu instanceof BookshelfCoordinatorMenu menu
+            && menu.containerId == payload.containerId()) {
+            menu.applySnapshot(payload);
+        }
     }
 
     public static void sendSnapshot(ServerPlayer player, BookshelfCoordinatorMenu menu) {
-        ServerPlayNetworking.send(player, new SnapshotPayload(
+        PacketDistributor.sendToPlayer(player, new SnapshotPayload(
             menu.containerId,
             menu.entries(),
             menu.connectedShelves(),
@@ -71,8 +85,10 @@ public final class BookshelfCoordinatorNetworking {
         ));
     }
 
-    private static void receiveExtract(ExtractRequest request, ServerPlayNetworking.Context context) {
-        ServerPlayer player = context.player();
+    private static void receiveExtract(ExtractRequest request, IPayloadContext context) {
+        if (!(context.player() instanceof ServerPlayer player)) {
+            return;
+        }
         if (!player.isAlive() || player.isSpectator()
             || !(player.containerMenu instanceof BookshelfCoordinatorMenu menu)
             || menu.containerId != request.containerId()

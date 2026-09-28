@@ -22,7 +22,7 @@ public final class MinerExplosionEntities {
                 .sized(1.0F, 1.0F)
                 .clientTrackingRange(8)
                 .updateInterval(1)
-                .build()
+                .build(id.toString())
         );
     }
 

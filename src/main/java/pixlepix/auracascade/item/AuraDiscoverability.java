@@ -3,7 +3,6 @@ package pixlepix.auracascade.item;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -21,7 +20,7 @@ public final class AuraDiscoverability {
     public static final CreativeModeTab AURA_TAB = Registry.register(
         BuiltInRegistries.CREATIVE_MODE_TAB,
         TAB_ID,
-        FabricItemGroup.builder()
+        CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.aura"))
             .icon(() -> new ItemStack(AuraItems.crystal(AuraColor.WHITE)))
             .displayItems((parameters, output) -> addCreativeTabEntries(output::accept))

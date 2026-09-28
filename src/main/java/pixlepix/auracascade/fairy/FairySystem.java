@@ -9,11 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
@@ -37,6 +32,11 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import pixlepix.auracascade.compat.AuraAccessoryBridgeRegistry;
 import pixlepix.auracascade.compat.AuraAccessorySlot;
 import pixlepix.auracascade.item.AuraItems;
@@ -73,46 +73,81 @@ public final class FairySystem {
     }
 
     public static void bootstrapCommon() {
-        AuraFairyEntityRegistry.bootstrapCommon();
-        FairyTorchRegistry.bootstrapCommon();
         if (bootstrapped) {
             return;
         }
         bootstrapped = true;
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
-            if (entity instanceof Allay && provenLegacyOwner(true, entity.getTags()).isPresent()) {
-                entity.discard();
-            }
-        });
-        ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
-            if (entity instanceof AuraFairyEntity fairy) {
-                forgetFairy(fairy);
-            }
-        });
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            ServerPlayer player = handler.player;
-            PlayerLocation last = LAST_PLAYER_LOCATIONS.remove(player.getUUID());
-            forgetOwnerState(player.getUUID());
-            clearNearby(last == null ? player.serverLevel() : last.level(), player.getUUID(),
-                last == null ? player.getBoundingBox() : last.bounds());
-        });
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
-            PlayerLocation last = LAST_PLAYER_LOCATIONS.remove(player.getUUID());
-            forgetOwnerState(player.getUUID());
-            clearNearby(origin, player.getUUID(), last != null && last.level() == origin ? last.bounds() : player.getBoundingBox());
-        });
-        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            PlayerLocation last = LAST_PLAYER_LOCATIONS.remove(oldPlayer.getUUID());
-            forgetOwnerState(oldPlayer.getUUID());
-            clearNearby(last == null ? oldPlayer.serverLevel() : last.level(), oldPlayer.getUUID(),
-                last == null ? oldPlayer.getBoundingBox() : last.bounds());
-        });
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
-            CANONICAL_FAIRIES.clear();
-            LAST_PLAYER_LOCATIONS.clear();
-            LAST_ROLE_LISTS.clear();
-            LAST_RECONCILE_TICKS.clear();
-        });
+        NeoForge.EVENT_BUS.addListener(FairySystem::onEntityJoinLevel);
+        NeoForge.EVENT_BUS.addListener(FairySystem::onEntityLeaveLevel);
+        NeoForge.EVENT_BUS.addListener(FairySystem::onPlayerLoggedOut);
+        NeoForge.EVENT_BUS.addListener(FairySystem::onPlayerChangedDimension);
+        NeoForge.EVENT_BUS.addListener(FairySystem::onPlayerClone);
+        NeoForge.EVENT_BUS.addListener(FairySystem::onPlayerRespawn);
+        NeoForge.EVENT_BUS.addListener(FairySystem::onServerStopped);
+    }
+
+    private static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+        Entity entity = event.getEntity();
+        if (!event.getLevel().isClientSide() && entity instanceof Allay
+            && provenLegacyOwner(true, entity.getTags()).isPresent()) {
+            event.setCanceled(true);
+        }
+    }
+
+    private static void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
+        if (!event.getLevel().isClientSide() && event.getEntity() instanceof AuraFairyEntity fairy) {
+            forgetFairy(fairy);
+        }
+    }
+
+    private static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        PlayerLocation last = LAST_PLAYER_LOCATIONS.remove(player.getUUID());
+        forgetOwnerState(player.getUUID());
+        clearNearby(last == null ? player.serverLevel() : last.level(), player.getUUID(),
+            last == null ? player.getBoundingBox() : last.bounds());
+    }
+
+    private static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        PlayerLocation last = LAST_PLAYER_LOCATIONS.remove(player.getUUID());
+        forgetOwnerState(player.getUUID());
+        ServerLevel origin = player.getServer().getLevel(event.getFrom());
+        if (origin == null && last != null) {
+            origin = last.level();
+        }
+        if (origin != null) {
+            clearNearby(origin, player.getUUID(), last != null && last.level() == origin
+                ? last.bounds() : player.getBoundingBox());
+        }
+    }
+
+    private static void onPlayerClone(PlayerEvent.Clone event) {
+        if (event.getOriginal() instanceof ServerPlayer original) {
+            LAST_PLAYER_LOCATIONS.put(original.getUUID(),
+                new PlayerLocation(original.serverLevel(), original.getBoundingBox()));
+        }
+    }
+
+    private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        PlayerLocation last = LAST_PLAYER_LOCATIONS.remove(player.getUUID());
+        forgetOwnerState(player.getUUID());
+        clearNearby(last == null ? player.serverLevel() : last.level(), player.getUUID(),
+            last == null ? player.getBoundingBox() : last.bounds());
+    }
+
+    private static void onServerStopped(ServerStoppedEvent event) {
+        CANONICAL_FAIRIES.clear();
+        LAST_PLAYER_LOCATIONS.clear();
+        LAST_ROLE_LISTS.clear();
+        LAST_RECONCILE_TICKS.clear();
     }
 
     public static void syncPlayerFairies(ServerPlayer player) {

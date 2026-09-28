@@ -1,36 +1,53 @@
 package pixlepix.auracascade.compat.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.screens.MenuScreens;
 import org.lwjgl.glfw.GLFW;
 import pixlepix.auracascade.compat.AuraAccessoryNetworking;
 
 public final class AuraAccessoryClient {
+    private static final KeyMapping OPEN = new KeyMapping(
+        "key.aura.open_accessories", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.aura"
+    );
+    private static final KeyMapping WING = new KeyMapping(
+        "key.aura.activate_wing", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.aura"
+    );
+
     private AuraAccessoryClient() {
     }
 
-    public static void bootstrapClient() {
-        MenuScreens.register(AuraAccessoryNetworking.menuType(), AuraAccessoryScreen::new);
-        KeyMapping open = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-            "key.aura.open_accessories", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.aura"
-        ));
-        KeyMapping wing = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-            "key.aura.activate_wing", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.aura"
-        ));
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.player == null || client.screen != null) {
-                return;
-            }
-            while (open.consumeClick()) {
-                ClientPlayNetworking.send(new AuraAccessoryNetworking.OpenRequest());
-            }
-            while (wing.consumeClick()) {
-                ClientPlayNetworking.send(new AuraAccessoryNetworking.WingRequest());
-            }
-        });
+    public static void bootstrapClient(IEventBus modBus) {
+        modBus.addListener(AuraAccessoryClient::registerScreens);
+        modBus.addListener(AuraAccessoryClient::registerKeys);
+        NeoForge.EVENT_BUS.addListener(AuraAccessoryClient::onClientTick);
+    }
+
+    private static void registerScreens(RegisterMenuScreensEvent event) {
+        event.register(AuraAccessoryNetworking.menuType(), AuraAccessoryScreen::new);
+    }
+
+    private static void registerKeys(RegisterKeyMappingsEvent event) {
+        event.register(OPEN);
+        event.register(WING);
+    }
+
+    private static void onClientTick(ClientTickEvent.Post event) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || client.screen != null) {
+            return;
+        }
+        while (OPEN.consumeClick()) {
+            PacketDistributor.sendToServer(new AuraAccessoryNetworking.OpenRequest());
+        }
+        while (WING.consumeClick()) {
+            PacketDistributor.sendToServer(new AuraAccessoryNetworking.WingRequest());
+        }
     }
 }

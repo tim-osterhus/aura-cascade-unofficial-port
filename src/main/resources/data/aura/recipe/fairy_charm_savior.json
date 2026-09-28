@@ -4,8 +4,8 @@
   "key": {
     "X": { "item": "minecraft:diamond_sword" },
     "C": {
-      "fabric:type": "fabric:custom_data",
-      "base": { "item": "aura:fairy_charm" },
+      "type": "aura:custom_data",
+      "items": "aura:fairy_charm",
       "nbt": { "fairyRole": "fairy" }
     }
   },

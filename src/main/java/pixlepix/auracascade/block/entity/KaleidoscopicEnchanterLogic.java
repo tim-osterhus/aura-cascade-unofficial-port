@@ -7,10 +7,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -45,7 +41,12 @@ import net.minecraft.world.level.block.NetherWartBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.EntityHitResult;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import pixlepix.auracascade.enchantment.AuraEnchantments;
 import pixlepix.auracascade.parity.AuraColor;
 
@@ -72,12 +73,11 @@ public final class KaleidoscopicEnchanterLogic {
             return;
         }
 
-        AttackBlockCallback.EVENT.register(KaleidoscopicEnchanterLogic::handleAttackBlock);
-        AttackEntityCallback.EVENT.register(KaleidoscopicEnchanterLogic::handleAttackEntity);
-        PlayerBlockBreakEvents.BEFORE.register(KaleidoscopicEnchanterLogic::handleBeforeBlockBreak);
-        PlayerBlockBreakEvents.AFTER.register(KaleidoscopicEnchanterLogic::handleAfterBlockBreak);
-        ServerLivingEntityEvents.AFTER_DAMAGE.register(KaleidoscopicEnchanterLogic::handleAfterDamage);
-        ServerLivingEntityEvents.AFTER_DEATH.register(KaleidoscopicEnchanterLogic::handleAfterDeath);
+        NeoForge.EVENT_BUS.addListener(KaleidoscopicEnchanterLogic::handleAttackBlock);
+        NeoForge.EVENT_BUS.addListener(KaleidoscopicEnchanterLogic::handleAttackEntity);
+        NeoForge.EVENT_BUS.addListener(KaleidoscopicEnchanterLogic::handleBeforeBlockBreak);
+        NeoForge.EVENT_BUS.addListener(KaleidoscopicEnchanterLogic::handleAfterDamage);
+        NeoForge.EVENT_BUS.addListener(KaleidoscopicEnchanterLogic::handleAfterDeath);
         runtimeHooksRegistered = true;
     }
 
@@ -228,14 +228,18 @@ public final class KaleidoscopicEnchanterLogic {
         return state.getDestroySpeed(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) >= HARD_DURABILITY_THRESHOLD;
     }
 
-    private static InteractionResult handleAttackBlock(Player player, Level level, InteractionHand hand, BlockPos pos, Direction direction) {
-        if (level.isClientSide() || hand != InteractionHand.MAIN_HAND) {
-            return InteractionResult.PASS;
+    private static void handleAttackBlock(PlayerInteractEvent.LeftClickBlock event) {
+        Player player = event.getEntity();
+        Level level = event.getLevel();
+        BlockPos pos = event.getPos();
+        if (event.getAction() != PlayerInteractEvent.LeftClickBlock.Action.START
+            || level.isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) {
+            return;
         }
 
         ItemStack stack = player.getMainHandItem();
         if (!isValidTarget(stack)) {
-            return InteractionResult.PASS;
+            return;
         }
 
         syncPersistentRuntimeEnchantments(stack, level.registryAccess());
@@ -246,46 +250,40 @@ public final class KaleidoscopicEnchanterLogic {
         if (miningProfile.fatigueLevel() > 0) {
             player.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 12, miningProfile.fatigueLevel() - 1, true, false, false));
         }
-        return InteractionResult.PASS;
     }
 
-    private static InteractionResult handleAttackEntity(
-        Player player,
-        Level level,
-        InteractionHand hand,
-        Entity entity,
-        EntityHitResult hitResult
-    ) {
-        if (!level.isClientSide() && hand == InteractionHand.MAIN_HAND) {
-            syncPersistentRuntimeEnchantments(player.getMainHandItem(), level.registryAccess());
+    private static void handleAttackEntity(AttackEntityEvent event) {
+        Player player = event.getEntity();
+        if (!player.level().isClientSide()) {
+            syncPersistentRuntimeEnchantments(player.getMainHandItem(), player.level().registryAccess());
         }
-        return InteractionResult.PASS;
     }
 
-    private static boolean handleBeforeBlockBreak(Level level, Player player, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-        if (temporaryBreakActive || !(player instanceof ServerPlayer serverPlayer) || player.getAbilities().instabuild) {
-            return true;
-        }
-
-        ItemStack stack = player.getMainHandItem();
-        if (!isValidTarget(stack)) {
-            return true;
-        }
-
-        return applyBeforeBlockBreakRuntime(new LiveBreakRuntime(serverPlayer, stack), levels(stack, level.registryAccess()), pos, state);
-    }
-
-    private static void handleAfterBlockBreak(Level level, Player player, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-        if (!(player instanceof ServerPlayer serverPlayer)) {
+    private static void handleBeforeBlockBreak(BlockEvent.BreakEvent event) {
+        if (!(event.getLevel() instanceof Level level)
+            || !(event.getPlayer() instanceof ServerPlayer serverPlayer)
+            || temporaryBreakActive || serverPlayer.getAbilities().instabuild) {
             return;
         }
-
-        ItemStack stack = player.getMainHandItem();
+        BlockPos pos = event.getPos();
+        BlockState state = event.getState();
+        ItemStack stack = serverPlayer.getMainHandItem();
         if (!isValidTarget(stack)) {
             return;
         }
 
-        Map<AuraColor, Integer> levels = levels(stack, level.registryAccess());
+        if (!applyBeforeBlockBreakRuntime(new LiveBreakRuntime(serverPlayer, stack), levels(stack, level.registryAccess()), pos, state)) {
+            event.setCanceled(true);
+        }
+    }
+
+    public static void afterSuccessfulBlockBreak(ServerPlayer serverPlayer, BlockPos pos, BlockState state) {
+        ItemStack stack = serverPlayer.getMainHandItem();
+        if (!isValidTarget(stack)) {
+            return;
+        }
+
+        Map<AuraColor, Integer> levels = levels(stack, serverPlayer.level().registryAccess());
         int greenLevel = level(levels, AuraColor.GREEN);
         if (greenLevel > 0 && isLogBlock(state)) {
             fellNearbyLogs(serverPlayer, pos, greenLevel);
@@ -295,7 +293,10 @@ public final class KaleidoscopicEnchanterLogic {
         }
     }
 
-    private static void handleAfterDamage(LivingEntity entity, DamageSource source, float baseDamageTaken, float damageTaken, boolean blocked) {
+    private static void handleAfterDamage(LivingDamageEvent.Post event) {
+        LivingEntity entity = event.getEntity();
+        DamageSource source = event.getSource();
+        float damageTaken = event.getNewDamage();
         if (!(entity.level() instanceof ServerLevel serverLevel) || damageTaken <= 0.0F) {
             return;
         }
@@ -320,7 +321,9 @@ public final class KaleidoscopicEnchanterLogic {
         applyAfterDamageRuntime(new LiveAfterDamageRuntime(serverLevel, attacker, entity), defenderLevels, attackerLevels, damageTaken);
     }
 
-    private static void handleAfterDeath(LivingEntity entity, DamageSource damageSource) {
+    private static void handleAfterDeath(LivingDeathEvent event) {
+        LivingEntity entity = event.getEntity();
+        DamageSource damageSource = event.getSource();
         if (lootDuplicationActive || !(entity.level() instanceof ServerLevel serverLevel)) {
             return;
         }
