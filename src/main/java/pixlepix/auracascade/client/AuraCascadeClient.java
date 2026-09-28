@@ -185,7 +185,7 @@ public final class AuraCascadeClient implements ClientModInitializer {
 
                 int width = minecraft.font.width(wrappedLine);
                 graphics.fill(MARGIN - 2, y - 1, MARGIN + width + 2, y + minecraft.font.lineHeight, ROW_BACKGROUND);
-                graphics.drawString(minecraft.font, wrappedLine, MARGIN, y, 0xFFFFFF, true);
+                graphics.drawString(minecraft.font, wrappedLine, MARGIN, y, 0xFFFFFFFF, true);
                 y += minecraft.font.lineHeight + ROW_GAP;
             }
         }

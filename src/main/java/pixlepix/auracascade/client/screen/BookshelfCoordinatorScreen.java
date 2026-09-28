@@ -183,7 +183,7 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
             boundedText(powerStatus, 150),
             194,
             19,
-            0x404040,
+            0xFF404040,
             false
         );
 
@@ -194,7 +194,7 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
             Component empty = menu.entries().isEmpty()
                 ? Component.translatable("screen.aura.bookshelf_coordinator.empty")
                 : Component.translatable("screen.aura.bookshelf_coordinator.no_results");
-            graphics.drawString(font, boundedText(empty, 149), 194, 151, 0x555555, false);
+            graphics.drawString(font, boundedText(empty, 149), 194, 151, 0xFF555555, false);
         }
     }
 
@@ -274,7 +274,7 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
         graphics.fill(leftPos + 192, topPos + 54, leftPos + 343, topPos + 104, 0xFFE2E2E2);
         if (selectedStack.isEmpty()) {
             Component choose = Component.translatable("screen.aura.bookshelf_coordinator.select_item");
-            graphics.drawString(font, boundedText(choose, 142), leftPos + 197, topPos + 70, 0x555555, false);
+            graphics.drawString(font, boundedText(choose, 142), leftPos + 197, topPos + 70, 0xFF555555, false);
             return;
         }
 
@@ -284,7 +284,7 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
             boundedText(selectedStack.getHoverName(), 121),
             leftPos + 216,
             topPos + 59,
-            0x202020,
+            0xFF202020,
             false
         );
         graphics.drawString(
@@ -292,7 +292,7 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
             Component.translatable("screen.aura.bookshelf_coordinator.item_count", selectedCount),
             leftPos + 216,
             topPos + 73,
-            0x555555,
+            0xFF555555,
             false
         );
     }
@@ -373,11 +373,11 @@ public final class BookshelfCoordinatorScreen extends AbstractContainerScreen<Bo
     }
 
     private int statusColor() {
-        return menu.canRetrieve() ? 0x205020 : 0x7A2020;
+        return menu.canRetrieve() ? 0xFF205020 : 0xFF7A2020;
     }
 
     private int resultColor() {
-        return menu.resultCode() == BookshelfCoordinatorNetworking.RESULT_RETRIEVED ? 0x205020 : 0x7A2020;
+        return menu.resultCode() == BookshelfCoordinatorNetworking.RESULT_RETRIEVED ? 0xFF205020 : 0xFF7A2020;
     }
 
     private void select(BookshelfCoordinatorBlockEntity.BrowserEntry entry) {

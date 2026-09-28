@@ -154,6 +154,7 @@ final class VisualAssetParityAuditTest {
             state.getAsJsonObject("variants").getAsJsonObject("").get("model").getAsString());
         JsonObject model = readJson(ASSET_ROOT.resolve("models/block/fairy_torch.json")).getAsJsonObject();
         assertTrue(model.getAsJsonArray("elements").isEmpty());
+        assertEquals("aura:item/fairy_charm", model.getAsJsonObject("textures").get("particle").getAsString());
     }
 
     @Test

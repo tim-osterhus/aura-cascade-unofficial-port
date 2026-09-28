@@ -1,3 +1,6 @@
 {
-  "elements": []
+  "elements": [],
+  "textures": {
+    "particle": "aura:item/fairy_charm"
+  }
 }
