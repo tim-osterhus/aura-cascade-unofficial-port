@@ -71,12 +71,12 @@ final class MultiplayerEvidence {
         JsonArray playerReports = new JsonArray();
         for (Player player : players) {
             JsonObject p = new JsonObject();
-            p.addProperty("name", player.getGameProfile().getName());
+            p.addProperty("name", player.getGameProfile().name());
             p.addProperty("uuid", player.getUUID().toString());
             p.addProperty("accessoryAttached", ((AttachmentTarget) player).hasAttached(accessoryType));
             p.addProperty("alive", player.isAlive());
             p.addProperty("spectator", player.isSpectator());
-            p.addProperty("selectedHotbarSlot", player.getInventory().selected);
+            p.addProperty("selectedHotbarSlot", player.getInventory().getSelectedSlot());
             p.addProperty("mainHandItem", BuiltInRegistries.ITEM.getKey(player.getMainHandItem().getItem()).toString());
             p.addProperty("mainHandCount", player.getMainHandItem().getCount());
             JsonArray slots = new JsonArray();

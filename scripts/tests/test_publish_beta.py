@@ -28,17 +28,20 @@ class PublishBetaTests(unittest.TestCase):
         metadata_path.parent.mkdir(parents=True)
         metadata_path.write_text(
             json.dumps({
-                "id": "aura",
+                **self.valid_jar_metadata(),
                 "version": "${version}",
-                "depends": {
-                    "minecraft": "1.21.1",
-                    "fabric-api": "*",
-                    "patchouli": "*",
-                },
             }),
             encoding="utf-8",
         )
-        (self.workspace / "gradle.properties").write_text("mod_version=unit-test-version\n", encoding="utf-8")
+        (self.workspace / "gradle.properties").write_text(
+            "mod_version=0.2.1+1.21.11\n"
+            "minecraft_version=1.21.11\n"
+            "loader_version=0.19.5\n"
+            "fabric_api_version=0.141.6+1.21.11\n"
+            "patchouli_file=8713841\n"
+            "energy_api_version=4.2.0\n",
+            encoding="utf-8",
+        )
         self.manifest_path = self.workspace / "reviewed-beta.json"
         self.write_manifest()
 
@@ -49,11 +52,13 @@ class PublishBetaTests(unittest.TestCase):
     def valid_jar_metadata() -> dict[str, object]:
         return {
             "id": "aura",
-            "version": "unit-test-version",
+            "version": "0.2.1+1.21.11",
             "depends": {
-                "minecraft": "1.21.1",
+                "minecraft": "1.21.11",
+                "fabricloader": ">=0.19.5",
                 "fabric-api": "*",
-                "patchouli": "*",
+                "patchouli": ">=1.21.11-94.4-FABRIC",
+                "team_reborn_energy": ">=4.2.0",
             },
         }
 
@@ -67,15 +72,15 @@ class PublishBetaTests(unittest.TestCase):
             "projectId": 1519395,
             "releaseType": "beta",
             "artifactPath": "build/libs/aura-beta.jar",
-            "version": "unit-test-version",
+            "version": "0.2.1+1.21.11",
             "expectedJarSHA256": hashlib.sha256(self.artifact.read_bytes()).hexdigest(),
             "displayName": "Aura Cascade test beta",
             "changelog": "Focused uploader test.",
-            "gameVersionNames": ["1.21.1", "Fabric", "Client", "Server"],
+            "gameVersionNames": ["1.21.11", "Fabric", "Client", "Server"],
             "relations": {
                 "projects": [
                     {"slug": "fabric-api", "type": "requiredDependency"},
-                    {"slug": "patchouli", "type": "requiredDependency"},
+                    {"slug": "patchouli-fabric-edition", "type": "requiredDependency"},
                 ]
             },
         }
@@ -115,7 +120,7 @@ class PublishBetaTests(unittest.TestCase):
         self.assertEqual(1519395, request["project_id"])
         self.assertEqual("test-token", request["token"])
         self.assertEqual("beta", request["metadata"]["releaseType"])
-        self.assertEqual(["1.21.1", "Fabric", "Client", "Server"], request["metadata"]["gameVersionNames"])
+        self.assertEqual(["1.21.11", "Fabric", "Client", "Server"], request["metadata"]["gameVersionNames"])
         self.assertEqual(2, len(request["metadata"]["relations"]["projects"]))
 
     def test_rejects_artifact_hash_mismatch_before_token_or_network(self) -> None:
@@ -132,20 +137,26 @@ class PublishBetaTests(unittest.TestCase):
         variants = (
             ({**self.valid_jar_metadata(), "id": "other"}, "id must be aura"),
             ({**self.valid_jar_metadata(), "version": "older-test-version"}, "artifact fabric.mod.json version"),
-            ({**self.valid_jar_metadata(), "depends": {"minecraft": "1.21.11", "fabric-api": "*", "patchouli": "*"}}, "Minecraft 1.21.1 exactly"),
-            ({**self.valid_jar_metadata(), "depends": {"minecraft": "1.21.1", "patchouli": "*"}}, "missing required dependency fabric-api"),
-            ({**self.valid_jar_metadata(), "depends": {"minecraft": "1.21.1", "fabric-api": "*"}}, "missing required dependency patchouli"),
+            ({**self.valid_jar_metadata(), "depends": {**self.valid_jar_metadata()["depends"], "minecraft": "1.21.1"}}, "Minecraft 1.21.11 exactly"),
+            ({**self.valid_jar_metadata(), "depends": {**self.valid_jar_metadata()["depends"], "fabricloader": ">=0.19.1"}}, "Fabric Loader >=0.19.5"),
+            ({**self.valid_jar_metadata(), "depends": {**self.valid_jar_metadata()["depends"], "patchouli": "*"}}, "require target Patchouli"),
+            ({**self.valid_jar_metadata(), "depends": {key: value for key, value in self.valid_jar_metadata()["depends"].items() if key != "fabric-api"}}, "missing required dependency fabric-api"),
+            ({**self.valid_jar_metadata(), "depends": {key: value for key, value in self.valid_jar_metadata()["depends"].items() if key != "team_reborn_energy"}}, "missing required dependency team_reborn_energy"),
         )
         for metadata, expected_error in variants:
             with self.subTest(expected_error=expected_error):
                 self.write_jar_metadata(metadata)
                 self.write_manifest()
-                result, _, stderr = self.run_cli()
+                with patch.object(publish_beta, "read_api_token", side_effect=AssertionError("token was read")) as token_reader:
+                    with patch.object(publish_beta, "upload_artifact", side_effect=AssertionError("network was used")) as upload:
+                        result, _, stderr = self.run_cli("--upload")
                 self.assertEqual(2, result)
                 self.assertIn(expected_error, stderr)
+                token_reader.assert_not_called()
+                upload.assert_not_called()
 
     def test_game_version_names_are_exact_with_optional_java_21(self) -> None:
-        self.write_manifest(gameVersionNames=["1.21.1", "Fabric", "Client", "Server", "Java 21"])
+        self.write_manifest(gameVersionNames=["1.21.11", "Fabric", "Client", "Server", "Java 21"])
         result, _, _ = self.run_cli()
         self.assertEqual(0, result)
 
@@ -158,6 +169,11 @@ class PublishBetaTests(unittest.TestCase):
         self.write_manifest(version="wrong-test-version")
         result, _, stderr = self.run_cli()
         self.assertEqual(2, result)
+        self.assertIn("Manifest version must end in +1.21.11", stderr)
+
+        self.write_manifest(version="0.2.0+1.21.11")
+        result, _, stderr = self.run_cli()
+        self.assertEqual(2, result)
         self.assertIn("source fabric.mod.json version", stderr)
 
         metadata_path = self.workspace / "src" / "main" / "resources" / "fabric.mod.json"
@@ -167,14 +183,14 @@ class PublishBetaTests(unittest.TestCase):
         self.write_manifest()
         result, _, stderr = self.run_cli()
         self.assertEqual(2, result)
-        self.assertIn("Minecraft 1.21.1 exactly", stderr)
+        self.assertIn("Minecraft 1.21.11 exactly", stderr)
 
     def test_requires_both_validated_environments_before_upload(self) -> None:
         for versions in (
-            ["1.21.1", "Fabric"],
-            ["1.21.1", "Fabric", "Client"],
-            ["1.21.1", "Fabric", "Server"],
-            ["1.21.1", "Fabric", "Client", "Server", "Server"],
+            ["1.21.11", "Fabric"],
+            ["1.21.11", "Fabric", "Client"],
+            ["1.21.11", "Fabric", "Server"],
+            ["1.21.11", "Fabric", "Client", "Server", "Server"],
         ):
             with self.subTest(versions=versions):
                 self.write_manifest(gameVersionNames=versions)
@@ -184,11 +200,30 @@ class PublishBetaTests(unittest.TestCase):
                 self.assertEqual(2, result)
                 self.assertIn("gameVersionNames must be exactly", stderr)
 
-    def test_requires_fabric_api_and_patchouli_required_relations(self) -> None:
-        self.write_manifest(relations={"projects": [{"slug": "fabric-api", "type": "optionalDependency"}]})
-        result, _, stderr = self.run_cli()
-        self.assertEqual(2, result)
-        self.assertIn("patchouli", stderr)
+    def test_requires_exact_fabric_api_and_patchouli_fork_relations(self) -> None:
+        for projects in (
+            [{"slug": "fabric-api", "type": "requiredDependency"}, {"slug": "patchouli", "type": "requiredDependency"}],
+            [{"slug": "fabric-api", "type": "optionalDependency"}, {"slug": "patchouli-fabric-edition", "type": "requiredDependency"}],
+            [{"slug": "fabric-api", "type": "requiredDependency"}, {"slug": "fabric-api", "type": "requiredDependency"}],
+        ):
+            with self.subTest(projects=projects):
+                self.write_manifest(relations={"projects": projects})
+                with patch.object(publish_beta, "read_api_token", side_effect=AssertionError("token was read")):
+                    result, _, stderr = self.run_cli("--upload")
+                self.assertEqual(2, result)
+                self.assertIn("patchouli-fabric-edition", stderr)
+
+    def test_rejects_wrong_target_build_pins(self) -> None:
+        properties_path = self.workspace / "gradle.properties"
+        original = properties_path.read_text(encoding="utf-8")
+        for key, wrong in (("minecraft_version", "1.21.1"), ("loader_version", "0.19.1"),
+                           ("fabric_api_version", "0.141.0+1.21.11"), ("patchouli_file", "8713840")):
+            with self.subTest(key=key):
+                properties_path.write_text(original.replace(f"{key}={publish_beta.BUILD_PINS[key]}", f"{key}={wrong}"), encoding="utf-8")
+                result, _, stderr = self.run_cli()
+                self.assertEqual(2, result)
+                self.assertIn(f"gradle.properties {key}", stderr)
+        properties_path.write_text(original, encoding="utf-8")
 
     def test_upload_response_must_contain_a_positive_integer_id(self) -> None:
         for response in ({}, {"id": 0}, {"id": True}, {"id": "9876"}):

@@ -29,6 +29,7 @@ public final class PackagedObserverClient implements ClientModInitializer {
     private int ticks;
     private int stableFrames;
     private boolean finished;
+    private boolean finishing;
     private final long startedAt = System.nanoTime();
 
     @Override
@@ -40,14 +41,28 @@ public final class PackagedObserverClient implements ClientModInitializer {
     private void onTick(Minecraft client) {
         ticks++;
         if (finished) {
-            client.stop();
-        } else if (ticks >= TIMEOUT_TICKS || System.nanoTime() - startedAt >= TIMEOUT_NANOS) {
+            if (Boolean.getBoolean("aura.qa.clientProbe") && !TargetClientProbe.isComplete()) {
+                TargetClientProbe.startIfEnabled();
+                return;
+            }
+            if (Boolean.getBoolean("aura.qa.feedbackProbe") && !TargetFeedbackProbe.isComplete()) {
+                TargetFeedbackProbe.startIfEnabled();
+                return;
+            }
+            if (Boolean.getBoolean("aura.qa.renderProbe") && !TargetRenderProbe.isComplete()) {
+                TargetRenderProbe.startIfEnabled();
+                return;
+            }
+            if (!Boolean.getBoolean("aura.qa.observer.keepOpen")) {
+                client.stop();
+            }
+        } else if (!finishing && (ticks >= TIMEOUT_TICKS || System.nanoTime() - startedAt >= TIMEOUT_NANOS)) {
             finish(client, "world_not_rendered_before_timeout");
         }
     }
 
     private void onHudRendered(Minecraft client) {
-        if (finished) {
+        if (finished || finishing) {
             return;
         }
         if (client.level == null || client.player == null || client.getSingleplayerServer() == null
@@ -61,7 +76,12 @@ public final class PackagedObserverClient implements ClientModInitializer {
     }
 
     private void finish(Minecraft client, String failure) {
-        finished = true;
+        finishing = true;
+        Screenshot.takeScreenshot(client.getMainRenderTarget(), image ->
+            client.execute(() -> finishWithScreenshot(client, failure, image)));
+    }
+
+    private void finishWithScreenshot(Minecraft client, String failure, NativeImage captured) {
         JsonObject report = new JsonObject();
         report.addProperty("runtimeNamespace", FabricLoader.getInstance().getMappingResolver().getCurrentRuntimeNamespace());
         report.addProperty("clientTicks", ticks);
@@ -72,7 +92,7 @@ public final class PackagedObserverClient implements ClientModInitializer {
             report.addProperty("worldName", client.getSingleplayerServer().getWorldData().getLevelName());
         }
         if (client.level != null) {
-            report.addProperty("dimension", client.level.dimension().location().toString());
+            report.addProperty("dimension", client.level.dimension().identifier().toString());
         }
         if (client.player != null) {
             report.addProperty("playerUuid", client.player.getUUID().toString());
@@ -112,7 +132,7 @@ public final class PackagedObserverClient implements ClientModInitializer {
         try {
             Files.createDirectories(outputDir);
             Path screenshot = outputDir.resolve("screenshot.png");
-            try (NativeImage image = Screenshot.takeScreenshot(client.getMainRenderTarget())) {
+            try (NativeImage image = captured) {
                 if (image == null || image.getWidth() < 1 || image.getHeight() < 1) {
                     throw new IllegalStateException("Screenshot image is empty");
                 }
@@ -174,6 +194,7 @@ public final class PackagedObserverClient implements ClientModInitializer {
         } catch (Exception exception) {
             System.err.println("[Aura QA Observer] Could not write manifest: " + exception);
         }
+        finished = true;
     }
 
     private static String firstFailure(String current, String candidate) {

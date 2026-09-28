@@ -85,9 +85,15 @@ public final class ConsumerLifetimeProbe implements ModInitializer {
     }
 
     private static CompoundTag save(ItemEntity item) {
-        CompoundTag tag = new CompoundTag();
-        item.addAdditionalSaveData(tag);
-        return tag;
+        var output = net.minecraft.world.level.storage.TagValueOutput.createWithContext(
+            net.minecraft.util.ProblemReporter.DISCARDING, item.registryAccess());
+        item.saveWithoutId(output);
+        return output.buildResult();
+    }
+
+    private static void load(ItemEntity item, CompoundTag tag) {
+        item.load(net.minecraft.world.level.storage.TagValueInput.create(
+            net.minecraft.util.ProblemReporter.DISCARDING, item.registryAccess(), tag));
     }
 
     private static void ageAndPersistence(ServerLevel level) {
@@ -98,19 +104,19 @@ public final class ConsumerLifetimeProbe implements ModInitializer {
         lifetime(item).aura$keepAlive();
         require(lifetime(item).aura$isConsumerKeptAlive() && item.getAge() == 0, "Keepalive did not reset age");
         CompoundTag saved = save(item);
-        require(saved.getBoolean(ConsumerItemKeepAlive.PROTECTED_TAG), "Protection not saved");
-        require(saved.getInt(ConsumerItemKeepAlive.AGE_TAG) == 0, "Reset age not saved");
+        require(saved.getBooleanOr(ConsumerItemKeepAlive.PROTECTED_TAG, false), "Protection not saved");
+        require(saved.getIntOr(ConsumerItemKeepAlive.AGE_TAG, -1) == 0, "Reset age not saved");
         saved.putInt(ConsumerItemKeepAlive.AGE_TAG, 70_000);
         ItemEntity restored = item(level, 1);
-        restored.readAdditionalSaveData(saved);
+        load(restored, saved);
         require(lifetime(restored).aura$isConsumerKeptAlive() && restored.getAge() == 70_000,
             "Full-width age/protection not restored");
-        require(save(restored).getInt(ConsumerItemKeepAlive.AGE_TAG) == 70_000, "Full-width age not resaved");
+        require(save(restored).getIntOr(ConsumerItemKeepAlive.AGE_TAG, -1) == 70_000, "Full-width age not resaved");
         require(ConsumerItemKeepAlive.effectiveLifetime(restored, 30_000) == Integer.MAX_VALUE,
             "Protection did not override Red Hole lifetime");
         CompoundTag ordinary = save(item(level, 1));
         ordinary.putShort("Age", (short) 123);
-        restored.readAdditionalSaveData(ordinary);
+        load(restored, ordinary);
         require(!lifetime(restored).aura$isConsumerKeptAlive() && restored.getAge() == 123,
             "Ordinary NBT retained stale protection or age");
         require(ConsumerItemKeepAlive.effectiveLifetime(restored, 6_000) == 6_000, "Ordinary lifetime changed");
@@ -134,7 +140,7 @@ public final class ConsumerLifetimeProbe implements ModInitializer {
         ItemEntity item = item(level, 1);
         CompoundTag saved = save(item);
         saved.putShort("Age", (short) 6_000);
-        item.readAdditionalSaveData(saved);
+        load(item, saved);
         Method mergable = method("method_20397", "()Z");
         require(Boolean.FALSE.equals(mergable.invoke(item)), "Ordinary old item unexpectedly mergeable");
         lifetime(item).aura$extendConsumerLifetime();
@@ -142,7 +148,7 @@ public final class ConsumerLifetimeProbe implements ModInitializer {
         require(item.getAge() == 6_000, "Extending protection reset age");
     }
 
-    // 1.21.1 intermediary mappings, not named-dev reflection strings.
+    // Intermediary mappings, not named-dev reflection strings; verified per target.
     private static Method method(String intermediary, String descriptor, Class<?>... parameters) throws Exception {
         String name = FabricLoader.getInstance().getMappingResolver().mapMethodName("intermediary",
             "net.minecraft.class_1542", intermediary, descriptor);

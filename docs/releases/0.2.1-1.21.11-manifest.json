@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "projectId": 1519395,
+  "version": "0.2.1+1.21.11",
+  "displayName": "Aura Cascade Reimagined 0.2.1+1.21.11 Beta",
+  "artifactPath": "build/libs/aura-cascade-0.2.1+1.21.11.jar",
+  "expectedJarSHA256": "8eb1dc90691b875ff5fb8aa9bb4d06aaa0befa31f23e2b1c5b5452346a3450cb",
+  "releaseType": "beta",
+  "gameVersionNames": [
+    "1.21.11",
+    "Fabric",
+    "Client",
+    "Server"
+  ],
+  "changelogType": "markdown",
+  "changelog": "## Aura Cascade Reimagined 0.2.1 Beta\n\nMinecraft 1.21.11 / Fabric. Requires Fabric Loader 0.19.5+, Java 21, Fabric API, and Patchouli: Fabric Edition 1.21.11-94.4-FABRIC. Fabric API and Patchouli are external required dependencies; Team Reborn Energy API 4.2.0 is bundled. Use a new world or a backed-up trial: old 0.1.x world compatibility is not established. Do not downgrade worlds opened by 1.21.11.\n\n- Carries forward the 0.2.1 hotfixes: dropped-item crafting particles, empty-node connection previews, Aura Creative tab discoverability with later selection retention, stable Aura HUD rows, and nine separate Encyclopedia landing links.\n- White Aura Crystals use one Amethyst Shard surrounded by eight Gold Nuggets, yielding two crystals.\n- Adapts saved data, registrations, recipes, rendering and gameplay hooks to 1.21.11; corrects target HUD/storage text opacity and the invisible Fairy Torch particle texture.\n- Bounded validation includes 258 tests across 65 suites, 11 publishing-utility tests, 15 multiplayer checks, three transformed-item lifetime checks, 18 landing-link assertions, actual-font guide layout, visual feedback/render checks, native persistence, changed gameplay hooks, a fueled White Ingot cycle, a complete White Gem Vortex craft and a third-party energy receiver.\n\nFixtures supply materials and controlled starting states. This is not exhaustive Survival or modpack testing. All fairy-role combinations, natural Scarer spawn rates, a full target Prism cycle and long-duration Red Hole expiry remain outside this validation. Known inherited issue: the Breeder Fairy may select juvenile animals; this forward port does not fix the issue reproduced on canonical 1.21.1.\n\nUnofficial modern port of Aura Cascade by pixlepix; original 1.8.x port by williewillus. Original texture credits and MIT notices are retained.",
+  "relations": {
+    "projects": [
+      {
+        "slug": "fabric-api",
+        "type": "requiredDependency"
+      },
+      {
+        "slug": "patchouli-fabric-edition",
+        "type": "requiredDependency"
+      }
+    ]
+  }
+}

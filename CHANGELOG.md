@@ -1,11 +1,15 @@
 # Aura Cascade Unofficial Port
 
-## Unreleased `0.2.1+1.21.11`
+## Beta `0.2.1+1.21.11`
 
 Forward port of the corrected 0.2.1 gameplay to Fabric 1.21.11, with Java 21.
 Uses the external Patchouli: Fabric Edition dependency and adapts saved data,
-rendering, item models, recipes and Minecraft hooks. Validation is in progress;
-no target publication is claimed by this entry.
+rendering, item models, recipes and Minecraft hooks. Target validation passes
+258 tests in 65 suites, packaged client/server, multiplayer and bounded visual
+and gameplay checks. Corrects HUD/storage text alpha and the invisible light's
+particle texture. The inherited Breeder Fairy juvenile-eligibility issue remains
+open. See `docs/releases/0.2.1-1.21.11-beta.md` for dependencies and limits;
+publication status is recorded separately from validation.
 
 ## Beta `0.2.1+1.21.1`
 

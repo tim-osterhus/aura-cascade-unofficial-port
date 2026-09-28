@@ -12,17 +12,16 @@ $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
 if (-not $Execute) {
     Write-Output 'Preview only. No files/processes created. Requires a remapped private probe JAR and an existing packaged launch manifest + sibling java.args.'
     Write-Output "Execution will create fresh game directories under build/qa-audit/multiplayer, bind 127.0.0.1:$Port, and run AuraOwnerQA + AuraWitnessQA offline."
-    Write-Output 'Reserve the exclusive heavy slot first: no other Java/Gradle/client workloads. Aggregate soft guard 3800 MiB; forced guard 4000 MiB; total deadline 600 seconds.'
+    Write-Output 'Run no other Aura Java workload concurrently. This session aggregate soft guard is 3800 MiB; forced guard 4000 MiB; total deadline 600 seconds.'
     Write-Output 'Memory-tuned profile: 512 MiB heap per JVM, 2 visible processors, client render distance 2; target measured aggregate below 3500 MiB (not guaranteed).'
     return
 }
 if ($PSVersionTable.PSVersion.Major -lt 7) { throw 'Use PowerShell 7.' }
-if (Get-Process -Name java,javaw -ErrorAction SilentlyContinue) { throw 'Another Java process is running. Reserve the parent heavy slot before execution.' }
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $java = (Resolve-Path -LiteralPath (Join-Path $JavaHome 'bin/java.exe')).Path
 $manifest = Get-Content -LiteralPath $ClientLaunchManifest -Raw | ConvertFrom-Json
-if ($manifest.minecraft -ne '1.21.1' -or $manifest.runtimeNamespaceExpected -ne 'intermediary' -or $manifest.identity -notmatch '^offline;') {
-    throw 'Template must be an existing offline packaged 1.21.1 launch manifest.'
+if ($manifest.minecraft -ne '1.21.11' -or $manifest.runtimeNamespaceExpected -ne 'intermediary' -or $manifest.identity -notmatch '^offline;') {
+    throw 'Template must be an existing offline packaged 1.21.11 launch manifest.'
 }
 $templateArgs = @(Get-Content -LiteralPath (Join-Path (Split-Path -Parent $ClientLaunchManifest) 'java.args') | ForEach-Object { ConvertFrom-Json -InputObject $_ })
 function Template-Value([string]$Flag) {
@@ -65,7 +64,7 @@ $dependencies = @(Get-ChildItem -LiteralPath (Join-Path $manifest.gameDirectory 
 })
 $dependencyIds = @($dependencies | ForEach-Object { Mod-Id $_.FullName })
 if ($dependencyIds -notcontains 'fabric-api' -or $dependencyIds -notcontains 'patchouli') { throw 'Template mods must contain staged Fabric API and Patchouli.' }
-$serverTemplate = Join-Path $repo 'build/qa-audit/packaged-server'
+$serverTemplate = Join-Path $repo 'build/qa-audit/packaged-server-1.21.11'
 if ((Get-Content -LiteralPath (Join-Path $serverTemplate 'eula.txt') -Raw) -notmatch '(?m)^eula=true\s*$') {
     throw 'Requires the already accepted isolated server EULA; this runner does not accept a new EULA.'
 }
@@ -175,13 +174,22 @@ function Memory-Sample {
     }
     return $mb
 }
+function Read-LiveSnapshot([string]$Path) {
+    # Java replaces this file while the runner samples it; allow rename on Windows.
+    $stream = [IO.File]::Open($Path, [IO.FileMode]::Open, [IO.FileAccess]::Read,
+        [IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete)
+    try {
+        $reader = [IO.StreamReader]::new($stream)
+        try { return $reader.ReadToEnd() } finally { $reader.Dispose() }
+    } finally { $stream.Dispose() }
+}
 function Read-Probe($Entry) {
     if (Test-Path -LiteralPath (Join-Path $Entry.output 'failure.json')) {
         throw (Get-Content -LiteralPath (Join-Path $Entry.output 'failure.json') -Raw)
     }
     $path = Join-Path $Entry.output 'latest.json'
     if (-not (Test-Path -LiteralPath $path)) { return $null }
-    try { $report = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json } catch { return $null }
+    try { $report = Read-LiveSnapshot $path | ConvertFrom-Json } catch { return $null }
     if ($report.runtimeNamespace -ne 'intermediary' -or $report.auraSha256 -ne $hash) { throw 'Probe did not load the actual remapped candidate.' }
     if ($report.maxFairiesObserved -gt 1) { throw "Duplicate fairy count observed by $($Entry.role)" }
     return $report
@@ -244,7 +252,8 @@ function Capture($Entry, [string]$Label) {
 }
 function Save-Phase([string]$Name, $OwnerEntry) {
     foreach ($entry in @($server, $OwnerEntry, $witness)) {
-        Copy-Item -LiteralPath (Join-Path $entry.output 'latest.json') -Destination (Join-Path $root "$Name-$($entry.role).json")
+        Read-LiveSnapshot (Join-Path $entry.output 'latest.json') |
+            Set-Content -LiteralPath (Join-Path $root "$Name-$($entry.role).json")
     }
 }
 try {
@@ -268,8 +277,8 @@ try {
     Wait-Phase 'two-distinct-players-joined' { @((Read-Probe $server).players).Count -eq 2 -and (Read-Probe $witness).worldLoaded }
     # Explicit stdin fixtures only; probe code never grants items or edits equipment.
     $fixture = @(
-        @{label='quiet-world'; command='gamerule doMobSpawning false'},
-        @{label='fixed-day'; command='gamerule doDaylightCycle false'},
+        @{label='quiet-world'; command='gamerule minecraft:spawn_mobs false'},
+        @{label='fixed-day'; command='gamerule minecraft:advance_time false'},
         @{label='daylight'; command='time set day'},
         @{label='clear-weather'; command='weather clear'},
         @{label='survival-authority'; command='gamemode survival @a'},

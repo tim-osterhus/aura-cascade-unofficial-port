@@ -3,7 +3,11 @@
 ## 1.21.11 Forward Port
 
 Branch `fabric/1.21.11` derives from canonical source checkpoint `44cc057`.
-Implementation and acceptance are in progress; no target release is approved yet.
+Source port `13a4c39` and target-only rendering corrections `d898c99` pass 258
+tests in 65 suites. Final candidate SHA-256 is
+`8eb1dc90691b875ff5fb8aa9bb4d06aaa0befa31f23e2b1c5b5452346a3450cb`.
+Packaged client/server, multiplayer, changed-hook and bounded visual checks pass;
+release status and explicit coverage limits remain in the target audit.
 See [the target audit](docs/audits/2026-09-25-port-12111.md) for dependency proof,
 memory measurements and target-only changes. All results below belong to the
 historical 1.21.1 baseline unless explicitly labeled otherwise.

@@ -1,5 +1,11 @@
 # Private Packaged Multiplayer Fixture
 
+This branch targets Minecraft 1.21.11. The dated passes below are historical
+1.21.1 evidence, not target-version results. Use the target packaged client
+manifest and `build/qa-audit/packaged-server-1.21.11` installation. Cross-thread
+playtest coordination is no longer required; this runner still enforces its own
+aggregate workload guard, and no other Aura build/game workload should overlap it.
+
 **Packaged multiplayer state/ownership/rejoin PASS:** parent run
 `20260923-093241-443` passed all 15 checks, with 3032.2 MiB peak private allocation
 and 2512.7 MiB working set; all four process instances exited 0. See the
@@ -9,6 +15,15 @@ confirmed by the parent; witness views are occluded, so both-client visual
 acceptance remains open. This separate private QA mod is not a release artifact.
 
 ## Small Fixture, Real Gameplay Paths
+
+The numbered multiplayer workflow below remains separate from the additional
+opt-in target probes bundled in the same private QA JAR. Those target probes
+can seed disposable server fixtures. `measure-packaged-server.ps1` selects
+native persistence, hook, progression, Vortex, disk-restart and external-energy
+checks, waits for their fresh completed reports, and requests a normal save and
+stop. Reports distinguish seeded materials from generated power and actual
+progression; detached codec tests do not prove disk persistence. None of these
+fixtures or QA classes are nested in the production artifact.
 
 One separate Fabric test mod has a client driver and a read-only dedicated-server
 probe. A single PowerShell runner coordinates them using local JSON files. There
@@ -146,8 +161,8 @@ mod mixin registration or production entrypoint is required.
 
 ## Execution Prerequisites
 
-- Parent reserves the exclusive heavy slot after all single-client gates. The
-  runner refuses to start if any `java`/`javaw` process exists, including Gradle.
+- Parent starts this fixture after its single-client gates, without another Aura
+  workload. Unrelated threads' Java processes are neither blocked nor stopped.
 - Windows x64, PowerShell 7, existing Java 21, built remapped candidate Aura JAR,
   and the separately remapped test JAR.
 - An existing successful packaged launch's `launch-manifest.json` **and sibling
@@ -157,7 +172,7 @@ mod mixin registration or production entrypoint is required.
 - All template libraries/assets/natives are staged inside this repository. No
   global `.minecraft` fallback, dependency download, token discovery or real
   account authentication is performed by this script.
-- `build/qa-audit/packaged-server` is already installed and has an already
+- `build/qa-audit/packaged-server-1.21.11` is already installed and has an already
   accepted `eula.txt`. The runner copies launcher/server JARs, libraries/versions,
   and that EULA into a **new** server directory, not any old world/player data.
 - Fabric API and Patchouli JARs are available in the template game's `mods`.
@@ -242,3 +257,17 @@ sync, unwanted remote attachment, missing/duplicate fairy or forced shutdown is
 a failure. `success:true` reflects the executed state checks; screenshot-file
 existence alone does not certify visible fairy pixels. Preserve the third run's
 bounded state PASS and its unresolved witness-image limitation separately.
+
+## Target Storage Probe
+
+`measure-packaged-server.ps1 -TargetStorage` opts into a dedicated-server
+coordinator fixture. It seeds two real Storage Books and Aura Node power, then
+checks component-aware browser aggregation, insufficient-power rejection,
+powered retrieval/item conservation and a disconnected-network negative. It
+restores its fixture and reports the loaded product hash. This is not earned
+progression, client search typing, or network-packet-path acceptance.
+
+The multiplayer runner reads live JSON snapshots with Windows read/write/delete
+sharing, allowing Java to replace its evidence file while it is sampled. The
+September 27 sharing-violation failure is retained separately from the successful
+corrected run in the target audit.

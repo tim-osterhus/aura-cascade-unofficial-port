@@ -7,7 +7,7 @@ allprojects {
         def observerSources = sourceSets.create('qaObserver') {
             java.srcDir 'scripts/qa/observer/src/main/java'
             resources.srcDir 'scripts/qa/observer/src/main/resources'
-            compileClasspath += sourceSets.main.compileClasspath
+            compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
         }
         def observerJar = tasks.register('qaObserverJar', Jar) {
             dependsOn tasks.named(observerSources.classesTaskName)
@@ -61,6 +61,9 @@ allprojects {
     tasks.withType(Test).configureEach {
         maxHeapSize = '512m'
         maxParallelForks = 1
+    }
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs += ['-Xmaxerrs', '500']
     }
     tasks.withType(JavaExec).configureEach {
         maxHeapSize = '1280m'

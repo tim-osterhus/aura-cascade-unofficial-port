@@ -15,9 +15,16 @@ Aura Cascade is an unofficial modern Fabric port of the shipped `AuraCascade-592
 
 ## Release Status
 
-The `fabric/1.21.11` branch is an in-progress forward port of the reviewed
-`0.2.1+1.21.1` checkpoint `44cc057`. Target validation and publication have not
-passed yet. See [the target audit](docs/audits/2026-09-25-port-12111.md).
+The `fabric/1.21.11` branch forward-ports the reviewed `0.2.1+1.21.1`
+checkpoint `44cc057`, with target-only rendering corrections in `d898c99`.
+The release candidate passes 258 tests in 65 suites, packaged client/server,
+multiplayer and bounded visual/gameplay checks. Publication status and exact
+coverage are recorded in [the target audit](docs/audits/2026-09-25-port-12111.md)
+and [target beta notes](docs/releases/0.2.1-1.21.11-beta.md).
+Requires Java 21, Fabric Loader 0.19.5+, Fabric API and Patchouli: Fabric Edition
+1.21.11-94.4-FABRIC. Use a new world or a backed-up trial; old 0.1.x world
+compatibility is unverified. The inherited Breeder Fairy juvenile-eligibility
+issue remains open. This beta is not an exhaustive Survival or modpack audit.
 The results below are historical 1.21.1 evidence, not target-version passes.
 
 Version `0.2.1+1.21.1` is the visual-feedback hotfix for

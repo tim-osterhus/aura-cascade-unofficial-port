@@ -7,13 +7,21 @@
   "entrypoints": {
     "main": [
       "pixlepix.auracascade.qa.multiplayer.MultiplayerServerProbe",
+      "pixlepix.auracascade.qa.multiplayer.ExternalEnergyProbe",
+      "pixlepix.auracascade.qa.multiplayer.TargetPersistenceProbe",
+      "pixlepix.auracascade.qa.multiplayer.TargetHookProbe",
+      "pixlepix.auracascade.qa.multiplayer.TargetRemainingHookProbe",
+      "pixlepix.auracascade.qa.multiplayer.TargetProgressionProbe",
+      "pixlepix.auracascade.qa.multiplayer.TargetVortexProbe",
+      "pixlepix.auracascade.qa.multiplayer.TargetStorageProbe",
+      "pixlepix.auracascade.qa.multiplayer.TargetDiskPersistenceProbe",
       "pixlepix.auracascade.qa.multiplayer.ConsumerLifetimeProbe"
     ],
     "client": ["pixlepix.auracascade.qa.multiplayer.MultiplayerClientProbe"]
   },
   "depends": {
-    "fabricloader": ">=0.19.1",
-    "minecraft": "1.21.1",
+    "fabricloader": ">=0.19.5",
+    "minecraft": "1.21.11",
     "java": ">=21",
     "fabric-api": "*",
     "aura": "*"

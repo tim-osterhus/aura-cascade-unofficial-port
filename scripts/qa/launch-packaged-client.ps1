@@ -3,7 +3,11 @@ param(
     [ValidatePattern('^[A-Za-z0-9_]{1,16}$')][string]$Username = 'AuraBrowserQA',
     [ValidateRange(512, 7000)][int]$StopAtMB = 3800,
     [switch]$StageDependencies,
-    [switch]$Execute
+    [switch]$Execute,
+    [switch]$Interactive,
+    [switch]$ClientProbe,
+    [switch]$FeedbackProbe,
+    [switch]$RenderProbe
 )
 
 $ErrorActionPreference = 'Stop'
@@ -18,14 +22,15 @@ if ([Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -ne [Runti
 }
 
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
-$root = Join-Path $repo 'build/qa-audit/packaged-client'
+$root = Join-Path $repo 'build/qa-audit/packaged-client-1.21.11'
 $runId = Get-Date -Format 'yyyyMMdd-HHmmss-fff'
-$runDir = Join-Path $repo "build/qa-audit/packaged-client-runs/$runId"
-$observerOutputDir = Join-Path $repo "build/qa-audit/observer/runs/$runId"
-$versionId = '1.21.1'
-$baseJsonPath = Join-Path $root 'versions/1.21.1/1.21.1.json'
-$clientJar = Join-Path $root 'versions/1.21.1/1.21.1.jar'
+$runDir = Join-Path $repo "build/qa-audit/packaged-client-1.21.11-runs/$runId"
+$observerOutputDir = Join-Path $repo "build/qa-audit/observer/runs/1.21.11/$runId"
+$versionId = '1.21.11'
+$baseJsonPath = Join-Path $root "versions/$versionId/$versionId.json"
+$clientJar = Join-Path $root "versions/$versionId/$versionId.jar"
 $modsDir = Join-Path $root 'mods'
+$patchouliSha256 = '08f8834ea942a5eefcb49811dd753f5f169fe76d142858f71914245f3b2d4462'
 $fixtureName = 'disposablefixturecopy'
 $fixtureDir = Join-Path $root "saves/$fixtureName"
 $projectProperties = @{}
@@ -33,6 +38,19 @@ foreach ($line in Get-Content -LiteralPath (Join-Path $repo 'gradle.properties')
     if ($line -match '^\s*([^#!\s][^=]*)=(.*)$') { $projectProperties[$matches[1].Trim()] = $matches[2].Trim() }
 }
 $projectVersion = [string]$projectProperties['mod_version']
+$expectedProperties = @{
+    minecraft_version = '1.21.11'
+    loader_version = '0.19.5'
+    fabric_api_version = '0.141.6+1.21.11'
+    patchouli_file = '8713841'
+    energy_api_version = '4.2.0'
+}
+foreach ($key in $expectedProperties.Keys) {
+    if ([string]$projectProperties[$key] -ne $expectedProperties[$key]) {
+        throw "gradle.properties $key must be $($expectedProperties[$key]) for this packaged run."
+    }
+}
+if (-not $projectVersion.EndsWith('+1.21.11')) { throw "Unexpected target mod version: $projectVersion" }
 $archiveName = if ($projectProperties['archives_base_name']) { [string]$projectProperties['archives_base_name'] } else { 'aura-cascade' }
 $auraJarSource = Join-Path $repo "build/libs/$archiveName-$projectVersion.jar"
 $observerJarSource = Join-Path $repo "build/qa-audit/observer/aura-qa-observer-$projectVersion.jar"
@@ -248,11 +266,11 @@ function Ensure-Assets($Index, [string]$AssetDirectory) {
 }
 
 if (-not (Test-Path -LiteralPath $baseJsonPath -PathType Leaf) -or -not (Test-Path -LiteralPath $clientJar -PathType Leaf)) {
-    throw 'The staged vanilla 1.21.1 JSON/JAR is missing.'
+    throw 'The staged vanilla 1.21.11 JSON/JAR is missing.'
 }
 $base = Get-Content -LiteralPath $baseJsonPath -Raw | ConvertFrom-Json
 if ($base.id -ne $versionId -or (Get-Sha1 $clientJar) -ne $base.downloads.client.sha1) {
-    throw 'The staged vanilla client JAR does not match the 1.21.1 version metadata.'
+    throw 'The staged vanilla client JAR does not match the 1.21.11 version metadata.'
 }
 
 $profiles = [System.Collections.Generic.List[object]]::new()
@@ -262,9 +280,9 @@ foreach ($path in Get-ChildItem -LiteralPath (Join-Path $root 'versions') -Filte
         $profiles.Add([pscustomobject]@{ Path = $path.FullName; Data = $candidate })
     }
 }
-if ($profiles.Count -ne 1) { throw "Expected one installed Fabric KnotClient profile inheriting 1.21.1; found $($profiles.Count). Run the isolated installer first." }
+if ($profiles.Count -ne 1) { throw "Expected one installed Fabric KnotClient profile inheriting 1.21.11; found $($profiles.Count). Run the isolated installer first." }
 $profile = $profiles[0].Data
-if ($profile.id -notmatch '^fabric-loader-0\.19\.1-1\.21\.1$') { throw "Unexpected Fabric profile ID: $($profile.id)" }
+if ($profile.id -ne 'fabric-loader-0.19.5-1.21.11') { throw "Unexpected Fabric profile ID: $($profile.id)" }
 
 $java = $null
 if ($Execute) {
@@ -276,11 +294,17 @@ $auraMetadata = $null
 $observerMetadata = $null
 if (Test-Path -LiteralPath $auraJarSource -PathType Leaf) {
     $auraMetadata = Read-FabricModMetadata $auraJarSource
-    if ($auraMetadata.id -ne 'aura') { throw "Unexpected packaged Aura mod id: $($auraMetadata.id)" }
+    if ($auraMetadata.id -ne 'aura' -or $auraMetadata.version -ne $projectVersion -or
+        $auraMetadata.depends.minecraft -ne $versionId -or $auraMetadata.depends.fabricloader -ne '>=0.19.5' -or
+        $auraMetadata.depends.patchouli -ne '>=1.21.11-94.4-FABRIC') {
+        throw "Packaged Aura JAR metadata does not match the 1.21.11 release: $auraJarSource"
+    }
 }
 if (Test-Path -LiteralPath $observerJarSource -PathType Leaf) {
     $observerMetadata = Read-FabricModMetadata $observerJarSource
-    if ($observerMetadata.id -ne 'aura_qa_observer') { throw "Unexpected packaged observer mod id: $($observerMetadata.id)" }
+    if ($observerMetadata.id -ne 'aura_qa_observer' -or $observerMetadata.depends.minecraft -ne $versionId) {
+        throw "Packaged observer JAR must target Minecraft $versionId`: $observerJarSource"
+    }
 }
 if ($Execute) {
     if (-not $projectVersion -or -not $auraMetadata -or -not $observerMetadata) {
@@ -288,8 +312,8 @@ if ($Execute) {
     }
     $auraZip = [IO.Compression.ZipFile]::OpenRead($auraJarSource)
     try {
-        if (-not $auraZip.GetEntry('META-INF/jars/energy-4.1.0.jar')) {
-            throw 'The packaged Aura JAR is missing nested energy-4.1.0.jar.'
+        if (-not $auraZip.GetEntry('META-INF/jars/energy-4.2.0.jar')) {
+            throw 'The packaged Aura JAR is missing nested energy-4.2.0.jar.'
         }
     } finally { $auraZip.Dispose() }
     if (Get-ChildItem -LiteralPath $modsDir -Filter 'energy-*.jar' -File -ErrorAction SilentlyContinue) {
@@ -298,21 +322,36 @@ if ($Execute) {
     $auraMetadata = Stage-RemappedMod $auraJarSource $auraJarTarget 'aura'
     $observerMetadata = Stage-RemappedMod $observerJarSource $observerJarTarget 'aura_qa_observer'
 }
-$modJars = @(Get-ChildItem -LiteralPath $modsDir -Filter '*.jar' -File | Sort-Object Name)
-$hasFabricApi = @($modJars | Where-Object Name -Like 'fabric-api-*.jar').Count -gt 0
-$hasPatchouli = @($modJars | Where-Object Name -Like 'Patchouli-*.jar').Count -gt 0
-if ($Execute -and (-not $hasFabricApi -or -not $hasPatchouli)) {
-    throw 'The isolated mods folder must contain Fabric API and Patchouli before launch.'
-}
+$modJars = if (Test-Path -LiteralPath $modsDir -PathType Container) {
+    @(Get-ChildItem -LiteralPath $modsDir -Filter '*.jar' -File | Sort-Object Name)
+} else { @() }
 if ($Execute) {
+    $modCounts = @{ 'fabric-api' = 0; patchouli = 0; aura = 0; aura_qa_observer = 0 }
     foreach ($modJar in $modJars) {
         if ($modJar.Name -match '(?i)(bridge|lab6|-dev\.jar$|-sources\.jar$)') {
             throw "Non-production/bridge artifact is not allowed in packaged mods: $($modJar.Name)"
         }
-        $modId = (Read-FabricModMetadata $modJar.FullName).id
-        if ($modId -notin @('fabric-api', 'patchouli', 'aura', 'aura_qa_observer')) {
+        $metadata = Read-FabricModMetadata $modJar.FullName
+        $modId = [string]$metadata.id
+        if (-not $modCounts.ContainsKey($modId)) {
             throw "Unexpected mod in isolated production run: $($modJar.Name) (id=$modId)"
         }
+        $modCounts[$modId]++
+        if ($modId -eq 'fabric-api' -and $metadata.version -ne '0.141.6+1.21.11') {
+            throw "Fabric API must be 0.141.6+1.21.11: $($modJar.Name)"
+        }
+        if ($modId -eq 'patchouli') {
+            $actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $modJar.FullName).Hash.ToLowerInvariant()
+            if ($metadata.version -ne '1.21.11-94.4-FABRIC' -or $actualHash -ne $patchouliSha256) {
+                throw "Patchouli must be CurseForge file 8713841 with SHA-256 ${patchouliSha256}: $($modJar.Name)"
+            }
+        }
+    }
+    if ($modCounts['fabric-api'] -ne 1 -or $modCounts['patchouli'] -ne 1) {
+        throw 'The isolated mods folder must contain exactly one target Fabric API and one verified Patchouli JAR.'
+    }
+    if ($Execute -and ($modCounts['aura'] -ne 1 -or $modCounts['aura_qa_observer'] -ne 1)) {
+        throw 'The packaged run must contain exactly one Aura JAR and one observer JAR.'
     }
 }
 if ($Execute -and -not (Test-Path -LiteralPath $fixtureDir -PathType Container)) {
@@ -456,6 +495,19 @@ $jvmArgs.Add('-XX:ReservedCodeCacheSize=96m')
 $jvmArgs.Add('-XX:MaxDirectMemorySize=256m')
 $jvmArgs.Add("-Djava.library.path=$nativesDir")
 $jvmArgs.Add("-Daura.qa.observer.dir=$observerOutputDir")
+if ($ClientProbe) {
+    $jvmArgs.Add('-Daura.qa.clientProbe=true')
+    $jvmArgs.Add("-Daura.qa.clientProbe.output=$(Join-Path $observerOutputDir 'client-probe')")
+}
+if ($FeedbackProbe) {
+    $jvmArgs.Add('-Daura.qa.feedbackProbe=true')
+    $jvmArgs.Add("-Daura.qa.feedbackProbe.output=$(Join-Path $observerOutputDir 'feedback-probe')")
+}
+if ($RenderProbe) {
+    $jvmArgs.Add('-Daura.qa.renderProbe=true')
+    $jvmArgs.Add("-Daura.qa.renderProbe.output=$(Join-Path $observerOutputDir 'render-probe')")
+}
+if ($Interactive) { $jvmArgs.Add('-Daura.qa.observer.keepOpen=true') }
 $jvmArgs.Add('-cp')
 $jvmArgs.Add($values.classpath)
 
@@ -468,6 +520,7 @@ Write-Output "Fixture required: $fixtureDir"
 Write-Output "Aura JAR: $auraJarSource"
 Write-Output "Observer JAR: $observerJarSource"
 Write-Output "Observer output: $observerOutputDir"
+if ($Interactive) { Write-Output 'Interactive mode: the client remains open after the observer finishes; close it normally when done.' }
 Write-Output "Screenshot: $(Join-Path $observerOutputDir 'screenshot.png')"
 if ($missingArtifacts.Count -gt 0) { Write-Output "Unresolved paths: $($missingArtifacts -join '; ')" }
 if (-not $Execute) {
@@ -516,12 +569,14 @@ $manifest = [pscustomobject]@{
     mods = @($modJars | ForEach-Object { [pscustomobject]@{ name = $_.Name; sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash.ToLowerInvariant() } })
     unresolvedArtifacts = @($missingArtifacts)
     memoryLimitMiB = $StopAtMB
+    interactive = [bool]$Interactive
     startedUtc = [DateTime]::UtcNow.ToString('o')
 }
 $manifest | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $runDir 'launch-manifest.json')
 
 $started = [DateTime]::UtcNow
-$client = Start-Process -FilePath $java -ArgumentList "@`"$argumentFile`"" -WorkingDirectory $root -WindowStyle Hidden -PassThru `
+$windowStyle = if ($Interactive) { 'Normal' } else { 'Hidden' }
+$client = Start-Process -FilePath $java -ArgumentList "@`"$argumentFile`"" -WorkingDirectory $root -WindowStyle $windowStyle -PassThru `
     -RedirectStandardOutput (Join-Path $runDir 'stdout.log') -RedirectStandardError (Join-Path $runDir 'stderr.log')
 $client.Id | Set-Content -LiteralPath (Join-Path $runDir 'pid.txt')
 $samples = [System.Collections.Generic.List[object]]::new()
@@ -569,6 +624,11 @@ if ($stoppedForMemory) { exit 124 }
 if ($client.ExitCode -ne 0) { throw "Packaged client exited abnormally with code $($client.ExitCode)" }
 $observerManifestPath = Join-Path $observerOutputDir 'manifest.json'
 $observerScreenshot = Join-Path $observerOutputDir 'screenshot.png'
+if ($Interactive -and -not (Test-Path -LiteralPath $observerManifestPath -PathType Leaf) -and
+    -not (Test-Path -LiteralPath $observerScreenshot -PathType Leaf)) {
+    Write-Output 'Interactive client closed before the observer report completed; no packaged-run pass is claimed.'
+    exit 0
+}
 if (-not (Test-Path -LiteralPath $observerManifestPath -PathType Leaf) -or -not (Test-Path -LiteralPath $observerScreenshot -PathType Leaf)) {
     throw "Observer did not write its manifest and screenshot under $observerOutputDir"
 }
@@ -585,6 +645,21 @@ if (-not $observerReport.success -or $observerReport.runtimeNamespace -ne 'inter
     throw "Observer manifest did not prove the packaged singleplayer run: $observerManifestPath"
 }
 Write-Output "Observer PASS: runtime=intermediary, Aura SHA-256=$expectedAuraHash"
+if ($ClientProbe) {
+    $probePath = Join-Path $observerOutputDir 'client-probe/manifest.json'
+    if (-not (Test-Path -LiteralPath $probePath -PathType Leaf)) { throw 'Missing client interaction probe report.' }
+    $probe = Get-Content -LiteralPath $probePath -Raw | ConvertFrom-Json
+    if (-not $probe.complete -or -not $probe.success) { throw "Client interaction probe failed: $probePath" }
+    Write-Output "Client interaction probe PASS: $probePath"
+}
 Write-Output "Screenshot: $observerScreenshot"
 Write-Output "Observer manifest: $observerManifestPath"
+foreach ($probeName in @($(if ($FeedbackProbe) { 'feedback-probe' }), $(if ($RenderProbe) { 'render-probe' }))) {
+    if (-not $probeName) { continue }
+    $probePath = Join-Path $observerOutputDir "$probeName/manifest.json"
+    if (-not (Test-Path -LiteralPath $probePath -PathType Leaf)) { throw "Missing $probeName report." }
+    $probe = Get-Content -LiteralPath $probePath -Raw | ConvertFrom-Json
+    if (-not $probe.complete -or -not $probe.success) { throw "$probeName failed: $probePath" }
+    Write-Output "$probeName state checks PASS (independent visual review still required): $probePath"
+}
 exit $client.ExitCode

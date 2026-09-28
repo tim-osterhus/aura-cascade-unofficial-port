@@ -6,7 +6,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
-$installDir = Join-Path $repo "build/qa-audit/packaged-$Mode"
+$installDir = Join-Path $repo "build/qa-audit/packaged-$Mode-1.21.11"
 $installer = Join-Path $repo 'build/qa-audit/tools/fabric-installer-1.1.2.jar'
 $expectedSha256 = '61e035bf7bf70153e127440ce34de47c9036f0a2d0c65d1529454bd35ceefe4f'
 
@@ -27,9 +27,9 @@ if (-not (Test-Path -LiteralPath $java -PathType Leaf)) {
 }
 
 $installerArgs = if ($Mode -eq 'client') {
-    @('client', '-dir', $installDir, '-mcversion', '1.21.1', '-loader', '0.19.1', '-noprofile')
+    @('client', '-dir', $installDir, '-mcversion', '1.21.11', '-loader', '0.19.5', '-noprofile')
 } else {
-    @('server', '-dir', $installDir, '-mcversion', '1.21.1', '-loader', '0.19.1', '-downloadMinecraft')
+    @('server', '-dir', $installDir, '-mcversion', '1.21.11', '-loader', '0.19.5', '-downloadMinecraft')
 }
 
 Write-Output "Isolated Fabric $Mode install: $installDir"

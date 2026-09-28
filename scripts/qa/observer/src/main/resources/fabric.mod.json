@@ -8,8 +8,8 @@
     "client": ["pixlepix.auracascade.qa.PackagedObserverClient"]
   },
   "depends": {
-    "fabricloader": ">=0.19.1",
-    "minecraft": "1.21.1",
+    "fabricloader": ">=0.19.5",
+    "minecraft": "1.21.11",
     "fabric-api": "*"
   }
 }

@@ -69,7 +69,7 @@ public final class MultiplayerClientProbe implements ClientModInitializer {
             report.add("lastUse", lastUse);
             report.addProperty("renderedFrames", renderedFrames);
             report.addProperty("screenshot", lastScreenshot);
-            report.addProperty("localPlayer", client.player == null ? "" : client.player.getGameProfile().getName());
+            report.addProperty("localPlayer", client.player == null ? "" : client.player.getGameProfile().name());
             report.addProperty("accessoryMenu", loaded && client.player.containerMenu instanceof AuraAccessoryMenu);
             if (ticks % 20 == 0) evidence.publish(report);
         } catch (Exception error) {
@@ -87,7 +87,7 @@ public final class MultiplayerClientProbe implements ClientModInitializer {
             renderedFrames = 0;
             return;
         }
-        if (!"AuraOwnerQA".equals(client.player.getGameProfile().getName())) {
+        if (!"AuraOwnerQA".equals(client.player.getGameProfile().name())) {
             throw new IllegalStateException("Only the fixture owner may issue equip/use actions");
         }
         switch (action) {
@@ -112,16 +112,16 @@ public final class MultiplayerClientProbe implements ClientModInitializer {
                 if (!client.player.getInventory().getItem(1).is(AuraItems.FAIRY_CHARM)) {
                     throw new IllegalStateException("Fixture charm missing from hotbar slot 1");
                 }
-                client.player.getInventory().selected = 1;
+                client.player.getInventory().setSelectedSlot(1);
                 lastUse = new JsonObject();
                 lastUse.addProperty("sequence", lastCommand);
                 lastUse.addProperty("hand", "MAIN_HAND");
-                lastUse.addProperty("selectedHotbarSlot", client.player.getInventory().selected);
+                lastUse.addProperty("selectedHotbarSlot", client.player.getInventory().getSelectedSlot());
                 lastUse.addProperty("item", BuiltInRegistries.ITEM.getKey(client.player.getMainHandItem().getItem()).toString());
                 lastUse.addProperty("count", client.player.getMainHandItem().getCount());
                 // Fabric's successful UseItemCallback cancels before vanilla selected-slot sync.
                 client.player.connection.send(new ServerboundSetCarriedItemPacket(1));
-                lastUse.addProperty("result", client.gameMode.useItem(client.player, InteractionHand.MAIN_HAND).name());
+                lastUse.addProperty("result", client.gameMode.useItem(client.player, InteractionHand.MAIN_HAND).toString());
             }
             default -> throw new IllegalArgumentException("Unknown fixture action " + action);
         }
@@ -131,15 +131,19 @@ public final class MultiplayerClientProbe implements ClientModInitializer {
         if (stopped || evidence == null || client.level == null || client.player == null || client.screen != null) return;
         renderedFrames++;
         if (capture == null || renderedFrames < 40) return;
-        try (NativeImage image = Screenshot.takeScreenshot(client.getMainRenderTarget())) {
+        String captureName = capture;
+        int captureCommand = lastCommand;
+        capture = null;
+        Screenshot.takeScreenshot(client.getMainRenderTarget(), image -> {
+        try (image) {
             if (image == null || image.getWidth() < 1 || image.getHeight() < 1) throw new IllegalStateException("Empty screenshot");
-            image.writeToFile(evidence.output.resolve(capture));
-            lastScreenshot = capture;
-            capture = null;
-            acknowledged = lastCommand;
+            image.writeToFile(evidence.output.resolve(captureName));
+            lastScreenshot = captureName;
+            acknowledged = captureCommand;
         } catch (Exception error) {
             MultiplayerEvidence.failure(error);
             stopped = true;
         }
+        });
     }
 }

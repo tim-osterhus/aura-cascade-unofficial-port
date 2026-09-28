@@ -15,7 +15,7 @@ import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.network.chat.Style;
 import vazkii.patchouli.api.PatchouliConfigAccess.TextOverflowMode;
 import vazkii.patchouli.client.book.BookContents;
@@ -35,7 +35,7 @@ import vazkii.patchouli.common.book.Book;
 import vazkii.patchouli.common.book.BookRegistry;
 
 public final class GuideLayoutAudit {
-    private static final ResourceLocation BOOK_ID = ResourceLocation.fromNamespaceAndPath("aura", "encyclopedia_aura");
+    private static final Identifier BOOK_ID = Identifier.fromNamespaceAndPath("aura", "encyclopedia_aura");
     private static final String ENTRY_RESOURCE_DIRECTORY = "patchouli_books/encyclopedia_aura/en_us/entries";
     private static final int EXPECTED_ENTRY_RESOURCE_COUNT = 41;
     private static final int QUEST_AUTOMATIC_TEXT_LIMIT = 131;
@@ -100,7 +100,7 @@ public final class GuideLayoutAudit {
         try {
             try {
                 GuiBookLanding landingGui = new GuiBookLanding(book);
-                landingGui.init(client, client.getWindow().getGuiScaledWidth(), client.getWindow().getGuiScaledHeight());
+                landingGui.init(client.getWindow().getGuiScaledWidth(), client.getWindow().getGuiScaledHeight());
                 result.add("landing", auditLanding(client, book, landingGui, failures, totals));
             } catch (Exception | LinkageError exception) {
                 failures.add("landing: landing_layout_audit_failed: " + exception);
@@ -122,7 +122,7 @@ public final class GuideLayoutAudit {
                     GuiBookEntry gui = new GuiBookEntry(book, entry, spread);
                     int firstPage = spread * 2;
                     try {
-                        gui.init(client, client.getWindow().getGuiScaledWidth(), client.getWindow().getGuiScaledHeight());
+                        gui.init(client.getWindow().getGuiScaledWidth(), client.getWindow().getGuiScaledHeight());
                     } catch (Exception | LinkageError exception) {
                         failures.add(entry.getId() + " spread " + spread + ": page_gui_init_failed: " + exception);
                         for (int index = firstPage; index < Math.min(firstPage + 2, pages.size()); index++) {
@@ -498,7 +498,7 @@ public final class GuideLayoutAudit {
     }
 
     private static ResourceCounts countResources(Minecraft client) throws Exception {
-        Map<ResourceLocation, net.minecraft.server.packs.resources.Resource> resources = client.getResourceManager()
+        Map<Identifier, net.minecraft.server.packs.resources.Resource> resources = client.getResourceManager()
             .listResources(ENTRY_RESOURCE_DIRECTORY, id -> id.getNamespace().equals("aura")
                 && id.getPath().endsWith(".json"));
         int pageCount = 0;

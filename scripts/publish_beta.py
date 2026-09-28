@@ -14,8 +14,16 @@ from publish_curseforge import DEFAULT_API_BASE_URL, PublishError, load_mod_vers
 
 
 PROJECT_ID = 1519395
-MINECRAFT_VERSION = "1.21.1"
-REQUIRED_RELATIONS = ("fabric-api", "patchouli")
+MINECRAFT_VERSION = "1.21.11"
+REQUIRED_RELATIONS = ("fabric-api", "patchouli-fabric-edition")
+REQUIRED_MOD_IDS = ("fabric-api", "patchouli", "team_reborn_energy")
+BUILD_PINS = {
+    "minecraft_version": MINECRAFT_VERSION,
+    "loader_version": "0.19.5",
+    "fabric_api_version": "0.141.6+1.21.11",
+    "patchouli_file": "8713841",
+    "energy_api_version": "4.2.0",
+}
 SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 
@@ -95,6 +103,8 @@ def validate_manifest(workspace: Path, manifest_path: Path) -> tuple[dict[str, A
         raise BetaPublishError('Manifest releaseType must be "beta".')
 
     version = _required_string(manifest, "version")
+    if not version.endswith(f"+{MINECRAFT_VERSION}"):
+        raise BetaPublishError(f"Manifest version must end in +{MINECRAFT_VERSION}.")
     _required_string(manifest, "displayName")
     _required_string(manifest, "changelog")
     expected_sha256 = _required_string(manifest, "expectedJarSHA256")
@@ -109,6 +119,8 @@ def validate_manifest(workspace: Path, manifest_path: Path) -> tuple[dict[str, A
         raise BetaPublishError("artifactPath must resolve inside the workspace.") from exc
     if artifact_path.suffix.lower() != ".jar" or not artifact_path.is_file():
         raise BetaPublishError(f"artifactPath must name an existing jar: {artifact_name}")
+
+    validate_build_pins(workspace)
 
     source_metadata_path = workspace / "src" / "main" / "resources" / "fabric.mod.json"
     try:
@@ -131,7 +143,7 @@ def validate_manifest(workspace: Path, manifest_path: Path) -> tuple[dict[str, A
     )
     if len(game_version_set) != len(game_versions) or game_version_set not in allowed_game_version_sets:
         raise BetaPublishError(
-            'gameVersionNames must be exactly ["1.21.1", "Fabric", "Client", "Server"] with optional "Java 21".'
+            f'gameVersionNames must be exactly ["{MINECRAFT_VERSION}", "Fabric", "Client", "Server"] with optional "Java 21".'
         )
 
     relations = manifest.get("relations")
@@ -143,16 +155,15 @@ def validate_manifest(workspace: Path, manifest_path: Path) -> tuple[dict[str, A
             raise BetaPublishError("Each relations.projects entry must include a slug and type.")
         if not isinstance(relation.get("type"), str):
             raise BetaPublishError("Each relations.projects entry must include a slug and type.")
-    required_slugs = {
+    required_slugs = [
         relation["slug"].strip().lower()
         for relation in projects
         if relation.get("type") == "requiredDependency"
-    }
-    missing_relations = sorted(set(REQUIRED_RELATIONS) - required_slugs)
-    if missing_relations:
+    ]
+    if len(projects) != len(REQUIRED_RELATIONS) or sorted(required_slugs) != sorted(REQUIRED_RELATIONS):
         raise BetaPublishError(
-            "Manifest relations must mark these projects as requiredDependency: "
-            + ", ".join(missing_relations)
+            "Manifest relations must mark exactly these projects as requiredDependency: "
+            + ", ".join(REQUIRED_RELATIONS)
         )
 
     actual_sha256 = sha256_file(artifact_path)
@@ -177,6 +188,22 @@ def read_jar_metadata(artifact_path: Path) -> dict[str, Any]:
     return metadata
 
 
+def validate_build_pins(workspace: Path) -> None:
+    properties_path = workspace / "gradle.properties"
+    try:
+        properties = {}
+        for raw in properties_path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if line and not line.startswith(("#", "!")) and "=" in line:
+                key, value = line.split("=", 1)
+                properties[key.strip()] = value.strip()
+    except OSError as exc:
+        raise BetaPublishError(f"Missing build properties: {properties_path}") from exc
+    for key, expected in BUILD_PINS.items():
+        if properties.get(key, "").strip() != expected:
+            raise BetaPublishError(f"gradle.properties {key} must be {expected} for this release.")
+
+
 def validate_fabric_metadata(
     metadata: dict[str, Any],
     expected_version: str,
@@ -194,7 +221,11 @@ def validate_fabric_metadata(
     dependencies = metadata.get("depends")
     if not isinstance(dependencies, dict) or dependencies.get("minecraft") != MINECRAFT_VERSION:
         raise BetaPublishError(f"The {label} fabric.mod.json must target Minecraft {MINECRAFT_VERSION} exactly.")
-    for mod_id in REQUIRED_RELATIONS:
+    if dependencies.get("fabricloader") != ">=0.19.5":
+        raise BetaPublishError(f"The {label} fabric.mod.json must require Fabric Loader >=0.19.5.")
+    if dependencies.get("patchouli") != ">=1.21.11-94.4-FABRIC":
+        raise BetaPublishError(f"The {label} fabric.mod.json must require target Patchouli.")
+    for mod_id in REQUIRED_MOD_IDS:
         if mod_id not in dependencies:
             raise BetaPublishError(f"The {label} fabric.mod.json is missing required dependency {mod_id}.")
 
