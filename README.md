@@ -21,6 +21,8 @@ The release candidate passes 258 tests in 65 suites, packaged client/server,
 multiplayer and bounded visual/gameplay checks. Publication status and exact
 coverage are recorded in [the target audit](docs/audits/2026-09-25-port-12111.md)
 and [target beta notes](docs/releases/0.2.1-1.21.11-beta.md).
+CurseForge accepted target beta file `8995986`; public availability is not yet
+confirmed. See the [publication record](docs/releases/0.2.1-1.21.11-publication.md).
 Requires Java 21, Fabric Loader 0.19.5+, Fabric API and Patchouli: Fabric Edition
 1.21.11-94.4-FABRIC. Use a new world or a backed-up trial; old 0.1.x world
 compatibility is unverified. The inherited Breeder Fairy juvenile-eligibility

@@ -5,7 +5,7 @@ its platform adaptations do not replace the canonical implementation.
 
 | Canonical checkpoint | Target checkpoint | Gameplay version | Disposition |
 | --- | --- | --- | --- |
-| `44cc057` | `13a4c39`, `d898c99` | 0.2.1 | Source port and target rendering corrections committed/pushed; bounded target runtime checks pass. Publication recorded separately. |
+| `44cc057` | `13a4c39`, `d898c99` | 0.2.1 | Source port and target rendering corrections committed/pushed; bounded target runtime checks pass. CurseForge accepted beta 8995986; public availability unconfirmed. |
 
 The source checkpoint includes the five 0.2.1 feedback/guide/Creative fixes and
 the immersive amethyst-plus-eight-gold-nugget crystal recipe. Registry and mod
