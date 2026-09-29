@@ -13,6 +13,12 @@ See the [beta notes](docs/releases/0.2.1-neoforge-beta.md),
 [implementation plan](docs/specs/2026-09-28-neoforge-1.21.1-port.md) and
 [target execution record](docs/audits/2026-09-28-neoforge-1211.md).
 
+CurseForge accepted the beta as
+[file 9005415](https://www.curseforge.com/minecraft/mc-mods/aura-cascade-reimagined/files/9005415).
+Public availability is not yet confirmed; the
+[publication record](docs/releases/0.2.1-neoforge-publication.md) distinguishes
+successful submission from public-file verification.
+
 Use NeoForge `21.1.252` and Patchouli `1.21.1-93-NEOFORGE`, not Fabric API or
 Team Reborn Energy. The native energy adapter targets NeoForge energy receivers.
 Build outputs have the `aura-cascade-neoforge-` prefix. Client and server

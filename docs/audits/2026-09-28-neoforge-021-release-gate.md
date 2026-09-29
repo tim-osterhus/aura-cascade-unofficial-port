@@ -1,6 +1,6 @@
 # NeoForge 0.2.1 Initial Beta Gate
 
-Status: APPROVED for the initial bounded 0.2.1 NeoForge beta. Runtime and independent review passed. Upload has not yet been attempted.
+Status: APPROVED for the initial bounded 0.2.1 NeoForge beta. Runtime and independent review passed. CurseForge accepted the upload as file `9005415`; public availability and returned metadata are not yet verified. See the [publication record](../releases/0.2.1-neoforge-publication.md).
 
 Current candidate: `f2bc9d9c6b73e59004f5e582196f850f1e4bfc5bd0515a299a5201ead0605f0b`.
 The second fairy fix defers reconciliation until the owner's chunk is entity-ticking
@@ -74,7 +74,8 @@ The authorized target is the initial 0.2.1 NeoForge beta, not canonical 0.2.2 re
 - [x] Reviewed inherited defect disclosure and remaining coverage limits; canonical 0.2.2 repairs are not included.
 - [x] Astra reviewed the final source correction, UI, multiplayer and all final native results within their stated bounds; no concrete blocker found.
 - [x] Reviewed source checkpoint pushed, release notes/metadata reviewed, and offline upload validator passed for the exact frozen artifact. Publication bookkeeping follows in the final release commit.
-- [ ] CurseForge beta upload, returned file metadata, and public availability check.
+- [x] CurseForge beta upload accepted as file `9005415`; frozen artifact hash unchanged afterward.
+- [ ] Public file availability and displayed metadata verification. Initial unauthenticated file-page check returned 404; no duplicate upload attempted.
 
 ## Known Baseline Risks
 
