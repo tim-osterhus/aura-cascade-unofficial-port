@@ -272,6 +272,119 @@ These partial trials are not a full MP PASS. Active MP snapshots were not read.
 The c935 disk/energy/progression/hook results above remain bound to c935 unless
 separately rerun/reviewed for f2bc. Final UI acceptance is not release approval.
 
+## Final Multiplayer Review
+
+Evidence: `build/qa-audit/neoforge-multiplayer/20260928-152948-557/` on
+`f2bc9d9c6b73e59004f5e582196f850f1e4bfc5bd0515a299a5201ead0605f0b`.
+Independently read summary, saved server/owner/witness phase JSON, all four
+`observations.jsonl` streams, lifecycle logs, memory CSV, and all four PNGs
+in owner-initial, owner-rejoin, and witness. No `latest.json` was read.
+
+Bounded state/lifecycle PASS is warranted. Summary records 31 completed checks;
+these include setup/screenshots, not 31 independent gameplay mechanisms.
+All 147 server, 38 initial-owner, 69 rejoined-owner, and 109 witness observation
+records identify f2bc. Each stream's maximum fairy count is one, with no
+retained over-one peak. Inspected probe code updates the maximum every tick
+and publishes every 20 ticks, retaining an exact snapshot when a new peak
+exceeds one. Thus this is stronger than merely finding no duplicates in the
+published phase samples; it remains bounded to this loaded-entity test run.
+
+Saved phases corroborate one slot-0 owner fairy in the Nether, no fairy for
+the Overworld witness while the owner is away, and matching server/client
+fairy UUIDs after return and respawn. Logout removes the server/witness fairy;
+rejoin restores one bound ring and one fairy without reopening the menu.
+Owner attachment data is present locally and absent on the remote player in
+witness snapshots. Visible held inventory after pickup is not private
+attachment leakage. Unequip preserves the bound ring in inventory and removes
+the fairy; re-equip restores one fairy.
+
+Server death observations distinguish both gamerules: keepInventory true
+retains one equipped bound ring, zero drops, and zero fairies while dead;
+respawn restores one fairy. With keepInventory false, equipment/inventory has
+zero rings and the world contains exactly one ring with bound count one.
+Pickup restores that ring to inventory with no remaining drop; re-equip
+restores one bound ring and fairy. The dead owner's client phase can still
+show pre-respawn attachment state; subsequent recovered-drop state has empty
+equipment and one inventory ring. This is eventual lifecycle synchronization,
+not a claim of instantaneous client clearing on death or every component's
+byte-for-byte conservation.
+
+All four lifetimes record exit 0 (server 21316, initial owner 17188, witness
+25704, rejoined owner 30764); client stop and server save/stop logs agree.
+Owner lifetimes are sequential, with at most server plus owner plus witness
+concurrently. Recalculation from 606 memory samples matches 3167.7 MiB private
+and 2642.1 MiB working-set peaks; sampling is not an OS hard cap.
+
+Visual boundary: both owner PNGs visibly contain one pink-purple fairy sprite.
+Both witness PNGs are valid rendered scenes but have no clearly identifiable
+fairy pixels. Witness entity tracking is proven by saved UUID/state, not a
+visual-rendering PASS. Tutorial toasts and a rejoin chat-verification toast
+obscure part of the scene. No continuous animation claim is made.
+
+Bookshelf menu-open/state synchronization passes: the owner client has a real
+menu, revision 1, empty entries, zero power, and canRetrieve false. The summary
+explicitly records `not_sent_unpowered_network_has_no_valid_entry` for the
+retrieval packet. No extraction request, powered retrieval, request rejection,
+or bookshelf item-conservation coverage is claimed from this run.
+
+This supersedes the pending full-MP-run status in earlier checkpoint sections
+for this bounded sequence only. Earlier duplicate-fairy failures, invalid
+death observer, and SavePhase atomic-read interruption remain retained, not
+relabeled as successes. Broad modpack, every role/count, and witness visual
+coverage remain outside acceptance. Final f2bc native hook/energy/progression/
+disk repetitions are being handled separately and are not accepted here by
+inheriting c935 results. This review is not publication/release approval.
+
+## Final Native Acceptance
+
+Independently read final result JSON, monitor summaries, and completion/save/stop
+logs for `neoforge-021-final-hooks-energy`, `neoforge-021-final-progression`,
+`neoforge-021-final-progression-evidence`, `neoforge-021-final-disk-prepare`,
+`neoforge-021-final-disk-check`, and `neoforge-021-final-disk-evidence` under
+`build/qa-audit/`. All four monitor lifetimes identify production SHA-256
+`f2bc9d9c6b73e59004f5e582196f850f1e4bfc5bd0515a299a5201ead0605f0b`,
+meet their expectations, request normal stop, exit 0, and report no failure.
+Logs corroborate completion and world saves. These are new f2bc results, not
+acceptance inherited from c935. No concrete blocker was found in this evidence.
+
+- Hooks: all five recorded checks pass: damage, red-hole lifetime, thief
+  drops, bonus-loot cancellation, and harvesting isolation.
+- Energy: all eight cases pass. Empty, sided, four-receiver, and external
+  Energy Meter cases each accept 29520 FE for 1968 Aura power debit; partial
+  accepts 37 FE for debit 3; full, rejecting, and over-four cases accept zero
+  with zero debit. Before/after power agrees with ceiling(accepted FE / 15).
+  All cases remove the feeder before measurement. The external case uses
+  Energy Meter 1.21.1-0.5.2's interval counter; its zero instrumented insertion
+  call field is not evidence of zero transfer. This is one external receiver,
+  not general modpack compatibility.
+- White progression: run `3f183373-d9f1-47d9-93ab-d07d6a1166ed` passes in
+  1450 total ticks, including a 40-tick unpowered control and 1410 progression
+  ticks. Control leaves inputs unchanged and processor progress zero. Eight
+  raw White crystals and one coal drive absorption, pumping, falling power,
+  and one White Arcane Ingot output; final nearby items contain only that
+  output. Final node Aura sums to 8000, matching the supplied crystals.
+  This is the White cycle, not every color or recipe.
+- Disk restart: `prepared-result.json` is only PREPARED with
+  `persistenceVerified=false`. Actual check run
+  `75799ef3-27ba-41c9-8307-17ac534e20bf` is PASS with persistence verified and
+  links preparation run `c9f33e77-3446-4a13-a444-fbe4ccd6e5f1`. Preparation PID
+  23768/start marker `7f447f0c-98b2-425c-9367-7ab4ea72eba5` ends before check
+  PID 26708/start marker `01d06e54-18d7-4f30-acbf-5735bf6714ee` starts. Both
+  identify the same final-server Aura jar and fixture positions. The check
+  monitor sends only `auraqa persistence check`; the previously reviewed
+  unchanged helper check path reads/restores rather than reseeding fixtures.
+  Expected and actual agree: node 3000 White Aura/zero power, one named MOD
+  storage book containing three White ingots and two White crystals, one
+  connected storage shelf with matching browser counts, and no remaining
+  world items. Coordinator power remains zero with five required; powered
+  retrieval is not tested by this restart.
+
+Bounded final native acceptance is warranted and supersedes the pending-native
+note above. Earlier failed trials remain retained. These fixture results do not
+expand the UI/MP boundaries, prove arbitrary-world migration or crash recovery,
+or constitute publication approval. No Minecraft process or build was launched
+by this reviewer; only this review document was edited.
+
 ## Evidence Boundary
 
 Earlier partial multiplayer/visual evidence belongs to old candidate

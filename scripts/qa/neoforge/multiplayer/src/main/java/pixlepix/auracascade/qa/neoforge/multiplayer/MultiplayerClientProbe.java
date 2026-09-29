@@ -90,6 +90,8 @@ final class MultiplayerClientProbe {
             report.addProperty("localPlayer", client.player == null ? "" : client.player.getGameProfile().getName());
             report.addProperty("accessoryMenu", loaded && client.player.containerMenu instanceof AuraAccessoryMenu);
             report.addProperty("bookshelfMenu", loaded && client.player.containerMenu instanceof BookshelfCoordinatorMenu);
+            report.addProperty("bookshelfFixtureReady", loaded
+                && client.level.getBlockState(new BlockPos(2, 64, 0)).is(AuraContent.BOOKSHELF_COORDINATOR));
             if (ticks % 20 == 0) evidence.publish(report);
         } catch (Exception error) {
             MultiplayerEvidence.failure(error);

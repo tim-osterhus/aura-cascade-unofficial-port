@@ -495,7 +495,10 @@ try {
 
     $beforeBookshelf = (Read-Probe $server).tick
     Fixture 'unpowered-bookshelf-menu-precondition' 'setblock 2 64 0 aura:bookshelf_coordinator'
-    Wait-Phase 'bookshelf-placement-ticked' { (Read-Probe $server).tick -ge ($beforeBookshelf + 20) }
+    Wait-Phase 'bookshelf-placement-received-by-client' {
+        (Read-Probe $server).tick -ge ($beforeBookshelf + 20) -and
+            (Read-Probe $rejoined).bookshelfFixtureReady -eq $true
+    }
     Command $rejoined 'bookshelfOpen' @{x=2; y=64; z=0}
     Wait-Phase 'real-bookshelf-menu-opened-unpowered' {
         $s = Read-Probe $server

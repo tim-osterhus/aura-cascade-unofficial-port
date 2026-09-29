@@ -4,11 +4,12 @@ Aura Cascade is an unofficial modern NeoForge port of the shipped `AuraCascade-5
 
 ## NeoForge Development Status
 
-This branch is a native NeoForge port in progress, based on canonical Fabric
-0.2.1 checkpoint `44cc057`. The initial **NeoForge 0.2.1 beta** is undergoing
-target-specific acceptance. Canonical repairs will follow in NeoForge 0.2.2;
-they are not part of this first loader release. Development artifacts are not
-release-approved builds. See the
+This branch is a native NeoForge port based on canonical Fabric 0.2.1 checkpoint
+`44cc057`. The initial **NeoForge 0.2.1 beta** has passed bounded target-specific
+acceptance. Canonical repairs will follow in NeoForge 0.2.2; they are not part
+of this first loader release. Only the exact artifact pinned in the
+[beta manifest](docs/releases/0.2.1-neoforge-beta-manifest.json) is approved.
+See the [beta notes](docs/releases/0.2.1-neoforge-beta.md),
 [implementation plan](docs/specs/2026-09-28-neoforge-1.21.1-port.md) and
 [target execution record](docs/audits/2026-09-28-neoforge-1211.md).
 
@@ -18,10 +19,12 @@ Build outputs have the `aura-cascade-neoforge-` prefix. Client and server
 development runs use separate `run/client` and `run/server` directories.
 Existing Fabric-world migration is unverified; use separate worlds or backups.
 
-The current development checkpoint passes 263 native regression tests, packaged
-client/server smoke checks and five targeted server event controls. Multiplayer,
-full native gameplay/UI acceptance and canonical 0.2.2 repair integration remain
-open. `qaObserverJar` builds a separate test helper, never bundled into the mod.
+The current candidate passes 265 native regression tests and bounded packaged
+UI checks. The initial-beta gate tracks native event, energy, persistence,
+progression and multiplayer acceptance separately from canonical 0.2.2 repairs.
+See the [release gate](docs/audits/2026-09-28-neoforge-021-release-gate.md)
+and [independent review](docs/audits/2026-09-28-neoforge-021-independent-review.md).
+The `qa*Jar` tasks build separate test helpers, never bundled into the mod.
 
 The release, gameplay and parity records below describe the inherited **Fabric
 baseline and its history**, not completed NeoForge validation. Historical hashes,

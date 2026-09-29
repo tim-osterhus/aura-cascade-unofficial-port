@@ -8,11 +8,19 @@ acceptance, followed by a separate 0.2.2 parity release after canonical repairs.
 | Canonical source | Target source | Disposition |
 | --- | --- | --- |
 | `44cc057` | `neoforge/1.21.1` development checkpoint | Native build, 263 regressions, packaged client/server and five hook controls pass; full target acceptance pending |
+| `44cc057` plus target-only lifecycle correction | `6d50bfc` | NeoForge 0.2.1 candidate, 265 regressions and bounded native UI acceptance; final multiplayer gate still pending at this checkpoint |
+| Same production source as `6d50bfc` | Final artifact `f2bc9d9c...` | Initial beta approved after 31 multiplayer checks, six UI runs, five hooks, eight energy cases, White progression and disk restart; full evidence in the release gate |
 
 No canonical 0.2.2 repair commit has been imported yet. The active repair
 register is owned by Mod Playtesting and is not frozen. Inherited Breeder and
 Binding Ring guide defects remain unresolved here; do not conflate baseline
 defects, target regressions, and invalid test fixtures.
+
+The target-only lifecycle correction defers fairy reconciliation until the
+owner's chunk is entity-ticking, constrains orbit positions to ticking chunks,
+and rejects superseded entities. NeoForge dimension tests reproduced duplicates
+before the correction. This is not a claimed canonical 0.2.2 repair; evaluate
+its applicability independently when preparing the later parity release.
 
 For each accepted repair record its ID, canonical SHA, target SHA, affected
 tests, packaged candidate hash and acceptance result. Prefer `cherry-pick -x`

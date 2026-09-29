@@ -1,11 +1,11 @@
 {
-  "reviewed": false,
+  "reviewed": true,
   "projectId": 1519395,
   "loader": "NeoForge",
   "version": "0.2.1+1.21.1",
   "displayName": "Aura Cascade Reimagined 0.2.1+1.21.1 NeoForge Beta",
   "artifactPath": "build/libs/aura-cascade-neoforge-0.2.1+1.21.1.jar",
-  "expectedJarSHA256": "04f1a0f860b2f19d3b1113c17f2ce58070193eaca1e2e86c771aab798817ad5a",
+  "expectedJarSHA256": "f2bc9d9c6b73e59004f5e582196f850f1e4bfc5bd0515a299a5201ead0605f0b",
   "releaseType": "beta",
   "gameVersionNames": [
     "1.21.1",
@@ -14,7 +14,7 @@
     "Server",
     "Java 21"
   ],
-  "changelog": "## Aura Cascade Reimagined 0.2.1 NeoForge Beta\n\nInitial NeoForge loader beta for Minecraft 1.21.1 and Java 21, on the existing 0.2.1 gameplay baseline. Requires NeoForge 21.1.252 and Patchouli 1.21.1-93-NEOFORGE; Fabric API and Team Reborn Energy are not required. Back up existing worlds before upgrading.\n\nThis beta does not include the canonical 0.2.2 repairs and is not a claim of full feature parity or exhaustive gameplay validation.\n\nKnown inherited Fabric 0.2.1 risks, not confirmed as NeoForge defects or claimed repaired: AC-022-001, Breeder accepts juveniles; AC-022-002, duplicate offspring observed (causal explanation still under investigation); and AC-022-003, Binding Ring costs link opens the wrong entry.",
+  "changelog": "## Aura Cascade Reimagined 0.2.1 NeoForge Beta\n\nInitial native NeoForge beta for Minecraft 1.21.1 and Java 21, on the existing 0.2.1 gameplay baseline. Requires NeoForge 21.1.252 and Patchouli 1.21.1-93-NEOFORGE on client and server. Fabric API and Team Reborn Energy are not required.\n\nIncludes native networking, private accessory synchronization, event hooks, client rendering and NeoForge energy interoperability. The release validation cycle also corrected fairy duplication during dimension/chunk transitions. The Aura tab, navigable Encyclopedia, node-placement previews, inspection HUD and dropped-item conversion effects are retained.\n\nThis is bounded beta acceptance, not exhaustive gameplay or modpack certification. Powered bookshelf retrieval, every recipe/fairy role, every guide hyperlink, and Angelsteel-specific animation are not independently certified by this loader gate. Fabric-to-NeoForge world migration is unverified: use separate worlds and backups.\n\nKnown inherited Fabric 0.2.1 risks, not claimed repaired or independently confirmed on NeoForge: Breeder accepts juveniles; duplicate offspring observed with cause still under investigation; Binding Ring costs link opens the wrong entry. Canonical 0.2.2 repairs will be integrated and revalidated in a later NeoForge release.",
   "relations": {
     "projects": [
       {
