@@ -1,0 +1,26 @@
+{
+  "reviewed": false,
+  "projectId": 1519395,
+  "loader": "NeoForge",
+  "version": "0.2.1+1.21.1",
+  "displayName": "Aura Cascade Reimagined 0.2.1+1.21.1 NeoForge Beta",
+  "artifactPath": "build/libs/aura-cascade-neoforge-0.2.1+1.21.1.jar",
+  "expectedJarSHA256": "04f1a0f860b2f19d3b1113c17f2ce58070193eaca1e2e86c771aab798817ad5a",
+  "releaseType": "beta",
+  "gameVersionNames": [
+    "1.21.1",
+    "NeoForge",
+    "Client",
+    "Server",
+    "Java 21"
+  ],
+  "changelog": "## Aura Cascade Reimagined 0.2.1 NeoForge Beta\n\nInitial NeoForge loader beta for Minecraft 1.21.1 and Java 21, on the existing 0.2.1 gameplay baseline. Requires NeoForge 21.1.252 and Patchouli 1.21.1-93-NEOFORGE; Fabric API and Team Reborn Energy are not required. Back up existing worlds before upgrading.\n\nThis beta does not include the canonical 0.2.2 repairs and is not a claim of full feature parity or exhaustive gameplay validation.\n\nKnown inherited Fabric 0.2.1 risks, not confirmed as NeoForge defects or claimed repaired: AC-022-001, Breeder accepts juveniles; AC-022-002, duplicate offspring observed (causal explanation still under investigation); and AC-022-003, Binding Ring costs link opens the wrong entry.",
+  "relations": {
+    "projects": [
+      {
+        "slug": "patchouli",
+        "type": "requiredDependency"
+      }
+    ]
+  }
+}

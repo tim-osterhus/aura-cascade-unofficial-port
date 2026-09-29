@@ -5,10 +5,13 @@ param(
     [string]$NeoVersion = '21.1.252',
     [string[]]$Commands = @('list'),
     [string]$ExpectedLogPattern = '',
+    [string[]]$QaJvmArguments = @(),
+    [ValidateRange(30, 600)][int]$TimeoutSeconds = 240,
     [int]$StopAtMB = 3200
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'session-limit.ps1')
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 $gameDir = (Resolve-Path -LiteralPath $GameDir).Path
 $argumentFile = Join-Path $gameDir "libraries/net/neoforged/neoforge/$NeoVersion/win_args.txt"
@@ -27,6 +30,10 @@ $info.CreateNoWindow = $true
 $info.RedirectStandardInput = $true
 $info.RedirectStandardOutput = $true
 $info.RedirectStandardError = $true
+foreach ($argument in $QaJvmArguments) {
+    if ($argument -notmatch '^-Daura\.qa\.[a-zA-Z0-9_.]+=') { throw 'Only scoped QA JVM properties are accepted.' }
+    $info.ArgumentList.Add($argument)
+}
 foreach ($argument in @('-Xms128m', '-Xmx768m', '-XX:ActiveProcessorCount=2', '-XX:+UseSerialGC', '-XX:MaxDirectMemorySize=128m', "-Daura.qa.observer.dir=$outputDir", "@$argumentFile", 'nogui')) {
     $info.ArgumentList.Add($argument)
 }
@@ -34,6 +41,7 @@ $started = [DateTime]::UtcNow
 $modHashes = @(Get-ChildItem -LiteralPath (Join-Path $gameDir 'mods') -Filter '*.jar' -File | ForEach-Object {
     [ordered]@{ name=$_.Name; sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }
 })
+$existingSessions = @(Assert-MinecraftSessionCapacity)
 $process = [Diagnostics.Process]::Start($info)
 $stdout = $process.StandardOutput.ReadToEndAsync()
 $stderr = $process.StandardError.ReadToEndAsync()
@@ -75,7 +83,7 @@ try {
                 }
             }
         }
-        if (([DateTime]::UtcNow - $started).TotalSeconds -gt 240) {
+        if (([DateTime]::UtcNow - $started).TotalSeconds -gt $TimeoutSeconds) {
             $failure = 'startup_command_or_shutdown_timeout'
             $process.Kill($true)
             break
@@ -92,6 +100,7 @@ try {
         started_utc=$started.ToString('o'); finished_utc=[DateTime]::UtcNow.ToString('o')
         reached_ready=$ready; commands=$Commands; expectation_met=$expectationMet
         mods=$modHashes
+        session_pids_before_launch=@($existingSessions.ProcessId)
         normal_stop_requested=$stopSent; exit_code=$process.ExitCode; failure=$failure
         peak_working_set_mb=($samples | Measure-Object working_set_mb -Maximum).Maximum
         peak_private_bytes_mb=($samples | Measure-Object private_bytes_mb -Maximum).Maximum

@@ -32,6 +32,21 @@ tasks.register('qaObserverJar', Jar) {
     from sourceSets.qaObserver.output
 }
 
+['Multiplayer': 'multiplayer', 'Ui': 'ui', 'Energy': 'energy', 'Persistence': 'persistence'].each { suffix, directory ->
+    def qaSources = sourceSets.create("qa${suffix}") {
+        java.srcDirs = ["scripts/qa/neoforge/${directory}/src/main/java"]
+        resources.srcDirs = ["scripts/qa/neoforge/${directory}/src/main/resources"]
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+    tasks.register("qa${suffix}Jar", Jar) {
+        archiveBaseName = "aura-neoforge-qa-${directory}"
+        archiveVersion = '1.0.0'
+        destinationDirectory = layout.buildDirectory.dir('qa-tools')
+        from qaSources.output
+    }
+}
+
 dependencies {
     implementation "vazkii.patchouli:Patchouli:${project.patchouli_version}"
 

@@ -6,6 +6,7 @@ param(
     [string]$QuickPlaySingleplayer,
     [string]$ObserverDirectory,
     [switch]$ObserverScene,
+    [string[]]$QaJvmArguments = @(),
     [switch]$GenerateLaunchOnly,
     [switch]$Execute,
     [ValidateRange(1024, 4500)][int]$StopAtMiB = 3800,
@@ -13,6 +14,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'session-limit.ps1')
+foreach ($qaArgument in $QaJvmArguments) {
+    if ($qaArgument -notmatch '^-Daura\.qa\.[a-zA-Z0-9_.]+=') { throw 'QA arguments must be aura.qa system properties.' }
+}
 $minecraftVersion = '1.21.1'
 $neoForgeVersion = '21.1.252'
 $patchouliVersion = '1.21.1-93-NEOFORGE'
@@ -335,7 +340,7 @@ $modJars = @(Get-ChildItem -LiteralPath $modsDirectory -Filter '*.jar' -File)
 $modIds = @{}
 foreach ($modJar in $modJars) {
     $id = Read-ModId $modJar.FullName
-    if ($id -notin @('aura', 'patchouli', 'aura_qa_observer')) { throw "Unexpected mod in isolated profile: $($modJar.Name) (id=$id)" }
+    if ($id -notin @('aura', 'patchouli', 'aura_qa_observer', 'aura_qa_ui', 'aura_qa_multiplayer')) { throw "Unexpected mod in isolated profile: $($modJar.Name) (id=$id)" }
     if ($modIds.ContainsKey($id)) { throw "Duplicate packaged mod id in isolated profile: $id" }
     $modIds[$id] = $modJar
 }
@@ -509,6 +514,7 @@ if ($Profile -eq 'client') {
     $javaArguments.Add("-Djava.library.path=$nativesDirectory")
     if ($observerOutputDirectory) { $javaArguments.Add("-Daura.qa.observer.dir=$observerOutputDirectory") }
     if ($ObserverScene) { $javaArguments.Add('-Daura.qa.observer.scene=true') }
+    foreach ($qaArgument in $QaJvmArguments) { $javaArguments.Add($qaArgument) }
     $javaArguments.Add('-cp')
     $javaArguments.Add($classpathText)
     $javaArguments.Add([string]$clientMetadata.mainClass)
@@ -579,6 +585,9 @@ if ($Profile -eq 'client') { $processInfo.ArgumentList.Add("@$(Join-Path $runDir
 else { foreach ($argument in $javaArguments) { $processInfo.ArgumentList.Add([string]$argument) } }
 
 $started = [DateTime]::UtcNow
+$existingSessions = @(Assert-MinecraftSessionCapacity)
+$launchDetails.sessionPidsBeforeLaunch = @($existingSessions.ProcessId)
+$launchDetails | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath $launchManifestPath -Encoding UTF8
 $process = [Diagnostics.Process]::Start($processInfo)
 $stdout = $process.StandardOutput.ReadToEndAsync()
 $stderr = $process.StandardError.ReadToEndAsync()

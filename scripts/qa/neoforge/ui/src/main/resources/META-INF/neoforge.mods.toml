@@ -1,0 +1,37 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+
+[[mods]]
+modId="aura_qa_ui"
+version="1.0.0"
+displayName="Aura Cascade NeoForge UI QA Driver"
+description='''Opt-in client UI and visual evidence driver for bounded NeoForge candidate checks.'''
+
+[[dependencies.aura_qa_ui]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.252,21.2)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.aura_qa_ui]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.aura_qa_ui]]
+modId="aura"
+type="required"
+versionRange="[0,)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.aura_qa_ui]]
+modId="patchouli"
+type="required"
+versionRange="[1.21.1-93-NEOFORGE,)"
+ordering="AFTER"
+side="BOTH"

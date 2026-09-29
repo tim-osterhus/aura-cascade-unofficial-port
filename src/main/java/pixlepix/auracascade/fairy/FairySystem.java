@@ -88,6 +88,10 @@ public final class FairySystem {
 
     private static void onEntityJoinLevel(EntityJoinLevelEvent event) {
         Entity entity = event.getEntity();
+        if (!event.getLevel().isClientSide() && entity instanceof AuraFairyEntity fairy && isSuperseded(fairy)) {
+            event.setCanceled(true);
+            return;
+        }
         if (!event.getLevel().isClientSide() && entity instanceof Allay
             && provenLegacyOwner(true, entity.getTags()).isPresent()) {
             event.setCanceled(true);
@@ -189,12 +193,18 @@ public final class FairySystem {
 
     private static void reconcilePlayerFairies(ServerPlayer player, List<FairyRole> roles) {
         ServerLevel level = player.serverLevel();
+        if (player.isAlive() && !roles.isEmpty() && !level.isPositionEntityTicking(player.blockPosition())) {
+            return;
+        }
         UUID ownerId = player.getUUID();
         List<AuraFairyEntity> existing = level.getEntitiesOfClass(
             AuraFairyEntity.class,
             player.getBoundingBox().inflate(RECONCILE_RADIUS),
             fairy -> ownerId.equals(fairy.ownerId())
         );
+        if (existing.size() != roles.size() || existing.stream().anyMatch(fairy -> isSuperseded(fairy))) {
+            existing = loadedOwnerFairies(level, ownerId);
+        }
         existing.sort(Comparator.comparingInt(Entity::getId));
         forgetOwnerFairies(ownerId);
 
@@ -212,7 +222,7 @@ public final class FairySystem {
             }
             if (fairy != null) {
                 fairy.setFairyData(ownerId, slot, role);
-                fairy.setPos(orbitPosition(level.getGameTime(), slot, player));
+                fairy.setPos(orbitPosition(level, slot, player));
                 CANONICAL_FAIRIES.put(new FairySlot(ownerId, slot), fairy.getUUID());
             }
         }
@@ -234,7 +244,7 @@ public final class FairySystem {
             return null;
         }
         fairy.setFairyData(owner.getUUID(), slot, role);
-        fairy.setPos(orbitPosition(level.getGameTime(), slot, owner));
+        fairy.setPos(owner.getX(), owner.getY() + 1.4D, owner.getZ());
         if (!level.addFreshEntity(fairy)) {
             fairy.discard();
             return null;
@@ -249,10 +259,40 @@ public final class FairySystem {
         return new Vec3(owner.getX() + Math.cos(angle) * radius, y, owner.getZ() + Math.sin(angle) * radius);
     }
 
+    static Vec3 orbitPosition(ServerLevel level, int slot, ServerPlayer owner) {
+        Vec3 desired = orbitPosition(level.getGameTime(), slot, owner);
+        BlockPos target = BlockPos.containing(desired.x, desired.y, desired.z);
+        return entityTickingOrbitPosition(desired, owner.position(), level.isPositionEntityTicking(target));
+    }
+
+    static Vec3 entityTickingOrbitPosition(Vec3 desired, Vec3 ownerPosition, boolean targetEntityTicking) {
+        return targetEntityTicking ? desired : ownerPosition.add(0.0D, 1.4D, 0.0D);
+    }
+
+    static boolean isSuperseded(AuraFairyEntity fairy) {
+        UUID ownerId = fairy.ownerId();
+        return ownerId != null && isSuperseded(
+            CANONICAL_FAIRIES.get(new FairySlot(ownerId, fairy.slot())), fairy.getUUID()
+        );
+    }
+
+    static boolean isSuperseded(UUID canonicalId, UUID fairyId) {
+        return canonicalId != null && !canonicalId.equals(fairyId);
+    }
+
+    private static List<AuraFairyEntity> loadedOwnerFairies(ServerLevel level, UUID ownerId) {
+        ArrayList<AuraFairyEntity> fairies = new ArrayList<>();
+        for (Entity entity : level.getAllEntities()) {
+            if (entity instanceof AuraFairyEntity fairy && !fairy.isRemoved() && ownerId.equals(fairy.ownerId())) {
+                fairies.add(fairy);
+            }
+        }
+        return fairies;
+    }
+
     private static void clearNearby(ServerLevel level, UUID ownerId, AABB area) {
         forgetOwnerFairies(ownerId);
-        level.getEntitiesOfClass(AuraFairyEntity.class, area.inflate(RECONCILE_RADIUS), fairy -> ownerId.equals(fairy.ownerId()))
-            .forEach(Entity::discard);
+        loadedOwnerFairies(level, ownerId).forEach(Entity::discard);
         removeLegacyFairiesNear(level, ownerId, area);
     }
 

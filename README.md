@@ -5,9 +5,10 @@ Aura Cascade is an unofficial modern NeoForge port of the shipped `AuraCascade-5
 ## NeoForge Development Status
 
 This branch is a native NeoForge port in progress, based on canonical Fabric
-0.2.1 checkpoint `44cc057`. The intended release is **0.2.2 beta**, after importing
-the accepted canonical repairs and passing target-specific acceptance. Development
-artifacts are not release-approved builds. See the
+0.2.1 checkpoint `44cc057`. The initial **NeoForge 0.2.1 beta** is undergoing
+target-specific acceptance. Canonical repairs will follow in NeoForge 0.2.2;
+they are not part of this first loader release. Development artifacts are not
+release-approved builds. See the
 [implementation plan](docs/specs/2026-09-28-neoforge-1.21.1-port.md) and
 [target execution record](docs/audits/2026-09-28-neoforge-1211.md).
 

@@ -100,13 +100,14 @@ public final class AuraFairyEntity extends Entity {
         ServerPlayer owner = ownerUuid == null ? null : serverLevel.getServer().getPlayerList().getPlayer(ownerUuid);
         if (!canRemainLoaded(ownerUuid, slot(), owner == null ? null : owner.getUUID(), owner != null && owner.isAlive(),
             owner != null && owner.level() == level(), owner == null ? Double.POSITIVE_INFINITY : distanceToSqr(owner))
-            || !FairySystem.isRoleEquipped(this, owner)) {
+            || !FairySystem.isRoleEquipped(this, owner)
+            || FairySystem.isSuperseded(this)) {
             FairySystem.forgetFairy(this);
             discard();
             return;
         }
 
-        setPos(FairySystem.orbitPosition(serverLevel.getGameTime(), slot(), owner));
+        setPos(FairySystem.orbitPosition(serverLevel, slot(), owner));
         setDeltaMovement(Vec3.ZERO);
         FairySystem.tickFairy(this, owner);
     }
